@@ -116,24 +116,129 @@ foreign EU branch (TESEPC) NOTIFICATION  idem                        SÍ — ant
 foreign EU FPS (cod 21/LPS) NOTIFICATION Entidades + ACT.TRANSFR.    NO — basta notificación recibida  DÉBIL
 ```
 
+## B3 — Clasificación por ruta jurídica + comprobaciones mecánicas
+
+### Los 47 `TIPO ENTIDAD` por ruta legal
+
+```text
+A. AUTORIZACIÓN PROPIA (domestic, inscripción tras autorización)
+   TEEP PI · TEEDE EMI · TEBP/TEBL/TEBN/TEBR banca · TECA cajas ·
+   TECC/TECCC/TECRC/TECRNC/TEOCC cooperativas · TECO crédito oficial ·
+   TEEFC EFC · TESAF arrendamiento · TESCH créd. hipotecario ·
+   TESGR garantía recíproca · TESDEC dominantes · TEEF/TESF/TESFC/
+   TESFMC financiación · TESR reafianzamiento · TESMMD mediadoras
+   dinero · TEST tasación · TEECVM/TEECVT cambio moneda · TEECCP L25/91
+
+B. REGISTRO (régimen simplificado / específico)
+   TEPSIC AISP · TEEPEX exenta art.14 RDL 19/2018 · ICI/PI inmobiliario
+
+C. PASAPORTE / CROSS-BORDER
+   TESECC/TESECE sucursal CI UE/no-UE · TESEPC sucursal EP UE ·
+   TESEDC sucursal EDE UE · TESEFC sucursal filial · SICI sucursal ICI ·
+   21/11.2 CI comunitaria/extra. en LPS · 19 filial comunitaria LPS ·
+   ICILPS ICI en LPS · TEOR oficina representación · TEBEX banca ext.
+
+D. ACTORES DERIVADOS (capacidad delegada, anclada al principal)
+   Agentes → app propia app.bde.es/age_www (no independientes)
+   Distribuidores → Listado_de_distribuidores.xls (distribución/
+   reembolso de dinero electrónico por cuenta de la EDE declarante)
+
+E. EXCLUSIONES (notificación de exclusión, no autorización)
+   PSP_excluidos.xlsx — art. 3 RDL 19/2018: red limitada / telecom.
+   EXCLUDED_ACTIVITY_NOTIFIED ≠ AUTHORISATION ≠ NOT_ENTITLED
+
+F. HÍBRIDAS
+   TEEFEP / TEEPH / TEEFPH — EFC o mixtas con facultad de pago
+
+G. OTROS / CERRADOS
+   CRIPTO (registro cerrado por fin período transitorio — nota oficial)
+```
+
+### Cuatro comprobaciones mecánicas sobre `ACTIVIDADES`
+
+```text
+1. ¿toda entidad de la clase tiene ≥1 actividad?
+   188/190 en ServicioPagos; 2 sin actividad (1 sucursal EP UE,
+   1 híbrida EFC-EP) — casi completo, con excepciones nombrables.
+
+2. ¿diccionario jurídico estable de códigos?
+   Sí: códigos = taxonomía real de servicios PSD2/LPSE (1,2,3.A-C,
+   4.A-C,5.A-B,6,7=PIS,8=AIS) + A/B/C dinero electrónico (Ley 21/2011)
+   + A.1-D actividades EFC (Ley 5/2015). Cada fila lleva NORMATIVA.
+
+3. ¿ausencia de actividad = no habilitada?
+   Cobertura casi total sugiere que sí para entidades presentes,
+   pero queda por demostrar normativamente (B4/B5): la hoja declara
+   ámbito autorizado, no afirma exhaustividad por sí misma.
+
+4. ¿historia por actividad reconstruible?
+   NO: sólo FECHA DE ALTA ACTIVIDAD; no hay fecha de cese por
+   actividad. La historia existe a nivel entidad (FECHA BAJA/MOTIVO),
+   no a nivel capability. Además 85 entidades dadas de baja conservan
+   sus filas de actividad → ACTIVIDADES refleja ámbito autorizado
+   histórico; la vigencia la gobierna FECHA BAJA de la entidad.
+```
+
+### Hallazgo estructural: cobertura LPS asimétrica
+
+`Registro_SinEstablecimiento` sólo contiene tipos LPS de **entidad de
+crédito** (21, 11.2, 19), ICI y cripto-cerrado. **No existe tipo LPS
+para entidad de pago/EDE**: las PI/EMI extranjeras en libre prestación
+en España viven en el registro EBA (services_raw por país) y en la
+vía notificación-NCA, no en la enumeración pública BdE.
+
+```text
+absence in BdE + foreign PI under FPS → NO interpretable
+(universo incorrecto; la enumeración de esa ruta es EBA, no BdE)
+absence in BdE + domestic PI          → candidata fuerte
+```
+
+Esto responde parcialmente a H10-A por la negativa: el universo BdE
+**no** cubre todas las rutas legales para prestar servicios de pago
+en España. La exhaustividad sólo puede predicarse por slice.
+
+### Tabla de decisión por ruta
+
+```text
+ruta              inclusión oblig.  enum. pública  lag publicación  capability repr.  historia  ausencia candidata
+domestic PI/EMI   sí (autorización) sí (XLSX)      bajo (obligación) sí (ACTIVIDADES)  entidad   STRONG
+AISP              sí (registro)     sí             bajo              sí (código 8)     entidad   STRONG
+exenta art.14     sí (reg. simplif.) sí            bajo              sí                entidad   STRONG
+EU branch         sí (antes operar) sí             bajo              sí                entidad   STRONG
+EU FPS (CI)       notificación      sí (cod 21)    VENTANA FALSA-    parcial           entidad   WEAK
+                                                   AUSENCIA posible
+EU FPS (PI/EMI)   notificación      NO en BdE      n/a (otro registro) n/a             n/a       NO (vía EBA)
+agente            declaración       app separada   n/a               delegada          ?         NO (independiente)
+distribuidor      declaración       xls separado   n/a               delegada          ?         NO (independiente)
+excluido PSP      notificación exc. xls separado   n/a               n/a               sí        NO (no es ruta PSP)
+```
+
+0 códigos sin asignar; rutas conocidas presentes. Agentes/
+distribuidores nunca → entitlement independiente. Excluidos nunca →
+autorización PSP ni negativo PSP.
+
 ## Estado
 
 ```text
-B1  PASS (evidencia congelada, 15 snapshots)
-B2  universe matrix inicial — en curso
-H10-A  STRONGLY PLAUSIBLE para clases domestic + branch;
-       OPEN para FPS (notificación ≠ inscripción previa)
-H10-B  estructura capability-level existe (ACTIVIDADES con normativa);
-       exhaustividad normativa por verificar
-H10-C  OPEN — depende de clase × régimen × fecha; no global
+B1  PASS (evidencia congelada, 17 snapshots)
+B2  universe matrix inicial — superado por clasificación B3
+B3  47/47 códigos → ruta jurídica · comprobaciones mecánicas hechas
+H10-A  por slice: STRONG domestic+branch+registro;
+       NO para PI/EMI extranjera en LPS (su enumeración es EBA, no BdE)
+H10-B  diccionario jurídico estable; falta fecha de cese por actividad
+       → historia por capability no reconstruible (sólo alta + baja
+       a nivel entidad)
+H10-C  ausencia domestic candidata fuerte; LPS-CI weak (ventana de
+       publicación); LPS-PI/EMI no interpretable; agentes/distribuidores/
+       excluidos fuera de la inferencia negativa
+H10    NO global — sólo por slice (ruta × actividad × fecha)
 ```
 
 ## Próximos pasos
 
 ```text
-B3  comparar categorías públicas vs rutas legales (47 tipos vs
-    mecanismos); huecos conocidos: FPS recién notificado, agentes,
-    distribuidores, híbridas
+B3  DONE — 47/47 tipos asignados a ruta legal; 0 códigos sin explicar;
+    hallazgo clave: LPS-PI/EMI no enumeradas en BdE
 B4  casos reales positivos + ausentes (slice preregistrado)
 B5  decidir H10-A/B/C por clase, no globalmente
 B6  sólo si COMPLETE_ENUMERATION queda probado para algún slice:

@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<html style="height:100%; margin:0px; padding:0px;">
+	<head>
+		<title>Arranque Registro de agentes</title>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+		
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/lib/jquery.min.js"></script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/lib/ria-plugins.min.js"></script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/BdE/JqCore.js"></script>
+	<script type="text/javascript">
+		var webContentPath="/age_www/";
+		var application = new JqApplication(webContentPath + "arq/Jquery7.1.3.73/");
+	</script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/BdE/Commons/Trazas/log4javascript.js"></script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/BdE/BdePatches.js"></script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/BdE/BdeRiaJquery.js"></script>
+		<script type="text/javascript" src="/age_www/arq/Jquery7.1.3.73/BdE/BdeLauncher.js"></script>
+		<script type="text/javascript" src="/age_www/js/configApl.js"></script>
+		<link rel="stylesheet" href="/age_www/arq/Jquery7.1.3.73/lib/ria-plugins.min.css"/>
+		<link rel="stylesheet" href="/age_www/arq/Jquery7.1.3.73/lib/tree/skin-xp/ui.fancytree.css" type="text/css"/>
+
+		<link rel="stylesheet" href="/age_www/arq/Jquery7.1.3.73/themes/BDETheme/theme.css" type="text/css"/>
+		
+		<script type="text/javascript">
+		
+			
+			try 
+			{
+					var isPreview = false;
+					var SimulacionPath = "";
+					
+					
+					BdeConectorIAS.setUrlIasAlias(false);
+				
+				
+				var bdeAplicacion = new BdeAplicacion();
+				bdeAplicacion.setNombre("age_www");
+				bdeAplicacion.setMonoOperacion(!false);
+				bdeAplicacion.setMultiConversacion(true);
+				bdeAplicacion.setPreguntaCierreOp(false);
+			}
+			catch (e)
+			{
+				console.log("Error initializing:" + e.message);
+			} 
+			
+			function Arranque(launcherParam)
+			{
+				var initOperation = getParameterByName("initOperation");
+				var applicationParameters = getApplicationParameters();
+				
+				var root = "../..";
+				
+				oLocalizacion = new BdeLocalizacion(
+					obtenerIdiomaEnUso(),
+					"Global_literales,Error_literales,"+root+"/arq/Jquery7.1.3.73/BdE/Commons/ErroresArquitectura/ErroresArquitectura_literales",
+					window);
+				oLocalizacion.refrescar();
+						try
+						{
+							BdeConectorIAS.sendLoginToIAS(initOperation, applicationParameters); 
+						}
+						catch(e)
+						{
+							var oBdeExternalError = e.iasUserData;
+							
+							if (oBdeExternalError != null)
+							{
+								BdeVentana.nuevaInstanciaError(oBdeExternalError, true);
+								return;
+							}
+							else
+							{
+								alert(e.message);
+								window.close();
+							}
+						}
+						
+						
+						window.onbeforeunload = function() 
+						{
+							if(bdeAplicacion.mustConfirmApplicationClosing())
+							{
+								return oLocalizacion.traducir_texto("#{BdeAplicacion_SalirAplicacion}", bdeAplicacion.getApplicationTitle());
+							}
+						};
+						
+						if ( BdeUtilities.msie )
+						{
+							window.attachEvent( "onunload", function() 
+							{
+								BdeConectorIAS.sendConversationFinish();
+								bdeAplicacion.dispose();
+							} );
+						}
+						else
+						{
+							window.addEventListener( "unload", function() 
+							{
+								BdeConectorIAS.sendConversationFinish();
+								bdeAplicacion.dispose();
+							}, false );
+						}
+			};
+			
+			$(document).ready(function()
+			{
+				if (shouldShowBrowserVersionMessage())
+				{
+					var root = "../..";
+					showBrowserVersionIncompatibilityMessage(root);
+				}
+				else
+				{
+					new Arranque();
+				}
+				
+				$("#loading").remove();
+			});
+			
+			function getParameterByName(name) 
+			{
+				name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+				var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+				results = regex.exec(location.search);
+				return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+			}
+			function getApplicationParameters()
+			{
+				var queryString = location.search.substring(1);
+				var applicationParameters = new Array();
+				var params = queryString.split("&");
+				for(var i = 0;i<params.length;i++)
+				{
+					var param = params[i];
+					if(param && param.length>2 && param.indexOf("="))
+					{
+						var key = param.substring(0, param.indexOf("="));
+						var value = param.substring(param.indexOf("=")+1, param.length);
+						if("initOperation"!=key && 
+							"launcherOperation"!=key)
+						{
+							applicationParameters.push(param);
+						}
+					}
+				}
+				return applicationParameters;
+			}
+		</script>
+	</head>
+	
+	<body>
+		<div id="loading">
+			CARGANDO APLICACIÓN Registro de agentes...
+		</div>
+	</body>
+</html><HTML>
+<BODY onfocus="document.cookie='IV_JCT=%2Fage_www; path=/'">
+</BODY>
+</HTML>

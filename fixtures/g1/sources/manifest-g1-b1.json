@@ -123,6 +123,20 @@
       "bytes": 17084,
       "sha256": "2f953a48b996dce5f771018aeff29e8baae4f440b0b8b987c3c2f2b90bda77fb",
       "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-listado-distribuidores.xls",
+      "source_url": "https://www.bde.es/f/webbde/SGE/regis/ficheros/Listado_de_distribuidores.xls",
+      "bytes": 41472,
+      "sha256": "73fc71795436e1dde600ecabf401d97f0c2f6073f804709bd0532ba3fd74f861"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-agentes-app-arranque.html",
+      "source_url": "https://app.bde.es/age_www/age_wwwias/xml/Arranque.html",
+      "bytes": 5108,
+      "sha256": "d99e3104351e059723974bdc269a240dd63478349c4878e163b389409d6ba4ad"
     }
   ]
 }
