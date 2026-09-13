@@ -1,48 +1,56 @@
 {
-  "gate": "g1-c1",
-  "hypothesis": "H11",
+  "capture_id": "g1-c1-2026-09-14",
+  "retrieved_at": "2026-09-14",
+  "hash_algorithm": "SHA-256",
+  "encoding": "UTF-8 for text snapshots; binary-preserving for PDF snapshots",
   "snapshots": [
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/eurlex-mica-2023-1114-es.html",
       "source_url": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32023R1114",
       "bytes": 1784282,
-      "sha256": "7a18f2b63974b08f866a81ec8521a0cffd572cb898d0fe50307da04e18bad744"
+      "sha256": "7a18f2b63974b08f866a81ec8521a0cffd572cb898d0fe50307da04e18bad744",
+      "source_as_of": "2026-09-14"
     },
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/cnmv-psc-criptoactivos.pdf",
       "source_url": "https://www.cnmv.es/Docportal/Proveedores-Servicios-Criptoactivos/Listado_ProveedoresCriptoactivos.pdf",
       "bytes": 457516,
-      "sha256": "08305d48ae0550ca68e01154dec3f61068e41eca45bfd0b1f554e84d1f466328"
+      "sha256": "08305d48ae0550ca68e01154dec3f61068e41eca45bfd0b1f554e84d1f466328",
+      "source_as_of": "2026-09-14"
     },
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/esma-mica-page.html",
       "source_url": "https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica",
       "bytes": 90584,
-      "sha256": "d446ab2cccd6fe6a6abfad86173f19ddee23e5cf802d7341e1efa47ba8e7b156"
+      "sha256": "d446ab2cccd6fe6a6abfad86173f19ddee23e5cf802d7341e1efa47ba8e7b156",
+      "source_as_of": "2026-09-14"
     },
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/esma-mica-casps.csv",
       "source_url": "https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv",
       "bytes": 167321,
-      "sha256": "0af299b12a3086e336cf6eaded8db9fee0db6a501b84b8d04467305b38a51a9a"
+      "sha256": "0af299b12a3086e336cf6eaded8db9fee0db6a501b84b8d04467305b38a51a9a",
+      "source_as_of": "2026-09-14"
     },
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/esma-mica-ncasp.csv",
       "source_url": "https://www.esma.europa.eu/sites/default/files/2024-12/NCASP.csv",
       "bytes": 24617,
-      "sha256": "fb778670226ec6d53e2cc23f210736ce02ab832c78a3a5e5ea08138deaf8dc5f"
+      "sha256": "fb778670226ec6d53e2cc23f210736ce02ab832c78a3a5e5ea08138deaf8dc5f",
+      "source_as_of": "2026-09-14"
     },
     {
       "hypothesis": "H11",
       "snapshot_file": "raw/esma-mica-description_of_the_fields_in_the_interim_mica_register.csv",
       "source_url": "https://www.esma.europa.eu/sites/default/files/2024-12/Description_of_the_fields_in_the_interim_MiCA_register.csv",
       "bytes": 13968,
-      "sha256": "7d89b5d4ff83ccf07bb2673e864def28dfed410eef5add3a2c5a623ceb8ad295"
+      "sha256": "7d89b5d4ff83ccf07bb2673e864def28dfed410eef5add3a2c5a623ceb8ad295",
+      "source_as_of": "2026-09-14"
     }
   ]
 }
