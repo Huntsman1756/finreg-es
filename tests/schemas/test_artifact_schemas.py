@@ -88,7 +88,8 @@ UNSCOPED = {
 
 # Capturas raw de autoridad: contenido controlado por BdE/CNMV/EBA/ESMA,
 # no por FinReg — jamas se les impone rigidez de contrato.
-UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json"]
+UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json",
+                  "fixtures/g1/sources/extracted/*.json"]
 
 
 def _covered_files() -> dict[Path, str]:
