@@ -1,0 +1,3032 @@
+[
+  {
+    "MessageType": "PSDMD",
+    "DataCollectionCode": "PSD_MD",
+    "PropertiesOfEntityTypes": [
+      {
+        "EntityType": "PSD_PI",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Authorised\/Withdrawn",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Authorised\/Withdrawn",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": false
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EPI",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Registered\/Withdrawn",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Registered\/Withdrawn",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": true
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EMI",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Authorised\/Withdrawn",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Authorised\/Withdrawn",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": false
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EEMI",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Registered\/Withdrawn",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Registered\/Withdrawn",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": true
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_AISP",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Registered\/Withdrawn",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Registered\/Withdrawn",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": false
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EXC",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Active\/Inactive",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Active\/Inactive",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_EXC",
+            "PropertyLabel": "Services provided under exclusion",
+            "IsMultivalued": true,
+            "PropertyDesc": "Exclusion under which the service provider carries out activities",
+            "PropertyShortDesc": "Exclusions",
+            "PropertyHelpDesc": "Services that are excluded from the scope of PSD2 and the respective exclusion under which they have been carried out.",
+            "CodeList": "ENUM_ENT_EXC",
+            "CodeListID": 2012,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_DES_ACT_EXC_SCP",
+            "PropertyLabel": "Description of the activity",
+            "MinimumLength": 1,
+            "MaximumLength": 2000,
+            "IsMultivalued": true,
+            "PropertyDesc": "Description of the activities excluded from scope.",
+            "PropertyShortDesc": "Description of Exclusions",
+            "PropertyHelpDesc": "The description of the services provided under the respective exclusion from the scope of PSD2.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_ENL",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Except Agents and Branches):\n      <CA_OwnerID>!<National Identifier for Entity>\n      e.g. AT_FMA!12345678",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Active\/Inactive",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Active\/Inactive",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM_COM",
+            "PropertyLabel": "Commercial Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Commercial name of the -Entity-",
+            "PropertyShortDesc": "Commercial Name",
+            "PropertyHelpDesc": "The commercial name of the institution.",
+            "DataType": "u",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_BR",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Branches)\n      <PARENT REFERENCE> ! <Country Code for Branch>\n          - where PARENT REFERENCE is defined as <EnityType Of Parent>!<Entity Code of Parent>\n      e.g. PSD_PI!AT_FMA!12345678!BE",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Active\/Inactive",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Active\/Inactive",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_SER",
+            "PropertyLabel": "Payment and electronic money services",
+            "IsMultivalued": true,
+            "PropertyDesc": "Services",
+            "PropertyShortDesc": "Services",
+            "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State.",
+            "CodeList": "ENUM_SER",
+            "CodeListID": 2038,
+            "DataType": "s",
+            "Optionality": "M",
+            "HomeServiceOnly": true
+          },
+          {
+            "PropertyCode": "ENT_TYP_PAR_ENT",
+            "PropertyLabel": "Entity Type of Parent",
+            "IsMultivalued": false,
+            "PropertyDesc": "Entity Type of Parent Entity",
+            "PropertyShortDesc": "Entity Type of Parent",
+            "PropertyHelpDesc": "Entity Type of Parent institution of branch or agent.",
+            "CodeList": "ENT_TYP_PSD_PAR",
+            "CodeListID": 99003,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_PAR_ENT",
+            "PropertyLabel": "Entity Code of Parent",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "Entity Code of Parent Entity",
+            "PropertyShortDesc": "Entity Code of Parent",
+            "PropertyHelpDesc": "Entity Code of Parent institution of branch or agent.",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "DER_CHI_ENT_AUT",
+            "PropertyLabel": "Derived Active \/ Inactive Status",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** Derived authorisation\/registration status for Child Entity - For Agents and Branches ONLY - (inherited from Parent if Parent ENT_AUT='NO' as 'NO' otherwise same value a child ENT_AUT",
+            "PropertyShortDesc": "Derived Active \/ Inactive Status",
+            "PropertyHelpDesc": "Derived Status (from Parent institution of branch or agent).",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "M"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_AG",
+        "Properties": [
+          {
+            "PropertyCode": "ENT_COD",
+            "PropertyLabel": "Entity Code",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+            "PropertyShortDesc": "Entity Code",
+            "PropertyHelpDesc": "[EntityCode] in Transaction Header of data exchange. Globally Unique Identifier for Entity.\nAllowed characters:\n      A-Z   (upper case Latin)\n      0-9   (numeric)\n      !   (exclamation mark)\n      _   (underscore)\nGuidance for all Entity Types (Agents):\n      <PARENT REFERENCE> ! <National Identifier for Entity>\n          - where PARENT REFERENCE is defined as <EnityType Of Parent>!<Entity Code of Parent>\n      e.g. PSD_PI!AT_FMA!12345678!100001_AG",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_TYP",
+            "PropertyLabel": "Entity Code Type",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+            "PropertyShortDesc": "Entity Code Type",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "CodeList": "ENUM_ENT_TYP_COD_PSD",
+            "CodeListID": 203,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAT_REF_COD",
+            "PropertyLabel": "National Identification Number",
+            "MinimumLength": 1,
+            "MaximumLength": 50,
+            "IsMultivalued": false,
+            "PropertyDesc": "National Identification Number of the -Entity-",
+            "PropertyShortDesc": "National Identification Number",
+            "PropertyHelpDesc": "Type of natural or legal person providing payment services.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_NAM",
+            "PropertyLabel": "Institution Name",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Name of the -Entity-",
+            "PropertyShortDesc": "Name",
+            "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names).",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COU_RES",
+            "PropertyLabel": "Country",
+            "IsMultivalued": false,
+            "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+            "PropertyShortDesc": "Country",
+            "PropertyHelpDesc": "The country where the natural or legal person is established.",
+            "CodeList": "RDL_COU_COD_EEA",
+            "CodeListID": 99901,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TOW_CIT_RES",
+            "PropertyLabel": "City",
+            "MinimumLength": 1,
+            "MaximumLength": 100,
+            "IsMultivalued": true,
+            "PropertyDesc": "City of the -Entity- head office",
+            "PropertyShortDesc": "City",
+            "PropertyHelpDesc": "The city where the natural or legal person is established.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_AUT",
+            "PropertyLabel": "Active\/Inactive",
+            "IsMultivalued": false,
+            "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+            "PropertyShortDesc": "Active\/Inactive",
+            "PropertyHelpDesc": "Property Help",
+            "CodeList": "ENUM_PSD_ENT_AUT",
+            "CodeListID": 211,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_ADD",
+            "PropertyLabel": "Street Address",
+            "MinimumLength": 1,
+            "MaximumLength": 500,
+            "IsMultivalued": true,
+            "PropertyDesc": "Address of the -Entity- head office",
+            "PropertyShortDesc": "Street Address",
+            "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_POS_COD",
+            "PropertyLabel": "PostCode",
+            "MinimumLength": 1,
+            "MaximumLength": 35,
+            "IsMultivalued": true,
+            "PropertyDesc": "Postcode of the -Entity- head office",
+            "PropertyShortDesc": "PostCode",
+            "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State.",
+            "DataType": "u",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_TYP_PAR_ENT",
+            "PropertyLabel": "Entity Type of Parent",
+            "IsMultivalued": false,
+            "PropertyDesc": "Entity Type of Parent Entity",
+            "PropertyShortDesc": "Entity Type of Parent",
+            "PropertyHelpDesc": "Entity Type of Parent institution of branch or agent.",
+            "CodeList": "ENT_TYP_PSD_PAR",
+            "CodeListID": 99003,
+            "DataType": "e",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "ENT_COD_PAR_ENT",
+            "PropertyLabel": "Entity Code of Parent",
+            "MinimumLength": 6,
+            "MaximumLength": 100,
+            "IsMultivalued": false,
+            "PropertyDesc": "Entity Code of Parent Entity",
+            "PropertyShortDesc": "Entity Code of Parent",
+            "PropertyHelpDesc": "Entity Code of Parent institution of branch or agent.",
+            "DataType": "s",
+            "Optionality": "M"
+          },
+          {
+            "PropertyCode": "IS_HID_NOT_PUB",
+            "PropertyLabel": "Is Entity Hidden",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+            "PropertyShortDesc": "Is Hidden",
+            "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register.",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "O"
+          },
+          {
+            "PropertyCode": "DER_CHI_ENT_AUT",
+            "PropertyLabel": "Derived Active \/ Inactive Status",
+            "IsMultivalued": false,
+            "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** Derived authorisation\/registration status for Child Entity - For Agents and Branches ONLY - (inherited from Parent if Parent ENT_AUT='NO' as 'NO' otherwise same value a child ENT_AUT",
+            "PropertyShortDesc": "Derived Active \/ Inactive Status",
+            "PropertyHelpDesc": "Derived Status (from Parent institution of branch or agent).",
+            "CodeList": "ENUM_YES_NO",
+            "CodeListID": 10100,
+            "DataType": "e",
+            "Optionality": "M"
+          }
+        ]
+      }
+    ],
+    "CodeLists_ENT_SER": [
+      {
+        "EntityType": "PSD_PI",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "PS_010",
+            "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+            "CodeListOrder": 110,
+            "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_020",
+            "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+            "CodeListOrder": 120,
+            "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_03A",
+            "CodeValueDisplay": "3a. Execution of direct debits",
+            "CodeListOrder": 131,
+            "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+          },
+          {
+            "CodeValue": "PS_03B",
+            "CodeValueDisplay": "3b. Execution of payment transactions",
+            "CodeListOrder": 132,
+            "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+          },
+          {
+            "CodeValue": "PS_03C",
+            "CodeValueDisplay": "3c. Execution of credit transfers",
+            "CodeListOrder": 133,
+            "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+          },
+          {
+            "CodeValue": "PS_04A",
+            "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+            "CodeListOrder": 141,
+            "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04B",
+            "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+            "CodeListOrder": 142,
+            "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04C",
+            "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+            "CodeListOrder": 143,
+            "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_05A",
+            "CodeValueDisplay": "5. Issuing of payment instruments",
+            "CodeListOrder": 151,
+            "CodeDescription": "5. Issuing of payment instruments"
+          },
+          {
+            "CodeValue": "PS_05B",
+            "CodeValueDisplay": "5. Acquiring of payment transactions",
+            "CodeListOrder": 152,
+            "CodeDescription": "5. Acquiring of payment transactions"
+          },
+          {
+            "CodeValue": "PS_060",
+            "CodeValueDisplay": "6. Money remittance",
+            "CodeListOrder": 160,
+            "CodeDescription": "6. Money remittance"
+          },
+          {
+            "CodeValue": "PS_070",
+            "CodeValueDisplay": "7. Payment initiation services",
+            "CodeListOrder": 170,
+            "CodeDescription": "7. Payment initiation services"
+          },
+          {
+            "CodeValue": "PS_080",
+            "CodeValueDisplay": "8. Account information services",
+            "CodeListOrder": 180,
+            "CodeDescription": "8. Account information services"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EPI",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "PS_010",
+            "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+            "CodeListOrder": 110,
+            "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_020",
+            "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+            "CodeListOrder": 120,
+            "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_03A",
+            "CodeValueDisplay": "3a. Execution of direct debits",
+            "CodeListOrder": 131,
+            "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+          },
+          {
+            "CodeValue": "PS_03B",
+            "CodeValueDisplay": "3b. Execution of payment transactions",
+            "CodeListOrder": 132,
+            "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+          },
+          {
+            "CodeValue": "PS_03C",
+            "CodeValueDisplay": "3c. Execution of credit transfers",
+            "CodeListOrder": 133,
+            "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+          },
+          {
+            "CodeValue": "PS_04A",
+            "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+            "CodeListOrder": 141,
+            "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04B",
+            "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+            "CodeListOrder": 142,
+            "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04C",
+            "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+            "CodeListOrder": 143,
+            "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_05A",
+            "CodeValueDisplay": "5. Issuing of payment instruments",
+            "CodeListOrder": 151,
+            "CodeDescription": "5. Issuing of payment instruments"
+          },
+          {
+            "CodeValue": "PS_05B",
+            "CodeValueDisplay": "5. Acquiring of payment transactions",
+            "CodeListOrder": 152,
+            "CodeDescription": "5. Acquiring of payment transactions"
+          },
+          {
+            "CodeValue": "PS_060",
+            "CodeValueDisplay": "6. Money remittance",
+            "CodeListOrder": 160,
+            "CodeDescription": "6. Money remittance"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EMI",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "ES_010",
+            "CodeValueDisplay": "Issuing, distribution and redemption of electronic money",
+            "CodeListOrder": 100,
+            "CodeDescription": "Issuing, distribution and redemption of electronic money"
+          },
+          {
+            "CodeValue": "PS_010",
+            "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+            "CodeListOrder": 110,
+            "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_020",
+            "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+            "CodeListOrder": 120,
+            "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_03A",
+            "CodeValueDisplay": "3a. Execution of direct debits",
+            "CodeListOrder": 131,
+            "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+          },
+          {
+            "CodeValue": "PS_03B",
+            "CodeValueDisplay": "3b. Execution of payment transactions",
+            "CodeListOrder": 132,
+            "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+          },
+          {
+            "CodeValue": "PS_03C",
+            "CodeValueDisplay": "3c. Execution of credit transfers",
+            "CodeListOrder": 133,
+            "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+          },
+          {
+            "CodeValue": "PS_04A",
+            "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+            "CodeListOrder": 141,
+            "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04B",
+            "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+            "CodeListOrder": 142,
+            "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04C",
+            "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+            "CodeListOrder": 143,
+            "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_05A",
+            "CodeValueDisplay": "5. Issuing of payment instruments",
+            "CodeListOrder": 151,
+            "CodeDescription": "5. Issuing of payment instruments"
+          },
+          {
+            "CodeValue": "PS_05B",
+            "CodeValueDisplay": "5. Acquiring of payment transactions",
+            "CodeListOrder": 152,
+            "CodeDescription": "5. Acquiring of payment transactions"
+          },
+          {
+            "CodeValue": "PS_060",
+            "CodeValueDisplay": "6. Money remittance",
+            "CodeListOrder": 160,
+            "CodeDescription": "6. Money remittance"
+          },
+          {
+            "CodeValue": "PS_070",
+            "CodeValueDisplay": "7. Payment initiation services",
+            "CodeListOrder": 170,
+            "CodeDescription": "7. Payment initiation services"
+          },
+          {
+            "CodeValue": "PS_080",
+            "CodeValueDisplay": "8. Account information services",
+            "CodeListOrder": 180,
+            "CodeDescription": "8. Account information services"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EEMI",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "ES_010",
+            "CodeValueDisplay": "Issuing, distribution and redemption of electronic money",
+            "CodeListOrder": 100,
+            "CodeDescription": "Issuing, distribution and redemption of electronic money"
+          },
+          {
+            "CodeValue": "PS_010",
+            "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+            "CodeListOrder": 110,
+            "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_020",
+            "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+            "CodeListOrder": 120,
+            "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_03A",
+            "CodeValueDisplay": "3a. Execution of direct debits",
+            "CodeListOrder": 131,
+            "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+          },
+          {
+            "CodeValue": "PS_03B",
+            "CodeValueDisplay": "3b. Execution of payment transactions",
+            "CodeListOrder": 132,
+            "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+          },
+          {
+            "CodeValue": "PS_03C",
+            "CodeValueDisplay": "3c. Execution of credit transfers",
+            "CodeListOrder": 133,
+            "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+          },
+          {
+            "CodeValue": "PS_04A",
+            "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+            "CodeListOrder": 141,
+            "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04B",
+            "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+            "CodeListOrder": 142,
+            "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04C",
+            "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+            "CodeListOrder": 143,
+            "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_05A",
+            "CodeValueDisplay": "5. Issuing of payment instruments",
+            "CodeListOrder": 151,
+            "CodeDescription": "5. Issuing of payment instruments"
+          },
+          {
+            "CodeValue": "PS_05B",
+            "CodeValueDisplay": "5. Acquiring of payment transactions",
+            "CodeListOrder": 152,
+            "CodeDescription": "5. Acquiring of payment transactions"
+          },
+          {
+            "CodeValue": "PS_060",
+            "CodeValueDisplay": "6. Money remittance",
+            "CodeListOrder": 160,
+            "CodeDescription": "6. Money remittance"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_AISP",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "PS_080",
+            "CodeValueDisplay": "8. Account information services",
+            "CodeListOrder": 180,
+            "CodeDescription": "8. Account information services"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_BR",
+        "CodeListCode": "ENUM_SER",
+        "CodeListName": "Services",
+        "Values": [
+          {
+            "CodeValue": "ES_010",
+            "CodeValueDisplay": "Issuing, distribution and redemption of electronic money",
+            "CodeListOrder": 100,
+            "CodeDescription": "Issuing, distribution and redemption of electronic money"
+          },
+          {
+            "CodeValue": "PS_010",
+            "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+            "CodeListOrder": 110,
+            "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_020",
+            "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+            "CodeListOrder": 120,
+            "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+          },
+          {
+            "CodeValue": "PS_03A",
+            "CodeValueDisplay": "3a. Execution of direct debits",
+            "CodeListOrder": 131,
+            "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+          },
+          {
+            "CodeValue": "PS_03B",
+            "CodeValueDisplay": "3b. Execution of payment transactions",
+            "CodeListOrder": 132,
+            "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+          },
+          {
+            "CodeValue": "PS_03C",
+            "CodeValueDisplay": "3c. Execution of credit transfers",
+            "CodeListOrder": 133,
+            "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+          },
+          {
+            "CodeValue": "PS_04A",
+            "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+            "CodeListOrder": 141,
+            "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04B",
+            "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+            "CodeListOrder": 142,
+            "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_04C",
+            "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+            "CodeListOrder": 143,
+            "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+          },
+          {
+            "CodeValue": "PS_05A",
+            "CodeValueDisplay": "5. Issuing of payment instruments",
+            "CodeListOrder": 151,
+            "CodeDescription": "5. Issuing of payment instruments"
+          },
+          {
+            "CodeValue": "PS_05B",
+            "CodeValueDisplay": "5. Acquiring of payment transactions",
+            "CodeListOrder": 152,
+            "CodeDescription": "5. Acquiring of payment transactions"
+          },
+          {
+            "CodeValue": "PS_060",
+            "CodeValueDisplay": "6. Money remittance",
+            "CodeListOrder": 160,
+            "CodeDescription": "6. Money remittance"
+          },
+          {
+            "CodeValue": "PS_070",
+            "CodeValueDisplay": "7. Payment initiation services",
+            "CodeListOrder": 170,
+            "CodeDescription": "7. Payment initiation services"
+          },
+          {
+            "CodeValue": "PS_080",
+            "CodeValueDisplay": "8. Account information services",
+            "CodeListOrder": 180,
+            "CodeDescription": "8. Account information services"
+          }
+        ]
+      }
+    ],
+    "CodeLists_ENT_AUT": [
+      {
+        "EntityType": "PSD_PI",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Withdrawn",
+            "CodeListOrder": 2,
+            "CodeDescription": "Withdrawn Entity",
+            "CodeAction": "Withdraw"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Authorised",
+            "CodeListOrder": 1,
+            "CodeDescription": "Authorised Entity",
+            "CodeAction": "Authorise,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EPI",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Withdrawn",
+            "CodeListOrder": 2,
+            "CodeDescription": "Withdrawn Entity",
+            "CodeAction": "Withdraw"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Registered",
+            "CodeListOrder": 1,
+            "CodeDescription": "Registered Entity",
+            "CodeAction": "Register,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EMI",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Withdrawn",
+            "CodeListOrder": 2,
+            "CodeDescription": "Withdrawn Entity",
+            "CodeAction": "Withdraw"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Authorised",
+            "CodeListOrder": 1,
+            "CodeDescription": "Authorised Entity",
+            "CodeAction": "Authorise,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EEMI",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Withdrawn",
+            "CodeListOrder": 2,
+            "CodeDescription": "Withdrawn Entity",
+            "CodeAction": "Withdraw"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Registered",
+            "CodeListOrder": 1,
+            "CodeDescription": "Registered Entity",
+            "CodeAction": "Register,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_AISP",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Withdrawn",
+            "CodeListOrder": 2,
+            "CodeDescription": "Withdrawn Entity",
+            "CodeAction": "Withdraw"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Registered",
+            "CodeListOrder": 1,
+            "CodeDescription": "Registered Entity",
+            "CodeAction": "Register,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_EXC",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "In-Active",
+            "CodeListOrder": 2,
+            "CodeDescription": "In-Active Entity",
+            "CodeAction": "De-Activate"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Active",
+            "CodeListOrder": 1,
+            "CodeDescription": "Active Entity",
+            "CodeAction": "Activate,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_ENL",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "In-Active",
+            "CodeListOrder": 2,
+            "CodeDescription": "In-Active Entity",
+            "CodeAction": "De-Activate"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Active",
+            "CodeListOrder": 1,
+            "CodeDescription": "Active Entity",
+            "CodeAction": "Activate,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_BR",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "In-Active",
+            "CodeListOrder": 2,
+            "CodeDescription": "In-Active Entity",
+            "CodeAction": "De-Activate"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Active",
+            "CodeListOrder": 1,
+            "CodeDescription": "Active Entity",
+            "CodeAction": "Activate,Re-"
+          }
+        ]
+      },
+      {
+        "EntityType": "PSD_AG",
+        "CodeListCode": "ENUM_PSD_ENT_AUT",
+        "CodeListName": "PSD Entity Status Code",
+        "Values": [
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "In-Active",
+            "CodeListOrder": 2,
+            "CodeDescription": "In-Active Entity",
+            "CodeAction": "De-Activate"
+          },
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Active",
+            "CodeListOrder": 1,
+            "CodeDescription": "Active Entity",
+            "CodeAction": "Activate,Re-"
+          }
+        ]
+      }
+    ],
+    "CodeLists": [
+      {
+        "CodeListCode": "ENT_TYP_PSD",
+        "CodeListName": "PSD-Entity Type",
+        "Values": [
+          {
+            "CodeValue": "PSD_PI",
+            "CodeValueDisplay": "Payments institution",
+            "CodeListOrder": 1010,
+            "CodeDescription": "Type of natural or legal person: ‘Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_EPI",
+            "CodeValueDisplay": "Exempted Payments institution",
+            "CodeListOrder": 1011,
+            "CodeDescription": "Type of natural or legal person: ‘Exempted Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_EMI",
+            "CodeValueDisplay": "Electronic-money institution",
+            "CodeListOrder": 1020,
+            "CodeDescription": "Type of natural or legal person: ‘Electronic money institution’;"
+          },
+          {
+            "CodeValue": "PSD_EEMI",
+            "CodeValueDisplay": "Exempted Electronic-money institution",
+            "CodeListOrder": 1021,
+            "CodeDescription": "Type of natural or legal person: Exempted Electronic money institution’;"
+          },
+          {
+            "CodeValue": "PSD_AISP",
+            "CodeValueDisplay": "Account Information Service Provider",
+            "CodeListOrder": 1030,
+            "CodeDescription": "Type of natural or legal person: ‘Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_EXC",
+            "CodeValueDisplay": "Service Provider Excluded from Scope of PSD2",
+            "CodeListOrder": 1040,
+            "CodeDescription": "Type of natural or legal person: ‘Service provider excluded from the scope of PSD2’.\r\nThese are service providers carrying out services under points (i) and (ii) of point (k) and point (l) of Article 3 of PSD2 that have notified a CA in accordance with Article 37 of PSD2;"
+          },
+          {
+            "CodeValue": "PSD_ENL",
+            "CodeValueDisplay": "Entitled under National Law",
+            "CodeListOrder": 1050,
+            "CodeDescription": "Type of natural or legal person: ‘Institution referred to in points (4) to (23) of Article 2(5) of Directive 2013\/36\/EU that is entitled under national law to provide payment services’;"
+          },
+          {
+            "CodeValue": "PSD_BR",
+            "CodeValueDisplay": "Branch",
+            "CodeListOrder": 1060,
+            "CodeDescription": "Branch of a payment institution, electronic money institution or account information service provider;"
+          },
+          {
+            "CodeValue": "PSD_AG",
+            "CodeValueDisplay": "Agent",
+            "CodeListOrder": 1070,
+            "CodeDescription": "Type of natural or legal person: ‘Agent’;"
+          }
+        ]
+      },
+      {
+        "CodeListCode": "ENT_TYP_PSD_PAR",
+        "CodeListName": "PSD-Parent Entity Types",
+        "Values": [
+          {
+            "CodeValue": "PSD_EMI",
+            "CodeValueDisplay": "Electronic-money institution",
+            "CodeListOrder": 1010,
+            "CodeDescription": "Type of natural or legal person: ‘Electronic money institution’;"
+          },
+          {
+            "CodeValue": "PSD_PI",
+            "CodeValueDisplay": "Payments institution",
+            "CodeListOrder": 1011,
+            "CodeDescription": "Type of natural or legal person: ‘Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_AISP",
+            "CodeValueDisplay": "Account Information Service Provider",
+            "CodeListOrder": 1020,
+            "CodeDescription": "Type of natural or legal person: ‘Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_EEMI",
+            "CodeValueDisplay": "Exempted Electronic-money institution",
+            "CodeListOrder": 1030,
+            "CodeDescription": "Type of natural or legal person: Exempted Electronic money institution’;"
+          },
+          {
+            "CodeValue": "PSD_EPI",
+            "CodeValueDisplay": "Exempted Payments institution",
+            "CodeListOrder": 1031,
+            "CodeDescription": "Type of natural or legal person: ‘Exempted Payment institution’;"
+          },
+          {
+            "CodeValue": "PSD_EXC",
+            "CodeValueDisplay": "Service Provider Excluded from Scope of PSD2",
+            "CodeListOrder": 1040,
+            "CodeDescription": "Type of natural or legal person: ‘Service provider excluded from the scope of PSD2’.\r\nThese are service providers carrying out services under points (i) and (ii) of point (k) and point (l) of Article 3 of PSD2 that have notified a CA in accordance with Article 37 of PSD2;"
+          },
+          {
+            "CodeValue": "PSD_ENL",
+            "CodeValueDisplay": "Entitled under National Law",
+            "CodeListOrder": 1041,
+            "CodeDescription": "Type of natural or legal person: ‘Institution referred to in points (4) to (23) of Article 2(5) of Directive 2013\/36\/EU that is entitled under national law to provide payment services’;"
+          }
+        ]
+      },
+      {
+        "CodeListCode": "ENUM_ENT_EXC",
+        "CodeListName": "Exclusions",
+        "Values": [
+          {
+            "CodeValue": "EXCL_101",
+            "CodeValueDisplay": "1.1. instruments allowing the holder to acquire goods or services only in the premises of the issuer or within a limited network of service providers under direct commercial agreement with a professional issuer",
+            "CodeListOrder": 1,
+            "CodeDescription": "1. Services based on specific payment instruments that can be used only in a limited way that meet one of the following conditions: 1.1. instruments allowing the holder to acquire goods or services only in the premises of the issuer or within a limited network of service providers under direct commercial agreement with a professional issuer"
+          },
+          {
+            "CodeValue": "EXCL_102",
+            "CodeValueDisplay": "1.2. instruments which can be used only to acquire a very limited range of goods or services",
+            "CodeListOrder": 1,
+            "CodeDescription": "1. Services based on specific payment instruments that can be used only in a limited way that meet one of the following conditions: 1.2. instruments which can be used only to acquire a very limited range of goods or services"
+          },
+          {
+            "CodeValue": "EXCL_201",
+            "CodeValueDisplay": "2.1. for purchase of digital content and voice-based services, regardless  of the device used for the purchase or consumption of the digital content and charged to the related bill",
+            "CodeListOrder": 1,
+            "CodeDescription": "2. Payment transactions by a provider of electronic communications networks or services provided in addition to electronic communications services for a subscriber to the network or service: 2.1. for purchase of digital content and voice-based services, regardless  of the device used for the purchase or consumption of the digital content and charged to the related bill"
+          },
+          {
+            "CodeValue": "EXCL_202",
+            "CodeValueDisplay": "2.2. performed from or via an electronic device and charged to the related bill within the framework of a charitable activity or for the purchase of tickets",
+            "CodeListOrder": 1,
+            "CodeDescription": "2. Payment transactions by a provider of electronic communications networks or services provided in addition to electronic communications services for a subscriber to the network or service: 2.2. performed from or via an electronic device and charged to the related bill within the framework of a charitable activity or for the purchase of tickets"
+          }
+        ]
+      },
+      {
+        "CodeListCode": "ENUM_ENT_TYP_COD_PSD",
+        "CodeListName": "Type of Natural or Legal Person",
+        "Values": [
+          {
+            "CodeValue": "NON_LEI",
+            "CodeValueDisplay": "Non-LEI",
+            "CodeListOrder": 2,
+            "CodeDescription": "Entity Code Type [NON_LEI]:- Not  a Legal Entity Identifier Code Type (Not in GLEIF):- The code provided in the 'Entity Code' property is not an LEI code "
+          }
+        ]
+      },
+      {
+        "CodeListCode": "ENUM_YES_NO",
+        "CodeListName": "Yes\/No",
+        "Values": [
+          {
+            "CodeValue": "YES",
+            "CodeValueDisplay": "Yes",
+            "CodeListOrder": 1,
+            "CodeDescription": "[YES]:- Yes"
+          },
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "No",
+            "CodeListOrder": 2,
+            "CodeDescription": "[NO]:- No"
+          }
+        ]
+      },
+      {
+        "CodeListCode": "RDL_COM_AUT_PSD",
+        "CodeListName": "PSD National Competent Authority",
+        "Values": [
+          {
+            "CodeValue": "AT_FMA",
+            "CodeValueDisplay": "Austrian Financial Market Authority",
+            "CodeListOrder": 1520,
+            "CodeDescription": "Finanzmarktaufsicht"
+          },
+          {
+            "CodeValue": "BE_NBB",
+            "CodeValueDisplay": "National Bank of Belgium",
+            "CodeListOrder": 2227,
+            "CodeDescription": "National Bank van Belgie \/ Banque Nationale de Belgique"
+          },
+          {
+            "CodeValue": "BG_BNB",
+            "CodeValueDisplay": "Bulgarian National Bank",
+            "CodeListOrder": 3532,
+            "CodeDescription": "Българска народна банка"
+          },
+          {
+            "CodeValue": "HR_HNB",
+            "CodeValueDisplay": "Croatian National Bank",
+            "CodeListOrder": 5538,
+            "CodeDescription": "Hrvatska Narodna Banka"
+          },
+          {
+            "CodeValue": "CY_CBC",
+            "CodeValueDisplay": "Central Bank of Cyprus",
+            "CodeListOrder": 5843,
+            "CodeDescription": "Κεντρική Τράπεζα της Κύπρου"
+          },
+          {
+            "CodeValue": "CZ_CNB",
+            "CodeValueDisplay": "Czech National Bank ",
+            "CodeListOrder": 5947,
+            "CodeDescription": "Ceská národní banka"
+          },
+          {
+            "CodeValue": "DK_DFSA",
+            "CodeValueDisplay": "Danish Financial Supervisory Authority",
+            "CodeListOrder": 6150,
+            "CodeDescription": "Finanstilsynet"
+          },
+          {
+            "CodeValue": "EE_FI",
+            "CodeValueDisplay": "Estonian Financial Supervision Authority",
+            "CodeListOrder": 7055,
+            "CodeDescription": "Finantsinspektsioon"
+          },
+          {
+            "CodeValue": "FI_FIN-FSA",
+            "CodeValueDisplay": "Finnish Financial Supervisory Authority",
+            "CodeListOrder": 7559,
+            "CodeDescription": "Finanssivalvonta \/ Finansinspektionen"
+          },
+          {
+            "CodeValue": "FR_ACPR",
+            "CodeValueDisplay": "Prudential Supervisory and Resolution Authority",
+            "CodeListOrder": 7664,
+            "CodeDescription": "Autorité de Contrôle Prudentiel et de Résolution"
+          },
+          {
+            "CodeValue": "DE_BAFIN",
+            "CodeValueDisplay": "Federal Financial Supervisory Authority",
+            "CodeListOrder": 8370,
+            "CodeDescription": "Bundesanstalt für Finanzdienstleistungsaufsicht"
+          },
+          {
+            "CodeValue": "GR_BOG",
+            "CodeValueDisplay": "Bank of Greece",
+            "CodeListOrder": 8677,
+            "CodeDescription": "Η Τράπεζα της Ελλάδος"
+          },
+          {
+            "CodeValue": "HU_CBH",
+            "CodeValueDisplay": "Central Bank of Hungary",
+            "CodeListOrder": 10181,
+            "CodeDescription": "Magyar Nemzeti Bank"
+          },
+          {
+            "CodeValue": "IS_CBI",
+            "CodeValueDisplay": "Central Bank of Iceland",
+            "CodeListOrder": 10284,
+            "CodeDescription": "Seðlabanki Íslands"
+          },
+          {
+            "CodeValue": "IE_CBI",
+            "CodeValueDisplay": "Central Bank of Ireland",
+            "CodeListOrder": 10787
+          },
+          {
+            "CodeValue": "IT_BI",
+            "CodeValueDisplay": "Bank of Italy",
+            "CodeListOrder": 11089,
+            "CodeDescription": "Banca d'Italia"
+          },
+          {
+            "CodeValue": "LV_FCMC",
+            "CodeValueDisplay": "Financial and Capital Market Commission",
+            "CodeListOrder": 12394,
+            "CodeDescription": "Finanšu un kapitala tirgus komisija"
+          },
+          {
+            "CodeValue": "LI_FMA",
+            "CodeValueDisplay": "Financial Market Authority Liechtenstein",
+            "CodeListOrder": 12897,
+            "CodeDescription": "Finanzmarktaufsicht Liechtenstein"
+          },
+          {
+            "CodeValue": "LT_BL",
+            "CodeValueDisplay": "Bank of Lithuania",
+            "CodeListOrder": 13001,
+            "CodeDescription": "Lietuvos Bankas"
+          },
+          {
+            "CodeValue": "LU_CSSF",
+            "CodeValueDisplay": "Commission for the Supervision of Financial Sector",
+            "CodeListOrder": 13104,
+            "CodeDescription": "Commission de Surveillance du Secteur Financier"
+          },
+          {
+            "CodeValue": "MT_MFSA",
+            "CodeValueDisplay": "Malta Financial Services Authority ",
+            "CodeListOrder": 13908
+          },
+          {
+            "CodeValue": "NL_DNB",
+            "CodeValueDisplay": "The Netherlands Bank",
+            "CodeListOrder": 15813,
+            "CodeDescription": "De Nederlandsche Bank"
+          },
+          {
+            "CodeValue": "NO_FSA",
+            "CodeValueDisplay": "The Financial Authority of Norway",
+            "CodeListOrder": 16716,
+            "CodeDescription": "Finanstilsynet"
+          },
+          {
+            "CodeValue": "PL_PFSA",
+            "CodeValueDisplay": "Polish Financial Supervision Authority ",
+            "CodeListOrder": 17819,
+            "CodeDescription": "Komisji Nadzoru Finansowego"
+          },
+          {
+            "CodeValue": "PT_BP",
+            "CodeValueDisplay": "Bank of Portugal",
+            "CodeListOrder": 17923,
+            "CodeDescription": "Banco de Portugal"
+          },
+          {
+            "CodeValue": "RO_NBR",
+            "CodeValueDisplay": "National Bank of Romania",
+            "CodeListOrder": 18228,
+            "CodeDescription": "Banca Nationala a României"
+          },
+          {
+            "CodeValue": "SK_NBS",
+            "CodeValueDisplay": "National Bank of Slovakia",
+            "CodeListOrder": 20332,
+            "CodeDescription": "Národná banka Slovenska"
+          },
+          {
+            "CodeValue": "SI_BS",
+            "CodeValueDisplay": "Bank of Slovenia ",
+            "CodeListOrder": 20437,
+            "CodeDescription": "Banka Slovenije"
+          },
+          {
+            "CodeValue": "ES_BE",
+            "CodeValueDisplay": "Bank of Spain",
+            "CodeListOrder": 21043,
+            "CodeDescription": "Banco de España"
+          },
+          {
+            "CodeValue": "SE_FINA",
+            "CodeValueDisplay": "Swedish Financial Supervisory Authority",
+            "CodeListOrder": 21648,
+            "CodeDescription": "Finansinspektionen"
+          },
+          {
+            "CodeValue": "GB_FCA",
+            "CodeValueDisplay": "Financial Conduct Authority (FCA) ",
+            "CodeListOrder": 23652
+          }
+        ]
+      },
+      {
+        "CodeListCode": "RDL_COU_COD_EEA",
+        "CodeListName": "EEA Countries",
+        "Values": [
+          {
+            "CodeValue": "AT",
+            "CodeValueDisplay": "Austria",
+            "CodeListOrder": 15,
+            "CodeDescription": "Austria"
+          },
+          {
+            "CodeValue": "BE",
+            "CodeValueDisplay": "Belgium",
+            "CodeListOrder": 22,
+            "CodeDescription": "Belgium"
+          },
+          {
+            "CodeValue": "BG",
+            "CodeValueDisplay": "Bulgaria",
+            "CodeListOrder": 35,
+            "CodeDescription": "Bulgaria"
+          },
+          {
+            "CodeValue": "HR",
+            "CodeValueDisplay": "Croatia",
+            "CodeListOrder": 55,
+            "CodeDescription": "Croatia"
+          },
+          {
+            "CodeValue": "CY",
+            "CodeValueDisplay": "Cyprus",
+            "CodeListOrder": 58,
+            "CodeDescription": "Cyprus"
+          },
+          {
+            "CodeValue": "CZ",
+            "CodeValueDisplay": "Czech",
+            "CodeListOrder": 59,
+            "CodeDescription": "Czech"
+          },
+          {
+            "CodeValue": "DK",
+            "CodeValueDisplay": "Denmark",
+            "CodeListOrder": 61,
+            "CodeDescription": "Denmark"
+          },
+          {
+            "CodeValue": "EE",
+            "CodeValueDisplay": "Estonia",
+            "CodeListOrder": 70,
+            "CodeDescription": "Estonia"
+          },
+          {
+            "CodeValue": "FI",
+            "CodeValueDisplay": "Finland",
+            "CodeListOrder": 75,
+            "CodeDescription": "Finland"
+          },
+          {
+            "CodeValue": "FR",
+            "CodeValueDisplay": "France",
+            "CodeListOrder": 76,
+            "CodeDescription": "France"
+          },
+          {
+            "CodeValue": "DE",
+            "CodeValueDisplay": "Germany",
+            "CodeListOrder": 83,
+            "CodeDescription": "Germany"
+          },
+          {
+            "CodeValue": "GR",
+            "CodeValueDisplay": "Greece",
+            "CodeListOrder": 86,
+            "CodeDescription": "Greece"
+          },
+          {
+            "CodeValue": "HU",
+            "CodeValueDisplay": "Hungary",
+            "CodeListOrder": 101,
+            "CodeDescription": "Hungary"
+          },
+          {
+            "CodeValue": "IS",
+            "CodeValueDisplay": "Iceland",
+            "CodeListOrder": 102,
+            "CodeDescription": "Iceland"
+          },
+          {
+            "CodeValue": "IE",
+            "CodeValueDisplay": "Ireland",
+            "CodeListOrder": 107,
+            "CodeDescription": "Ireland"
+          },
+          {
+            "CodeValue": "IT",
+            "CodeValueDisplay": "Italy",
+            "CodeListOrder": 110,
+            "CodeDescription": "Italy"
+          },
+          {
+            "CodeValue": "LV",
+            "CodeValueDisplay": "Latvia",
+            "CodeListOrder": 123,
+            "CodeDescription": "Latvia"
+          },
+          {
+            "CodeValue": "LI",
+            "CodeValueDisplay": "Liechtenstein",
+            "CodeListOrder": 128,
+            "CodeDescription": "Liechtenstein"
+          },
+          {
+            "CodeValue": "LT",
+            "CodeValueDisplay": "Lithuania",
+            "CodeListOrder": 129,
+            "CodeDescription": "Lithuania"
+          },
+          {
+            "CodeValue": "LU",
+            "CodeValueDisplay": "Luxembourg",
+            "CodeListOrder": 130,
+            "CodeDescription": "Luxembourg"
+          },
+          {
+            "CodeValue": "MT",
+            "CodeValueDisplay": "Malta",
+            "CodeListOrder": 138,
+            "CodeDescription": "Malta"
+          },
+          {
+            "CodeValue": "NL",
+            "CodeValueDisplay": "Netherlands",
+            "CodeListOrder": 157,
+            "CodeDescription": "Netherlands"
+          },
+          {
+            "CodeValue": "NO",
+            "CodeValueDisplay": "Norway",
+            "CodeListOrder": 166,
+            "CodeDescription": "Norway"
+          },
+          {
+            "CodeValue": "PL",
+            "CodeValueDisplay": "Poland",
+            "CodeListOrder": 177,
+            "CodeDescription": "Poland"
+          },
+          {
+            "CodeValue": "PT",
+            "CodeValueDisplay": "Portugal",
+            "CodeListOrder": 178,
+            "CodeDescription": "Portugal"
+          },
+          {
+            "CodeValue": "RO",
+            "CodeValueDisplay": "Romania",
+            "CodeListOrder": 181,
+            "CodeDescription": "Romania"
+          },
+          {
+            "CodeValue": "SK",
+            "CodeValueDisplay": "Slovakia",
+            "CodeListOrder": 202,
+            "CodeDescription": "Slovakia"
+          },
+          {
+            "CodeValue": "SI",
+            "CodeValueDisplay": "Slovenia",
+            "CodeListOrder": 203,
+            "CodeDescription": "Slovenia"
+          },
+          {
+            "CodeValue": "ES",
+            "CodeValueDisplay": "Spain",
+            "CodeListOrder": 209,
+            "CodeDescription": "Spain"
+          },
+          {
+            "CodeValue": "SE",
+            "CodeValueDisplay": "Sweden",
+            "CodeListOrder": 215,
+            "CodeDescription": "Sweden"
+          }
+        ]
+      }
+    ],
+    "Relationships": [
+      {
+        "ParentEntities": [
+          {
+            "EntityType": "PSD_PI",
+            "EntityTypeName": "Payments institution",
+            "RelatedEntities": [
+              {
+                "RelCode": "REL_PSD_AG",
+                "RelatedEntityTypeCode": "PSD_AG",
+                "RelatedEntityTypeName": "Agent",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              },
+              {
+                "RelCode": "REL_PSD_BR",
+                "RelatedEntityTypeCode": "PSD_BR",
+                "RelatedEntityTypeName": "Branch",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "EntityType": "PSD_EPI",
+            "EntityTypeName": "Exempted Payments institution",
+            "RelatedEntities": [
+              {
+                "RelCode": "REL_PSD_AG",
+                "RelatedEntityTypeCode": "PSD_AG",
+                "RelatedEntityTypeName": "Agent",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "EntityType": "PSD_EMI",
+            "EntityTypeName": "Electronic-money institution",
+            "RelatedEntities": [
+              {
+                "RelCode": "REL_PSD_AG",
+                "RelatedEntityTypeCode": "PSD_AG",
+                "RelatedEntityTypeName": "Agent",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              },
+              {
+                "RelCode": "REL_PSD_BR",
+                "RelatedEntityTypeCode": "PSD_BR",
+                "RelatedEntityTypeName": "Branch",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "EntityType": "PSD_EEMI",
+            "EntityTypeName": "Exempted Electronic-money institution",
+            "RelatedEntities": [
+              {
+                "RelCode": "REL_PSD_AG",
+                "RelatedEntityTypeCode": "PSD_AG",
+                "RelatedEntityTypeName": "Agent",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "EntityType": "PSD_AISP",
+            "EntityTypeName": "Account Information Service Provider",
+            "RelatedEntities": [
+              {
+                "RelCode": "REL_PSD_AG",
+                "RelatedEntityTypeCode": "PSD_AG",
+                "RelatedEntityTypeName": "Agent",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              },
+              {
+                "RelCode": "REL_PSD_BR",
+                "RelatedEntityTypeCode": "PSD_BR",
+                "RelatedEntityTypeName": "Branch",
+                "RelProperties": [
+                  {
+                    "PropertyCode": "ENT_COD_PAR_ENT"
+                  },
+                  {
+                    "PropertyCode": "ENT_TYP_PAR_ENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "EntityType": "PSD_EXC",
+            "EntityTypeName": "Service Provider Excluded from Scope of PSD2"
+          },
+          {
+            "EntityType": "PSD_ENL",
+            "EntityTypeName": "Entitled under National Law"
+          }
+        ]
+      }
+    ],
+    "PropertyDefinition": [
+      {
+        "PropertyCode": "ENT_TYP",
+        "PropertyLabel": "Type of Institution",
+        "IsMultivalued": 0,
+        "PropertyDesc": "Type of natural or legal person. With specific technical data exchange formats for each type defined in the Instructions for National Competent Authorities for submission and management of master data for PSD2. ",
+        "DataType": "e",
+        "CodeList": "ENT_TYP_PSD",
+        "CodeListID": 99002,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "",
+        "PropertyHelpDesc": ""
+      },
+      {
+        "PropertyCode": "ENT_COD",
+        "PropertyLabel": "Entity Code",
+        "IsMultivalued": 0,
+        "PropertyDesc": "[EntityCode]  in Transaction Header. Unique Identifier for Entity. NOTE: This is expected ONLY to be change in the event of an error by the CA.",
+        "DataType": "s",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 6,
+        "MaximumLength": 100,
+        "PropertyShortDesc": "Entity Code",
+        "PropertyHelpDesc": "Unique Identifier for Entity in combination with the Entity Type."
+      },
+      {
+        "PropertyCode": "ENT_COD_TYP",
+        "PropertyLabel": "Entity Code Type",
+        "IsMultivalued": 0,
+        "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** PSD Register Entity Code Type is Non-LEI by default",
+        "DataType": "e",
+        "CodeList": "ENUM_ENT_TYP_COD_PSD",
+        "CodeListID": 203,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Entity Code Type",
+        "PropertyHelpDesc": "Type of natural or legal person providing payment services."
+      },
+      {
+        "PropertyCode": "ENT_NAT_REF_COD",
+        "PropertyLabel": "National Identification Number",
+        "IsMultivalued": 0,
+        "PropertyDesc": "National Identification Number of the -Entity-",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 50,
+        "PropertyShortDesc": "National Identification Number",
+        "PropertyHelpDesc": "Type of natural or legal person providing payment services."
+      },
+      {
+        "PropertyCode": "ENT_NAM",
+        "PropertyLabel": "Institution Name",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Name of the -Entity-",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 500,
+        "PropertyShortDesc": "Name",
+        "PropertyHelpDesc": "Name of the natural or legal person providing payment services (including commercial names)."
+      },
+      {
+        "PropertyCode": "ENT_COU_RES",
+        "PropertyLabel": "Country",
+        "IsMultivalued": 0,
+        "PropertyDesc": "Country of the -Entity- head office. Fomat: ISO Alpha-2",
+        "DataType": "e",
+        "CodeList": "RDL_COU_COD_EEA",
+        "CodeListID": 99901,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Country",
+        "PropertyHelpDesc": "The country where the natural or legal person is established."
+      },
+      {
+        "PropertyCode": "ENT_TOW_CIT_RES",
+        "PropertyLabel": "City",
+        "IsMultivalued": 1,
+        "PropertyDesc": "City of the -Entity- head office",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 100,
+        "PropertyShortDesc": "City",
+        "PropertyHelpDesc": "The city where the natural or legal person is established."
+      },
+      {
+        "PropertyCode": "ENT_AUT",
+        "PropertyLabel": "Status",
+        "IsMultivalued": 0,
+        "PropertyDesc": "Current registration status of  -Entity- \/ Current authorisation status of  -Entity- \/ Current status of  -Entity-",
+        "DataType": "e",
+        "CodeList": "ENUM_PSD_ENT_AUT",
+        "CodeListID": 211,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Status",
+        "PropertyHelpDesc": "The status of authorisation or registration."
+      },
+      {
+        "PropertyCode": "COM_AUT",
+        "PropertyLabel": "National Competent Authority",
+        "IsMultivalued": 0,
+        "PropertyDesc": "National Competent Authority for Payments Register",
+        "DataType": "e",
+        "CodeList": "RDL_COM_AUT_PSD",
+        "CodeListID": 99992,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "NCA",
+        "PropertyHelpDesc": "The name of the competent authority that has authorised\/registered the natural or legal person for the provision of payment services and\/or electronic money services."
+      },
+      {
+        "PropertyCode": "ENT_NAM_COM",
+        "PropertyLabel": "Commercial Name",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Commercial name of the -Entity-",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 500,
+        "PropertyShortDesc": "Commercial Name",
+        "PropertyHelpDesc": "The commercial name of the institution."
+      },
+      {
+        "PropertyCode": "ENT_ADD",
+        "PropertyLabel": "Street Address",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Address of the -Entity- head office",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 500,
+        "PropertyShortDesc": "Street Address",
+        "PropertyHelpDesc": "The address of the institution’s head office \r\nOr \r\nThe address of the principal branch of the payment institution in the host Member State."
+      },
+      {
+        "PropertyCode": "ENT_POS_COD",
+        "PropertyLabel": "PostCode",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Postcode of the -Entity- head office",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 35,
+        "PropertyShortDesc": "PostCode",
+        "PropertyHelpDesc": "The post code of the institution’s head office\r\nOr\r\nThe post code of the principal branch of the payment institution in the host Member State."
+      },
+      {
+        "PropertyCode": "ENT_EXC",
+        "PropertyLabel": "Services provided under exclusion",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Exclusion under which the service provider carries out activities",
+        "DataType": "e",
+        "CodeList": "ENUM_ENT_EXC",
+        "CodeListID": 2012,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Exclusions",
+        "PropertyHelpDesc": "Services that are excluded from the scope of PSD2 and the respective exclusion under which they have been carried out."
+      },
+      {
+        "PropertyCode": "ENT_DES_ACT_EXC_SCP",
+        "PropertyLabel": "Description of the activity",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Description of the activities excluded from scope.",
+        "DataType": "u",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 1,
+        "MaximumLength": 2000,
+        "PropertyShortDesc": "Description of Exclusions",
+        "PropertyHelpDesc": "The description of the services provided under the respective exclusion from the scope of PSD2."
+      },
+      {
+        "PropertyCode": "ENT_SER",
+        "PropertyLabel": "Payment and electronic money services",
+        "IsMultivalued": 1,
+        "PropertyDesc": "Services",
+        "DataType": "s",
+        "CodeList": "ENUM_SER",
+        "CodeListID": 2038,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Services",
+        "PropertyHelpDesc": "These are the services referred to in Annex I to PSD2 and issuing electronic money under EMD2.\r\nThis field includes:\r\nA) The payment and\/or electronic money services the natural or legal person has been authorised\/registered to provide;\r\nB) The payment and\/or electronic money services the natural or legal person provides or intends to provide in a Host Member State."
+      },
+      {
+        "PropertyCode": "ENT_TYP_PAR_ENT",
+        "PropertyLabel": "Entity Type of Parent",
+        "IsMultivalued": 0,
+        "PropertyDesc": "Entity Type of Parent Entity",
+        "DataType": "e",
+        "CodeList": "ENT_TYP_PSD_PAR",
+        "CodeListID": 99003,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Entity Type of Parent",
+        "PropertyHelpDesc": "Entity Type of Parent institution of branch or agent."
+      },
+      {
+        "PropertyCode": "ENT_COD_PAR_ENT",
+        "PropertyLabel": "Entity Code of Parent",
+        "IsMultivalued": 0,
+        "PropertyDesc": "Entity Code of Parent Entity",
+        "DataType": "s",
+        "CodeList": "",
+        "CodeListID": 0,
+        "MinimumLength": 6,
+        "MaximumLength": 100,
+        "PropertyShortDesc": "Entity Code of Parent",
+        "PropertyHelpDesc": "Entity Code of Parent institution of branch or agent."
+      },
+      {
+        "PropertyCode": "IS_HID_NOT_PUB",
+        "PropertyLabel": "Is Entity Hidden",
+        "IsMultivalued": 0,
+        "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE DERIVED BY MISSING ENTITY ON BATCH DATA EXCHANGE *** Is Entity Hidden",
+        "DataType": "e",
+        "CodeList": "ENUM_YES_NO",
+        "CodeListID": 10100,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Is Hidden",
+        "PropertyHelpDesc": "This \"Is Entity Hidden\" property indicates when an Entity is hidden from the public register.\ne.g. when it is expected in a PSD_MD_FULL (full batch) file - but is missing. \nValues: TRUE = Not shown on Public Register; FALSE = Shown on Public Register."
+      },
+      {
+        "PropertyCode": "DER_CHI_ENT_AUT",
+        "PropertyLabel": "Derived Active \/ Inactive Status",
+        "IsMultivalued": 0,
+        "PropertyDesc": "*** NOT REQUIRED ON DATA EXCHANGE *** Derived authorisation\/registration status for Child Entity - For Agents and Branches ONLY - (inherited from Parent if Parent ENT_AUT='NO' as 'NO' otherwise same value a child ENT_AUT",
+        "DataType": "e",
+        "CodeList": "ENUM_YES_NO",
+        "CodeListID": 10100,
+        "MinimumLength": 0,
+        "MaximumLength": 0,
+        "PropertyShortDesc": "Derived Active \/ Inactive Status",
+        "PropertyHelpDesc": "Derived Status (from Parent institution of branch or agent)."
+      }
+    ],
+    "ServiceDefinition": [
+      {
+        "CodeValue": "ES_010",
+        "CodeValueDisplay": "Issuing, distribution and redemption of electronic money",
+        "CodeListOrder": 100,
+        "CodeDescription": "Issuing, distribution and redemption of electronic money"
+      },
+      {
+        "CodeValue": "PS_010",
+        "CodeValueDisplay": "1. Services enabling cash to be placed on a payment account",
+        "CodeListOrder": 110,
+        "CodeDescription": "1. Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account"
+      },
+      {
+        "CodeValue": "PS_020",
+        "CodeValueDisplay": "2. Services enabling cash withdrawals from a payment account",
+        "CodeListOrder": 120,
+        "CodeDescription": "2. Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account"
+      },
+      {
+        "CodeValue": "PS_03A",
+        "CodeValueDisplay": "3a. Execution of direct debits",
+        "CodeListOrder": 131,
+        "CodeDescription": "3a. Execution of direct debits, including one-off direct debits"
+      },
+      {
+        "CodeValue": "PS_03B",
+        "CodeValueDisplay": "3b. Execution of payment transactions",
+        "CodeListOrder": 132,
+        "CodeDescription": "3b. Execution of payment transactions through a payment card or a similar device"
+      },
+      {
+        "CodeValue": "PS_03C",
+        "CodeValueDisplay": "3c. Execution of credit transfers",
+        "CodeListOrder": 133,
+        "CodeDescription": "3c. Execution of credit transfers, including standing orders"
+      },
+      {
+        "CodeValue": "PS_04A",
+        "CodeValueDisplay": "4a. Execution of direct debits (covered by a credit line)",
+        "CodeListOrder": 141,
+        "CodeDescription": "4a. Execution of direct debits, including one-off direct debits (covered by a credit line)"
+      },
+      {
+        "CodeValue": "PS_04B",
+        "CodeValueDisplay": "4b. Execution of payment transactions (covered by a credit line)",
+        "CodeListOrder": 142,
+        "CodeDescription": "4b. Execution of payment transactions through a payment card or a similar device (covered by a credit line)"
+      },
+      {
+        "CodeValue": "PS_04C",
+        "CodeValueDisplay": "4c. Execution of credit transfers (covered by a credit line)",
+        "CodeListOrder": 143,
+        "CodeDescription": "4c. Execution of credit transfers, including standing orders (covered by a credit line)"
+      },
+      {
+        "CodeValue": "PS_05A",
+        "CodeValueDisplay": "5. Issuing of payment instruments",
+        "CodeListOrder": 151,
+        "CodeDescription": "5. Issuing of payment instruments"
+      },
+      {
+        "CodeValue": "PS_05B",
+        "CodeValueDisplay": "5. Acquiring of payment transactions",
+        "CodeListOrder": 152,
+        "CodeDescription": "5. Acquiring of payment transactions"
+      },
+      {
+        "CodeValue": "PS_060",
+        "CodeValueDisplay": "6. Money remittance",
+        "CodeListOrder": 160,
+        "CodeDescription": "6. Money remittance"
+      },
+      {
+        "CodeValue": "PS_070",
+        "CodeValueDisplay": "7. Payment initiation services",
+        "CodeListOrder": 170,
+        "CodeDescription": "7. Payment initiation services"
+      },
+      {
+        "CodeValue": "PS_080",
+        "CodeValueDisplay": "8. Account information services",
+        "CodeListOrder": 180,
+        "CodeDescription": "8. Account information services"
+      }
+    ]
+  }
+]

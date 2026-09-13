@@ -1,0 +1,135 @@
+{
+  "capture_id": "g0.5-p0-2026-09-13",
+  "retrieved_at": "2026-09-13",
+  "hash_algorithm": "SHA-256",
+  "encoding": "UTF-8 for text snapshots; binary-preserving for PDF and ZIP snapshots",
+  "snapshots": [
+    {
+      "hypothesis": "H1",
+      "snapshot_file": "raw/h1-cnmv-mica.html",
+      "source_url": "https://www.cnmv.es/Portal/mica/regulacion-criptoactivos?lang=es",
+      "bytes": 248487,
+      "sha256": "9e114652fd73c58ef15f2cea8b22344f678f74b9f8a2f0833485f52f6788c419"
+    },
+    {
+      "hypothesis": "H1",
+      "snapshot_file": "raw/h1-eurlex-mica-es.html",
+      "source_url": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32023R1114",
+      "bytes": 2048220,
+      "sha256": "1da399f503ba2db09df83bca31491d4975bd465e62858f5f36b5ef0f18a1426a"
+    },
+    {
+      "hypothesis": "H2",
+      "snapshot_file": "raw/h2-cnmv-mica-list.pdf",
+      "source_url": "https://www.cnmv.es/Docportal/Proveedores-Servicios-Criptoactivos/Listado_ProveedoresCriptoactivos.pdf",
+      "bytes": 457516,
+      "sha256": "08305d48ae0550ca68e01154dec3f61068e41eca45bfd0b1f554e84d1f466328"
+    },
+    {
+      "hypothesis": "H3",
+      "snapshot_file": "raw/h3-eba-cir-metadata.json",
+      "source_url": "https://euclid.eba.europa.eu/register/cir-api/metadata",
+      "bytes": 230135,
+      "sha256": "9eaf07f520bbc120b054291738efb3bf8cf054a3c7d2e9c50053d542ac7ea4bb"
+    },
+    {
+      "hypothesis": "H3",
+      "snapshot_file": "raw/h3-eba-cir-page.html",
+      "source_url": "https://www.eba.europa.eu/risk-and-data-analysis/data/registers-and-other-list-institutions/credit-institutions-register",
+      "bytes": 63489,
+      "sha256": "31d2e4b038f82f8e21e961450648ee57d2efcd4e35350393f2cc9ac39a72f8dc"
+    },
+    {
+      "hypothesis": "H4",
+      "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+      "source_url": "https://euclid.eba.europa.eu/register/downloads/PSDMD/20260913/download-PSDMD-202609130800.zip",
+      "source_as_of": "2026-09-13T08:00:04Z",
+      "bytes": 19902187,
+      "sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31"
+    },
+    {
+      "hypothesis": "H4",
+      "snapshot_file": "raw/h4-eba-psd2-filemetadata.json",
+      "source_url": "https://euclid.eba.europa.eu/register/api/filemetadata",
+      "bytes": 421,
+      "sha256": "786163c1880ffa69f40901131a38d9b3083aae27f48aefe400405e2902cfefbb"
+    },
+    {
+      "hypothesis": "H4",
+      "snapshot_file": "raw/h4-eba-psd2-metadata.json",
+      "source_url": "https://euclid.eba.europa.eu/register/pir-api/metadata",
+      "bytes": 130666,
+      "sha256": "68c530afeceb32b7763533a49be518b815b9308e25253b3d66493d8112e04305"
+    },
+    {
+      "hypothesis": "H4",
+      "snapshot_file": "raw/h4-eba-psd2-page.html",
+      "source_url": "https://www.eba.europa.eu/risk-and-data-analysis/data/registers/payment-institutions-register",
+      "bytes": 70049,
+      "sha256": "d7cd7dfe6ab9e03fc6471b94b5569f6f421a1e7d2707fe08a34838edbe79ff8a"
+    },
+    {
+      "hypothesis": "H6",
+      "snapshot_file": "raw/h6-bde-payment-entities.html",
+      "source_url": "https://www.bde.es/wbe/es/punto-informacion/contenidos/autorizaciones-acreditaciones/autorizacion-inicio-actividad/entidades-pago.html",
+      "bytes": 375063,
+      "sha256": "f85a8aaa3498526961cf769cc1faac958883765c524d2340456c72a6b7f87f67"
+    },
+    {
+      "hypothesis": "H6",
+      "snapshot_file": "raw/h6-bde-register-page.html",
+      "source_url": "https://www.bde.es/wbe/es/punto-informacion/contenidos/registros/registros-entidades/",
+      "bytes": 373546,
+      "sha256": "38c052508fb1214f9e0f6673ab300f8108949de8ad0208ab1f70f877e4628773"
+    },
+    {
+      "hypothesis": "H6",
+      "snapshot_file": "raw/h6-cnmv-credit-fps.html",
+      "source_url": "https://www.cnmv.es/Portal/Consultas/listadoentidad.aspx?id=1&tipoent=10",
+      "bytes": 1095506,
+      "sha256": "401a19b86179a618348c30b57591e21b7b9d18200ca391dc8429e2fe83fed96f"
+    },
+    {
+      "hypothesis": "H6",
+      "snapshot_file": "raw/h6-cnmv-esi-fps.html",
+      "source_url": "https://www.cnmv.es/Portal/Consultas/listadoentidad.aspx?id=1&tipoent=4",
+      "bytes": 1968005,
+      "sha256": "1e59f7d6a3cf31fe18bd3ba533d64cdd10c33f9ee11eff66c995d79565e38514"
+    },
+    {
+      "hypothesis": "H7",
+      "snapshot_file": "raw/h7-esma-casps.csv",
+      "source_url": "https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv",
+      "bytes": 167321,
+      "sha256": "0af299b12a3086e336cf6eaded8db9fee0db6a501b84b8d04467305b38a51a9a"
+    },
+    {
+      "hypothesis": "H7",
+      "snapshot_file": "raw/h7-esma-fields.csv",
+      "source_url": "https://www.esma.europa.eu/sites/default/files/2024-12/Description_of_the_fields_in_the_interim_MiCA_register.csv",
+      "bytes": 13968,
+      "sha256": "7d89b5d4ff83ccf07bb2673e864def28dfed410eef5add3a2c5a623ceb8ad295"
+    },
+    {
+      "hypothesis": "H8",
+      "snapshot_file": "raw/h8-bde-entities-categories.pdf",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/Entidades_inscritas_en_los_Registros_Oficiales.pdf",
+      "bytes": 44196,
+      "sha256": "471ac3d2a4ed45f43b5e70944160387d13c8ff79886f8affdd09b54ee687fcd5"
+    },
+    {
+      "hypothesis": "H8",
+      "snapshot_file": "raw/h8-bde-mfi-es.html",
+      "source_url": "https://www.bde.es/webbe/es/estadisticas/otras-clasificaciones/clasificacion-entidades/listas-instituciones-financieras/listas-instituciones-financieras-monetarias-pais/lista-mfi-es.html",
+      "bytes": 602419,
+      "sha256": "a5a9c64a842be787039b2acdd227ba13a36b7475d674f8c181d9c0d49979d32d"
+    },
+    {
+      "hypothesis": "H8",
+      "snapshot_file": "raw/h8-bde-mfi-es.csv",
+      "source_url": "https://www.bde.es/webbe/es/estadisticas/otras-clasificaciones/clasificacion-entidades/listas-instituciones-financieras/listas-instituciones-financieras-monetarias-pais/lista-mfi-es.csv",
+      "bytes": 243865,
+      "sha256": "6f2b071e8ac93f4e65eaddb1c07ff8d080130fa0d903acfe57a790c3545ff22e"
+    }
+  ]
+}
