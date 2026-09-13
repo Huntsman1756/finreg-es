@@ -51,6 +51,30 @@
       "bytes": 13968,
       "sha256": "7d89b5d4ff83ccf07bb2673e864def28dfed410eef5add3a2c5a623ceb8ad295",
       "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "H11",
+      "snapshot_file": "raw/esma-qa-2088.html",
+      "source_url": "https://www.esma.europa.eu/publications-data/questions-answers/2088",
+      "bytes": 53226,
+      "sha256": "09992eeb620e12d9be91fb25576152cc90b83e2d7de85eaa289c753d30cb95be",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "H11",
+      "snapshot_file": "raw/esma-qa-2125.html",
+      "source_url": "https://www.esma.europa.eu/publications-data/questions-answers/2125",
+      "bytes": 53738,
+      "sha256": "f827af2f5ca7278bc95af728799bc62bdde33f93b1ba41def5a5f3894e2b18bc",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "H11",
+      "snapshot_file": "raw/cnmv-psc-modelos.html",
+      "source_url": "https://www.cnmv.es/portal/legislacion/modelosn/modelosn?id=PSC&lang=es",
+      "bytes": 215842,
+      "sha256": "538e0d50e3e84070756759db5d76d96e4bc0ec83cefa4af198fde5bded91b20e",
+      "source_as_of": "2026-09-14"
     }
   ]
 }

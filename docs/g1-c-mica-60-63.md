@@ -87,6 +87,65 @@ C-07  multi-role: PROSEGUR CUSTODIA DE ACTIVOS DIGITALES —
       independientes por régimen
 ```
 
+## C4 — Cross-check CNMV ejecutado
+
+Artefacto derivado: `fixtures/g1/sources/extracted/cnmv-psc-extract.json`
+(extracción mecánica zlib+ToUnicode sobre el PDF congelado + revisión
+humana; `source_sha256` anclado). **No** se ha construido un parser
+operacional — es una capa probatoria acotada.
+
+Categorías CNMV observadas (una más de las previstas):
+
+```text
+PSC (ESPAÑA)                          → art. 63 / AUTHORISATION
+ENTIDAD DE CRÉDITO (ESPAÑA)           → art. 60 / NOTIFICATION
+PSC EN RÉGIMEN DE LP (origen: X)      → defer G1-D
+PSC A TRAVÉS DE SUCURSAL (origen: X)  → defer G1-D (branch)
+LIMITED PSC EN RÉGIMEN DE LP          → defer G1-D
+```
+
+Cross-check real: BBVA/CECABANK/RENTA 4/KUTXABANK/CAIXABANK =
+`ENTIDAD DE CRÉDITO (ESPAÑA)`; BIT2ME/PROSEGUR/CROSSMINT/DUE/
+BASQUE PAY = `PSC (ESPAÑA)`. La distinción está anclada en fuente
+NCA primaria, no inferida de `ae_legalform`/`ae_competentAuthority`.
+
+**Hallazgos normativos adicionales congelados (ESMA Q&A 2088/2125):**
+
+```text
+- Una entidad art.60(2)–(6) puede solicitar ADEMÁS autorización CASP
+  para servicios fuera de su equivalencia → la vía es por
+  (entity, crypto_service), no por entity_class:
+  ESI puede coexistir NOTIFICATION(svc A) + AUTHORISATION(svc B).
+
+- Entidad de crédito puede notificar cualquier servicio MiCA,
+  sujeto a restricciones nacionales derivadas de CRD → la matriz
+  C2 "todos" para crédito lleva esa qualification.
+```
+
+Regla corregida para C5:
+
+```text
+(entity, crypto_service) → possible legal route
+  NOTIFICATION / art.60  |  AUTHORISATION / art.63
+nunca: entity_class=ESI → todos NOTIFICATION
+```
+
+C-07 PROSEGUR reformulado como test MULTI_ROLE explícito:
+PI(RDL19/2018) + CASP(MiCA) = dos entitlements independientes,
+**no** `CONFLICTING_SOURCE_ASSERTIONS`.
+
+**Gate C4→C5 verificado:**
+
+```text
+identidad exacta resuelta por LEI/nombre     OK
+servicios congelados desde ESMA              OK
+categoría/mecanismo anclado en CNMV          OK (extract)
+base legal art.60/63 por servicio            matriz C2
+0 mecanismo inferido sólo de legalform       OK
+filas LP/sucursal → defer G1-D               OK
+multi-role preservado (PROSEGUR)             OK
+```
+
 ## Fronteras
 
 ```text
@@ -98,10 +157,10 @@ G1-E  negative/withdrawal/expiry semantics (incl. NCASP list)
 ## Estado
 
 ```text
-C1  DONE — evidencia congelada (manifest-g1-c1.json)
-C2  DONE — matriz art. 60 por entity_class × servicio
-C3  DONE — mapping registro → mecanismo
-C4  casos preregistrados; pendiente extracción CNMV PDF para
-    cross-check de categoría declarada (PSC vs entidad financiera)
+C1  DONE — evidencia congelada (manifest-g1-c1.json, 9 snapshots)
+C2  DONE — matriz art. 60 por entity_class × servicio (+qualification CRD)
+C3  DONE — mapping registro → mecanismo (refinado: por servicio, no por clase)
+C4  DONE — extract CNMV anclado; categorías reales verificadas;
+    gate C4→C5 superado
 C5/C6 pendientes
 ```
