@@ -188,8 +188,21 @@ G0.5-B        PASS_WITH_FINDINGS
 G0.5-C        PASS
 G0.6          PASS
 
-G0.7          NOT_STARTED
+G0.7          IN_PROGRESS   (A PASS / B–D pendientes)
 ```
+
+## Estado despues de G0.7-A
+
+G0.7 se divide en cuatro cortes: A (derivation rule freeze), B (real
+assessment run), C (divergence audit), D (closeout). En A quedan
+congelados el ruleset de derivacion `FINREG_G07_DERIVATION_V1`
+(`fixtures/g0.7/derivation-rules.json`), el preregistro de 21 casos
+`(entity_id, activity, jurisdiction, as_of)` con expected fijados antes
+de ejecutar el motor (`assessment-cases.json`) y el artefacto de 257
+aserciones derivadas + 3 findings sobre el ledger G0.6
+(`derived-assertions-g0.5-a-003.json`). `assess()` no se ha ejecutado.
+Detalle en
+[`docs/g0.7-derivation-freeze.md`](g0.7-derivation-freeze.md).
 
 ## Estado despues de G0.6
 

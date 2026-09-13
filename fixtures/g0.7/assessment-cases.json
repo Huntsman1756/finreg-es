@@ -1,0 +1,307 @@
+{
+  "cases_meta": {
+    "version": "FINREG_G07_ASSESSMENT_CASES_V1",
+    "gate": "G0.7-A",
+    "unit": "(entity_id, activity, jurisdiction, as_of)",
+    "entity_id_semantics": "corpus_id del corpus G0.5 congelado: el corpus ES el marco de identidad; los joins por identificador quedan probados por separado",
+    "preregistered_before_assessment": "los expected_* se fijan por razonamiento sobre el contrato congelado ANTES de ejecutar assess(); las divergencias se auditan en G0.7-C sin editar este fichero",
+    "match_definition": "un caso es MATCH si el assessment del run iguala expected_assessment; expected_reason se compara como dimension secundaria del audit",
+    "categories_not_representable_in_frozen_corpus": [
+      {
+        "category": "MICA_ART60_NOTIFICATION",
+        "reason": "la seccion CASPS del registro ESMA documenta autorizaciones art. 63; el corpus no contiene evidencia art. 60 y H1 (distincion de ruta) sigue abierto"
+      },
+      {
+        "category": "EXPIRED_ENTITLEMENT",
+        "reason": "ningun registro del corpus trae authorisation_end_date; no se fabrica una expiracion sintetica"
+      },
+      {
+        "category": "CONFLICTING_CURRENT_ASSERTIONS",
+        "reason": "ningun par de fuentes del corpus emite efectos opuestos admisibles sobre la misma unidad; el conflicto real no existe en los datos congelados"
+      },
+      {
+        "category": "DEMONSTRABLE_NEGATIVE",
+        "reason": "ningun contrato del corpus tiene negative_evidence_capability=COMPLETE_ENUMERATION verificada; CONFIRMED_NOT_AUTHORISED es inalcanzable con esta evidencia y ningun caso lo espera"
+      },
+      {
+        "category": "STATUTORY_DERIVED_CONFIRMED",
+        "reason": "la regla credit-institution-implies-payment-services existe pero su precondicion (asercion base ENTITLED sobre CREDIT_INSTITUTION) no se cumple: la evidencia BdE IFM es clasificacion (UNKNOWN), no enumeracion de autorizacion; G07-016 cubre el resultado honesto"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "G07-001",
+      "entity_id": "G05-001",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-001|ESMA_MICA_REGISTER|authorisation_notification_date", "G05-001|ESMA_MICA_REGISTER|service_codes_raw"],
+      "known_limitations": ["H1: ruta art. 60 vs art. 63 no resoluble desde el CSV; la regla asigna AUTHORISATION art. 63 segun la documentacion del propio fichero"],
+      "probes": "AUTORIZACION_DOMESTICA_CASP"
+    },
+    {
+      "case_id": "G07-002",
+      "entity_id": "G05-010",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-010|ESMA_MICA_REGISTER|authorisation_notification_date"],
+      "known_limitations": [],
+      "probes": "AUTORIZACION_DOMESTICA_CASP"
+    },
+    {
+      "case_id": "G07-003",
+      "entity_id": "G05-014",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-014|ESMA_MICA_REGISTER|service_codes_raw"],
+      "known_limitations": [],
+      "probes": "AUTORIZACION_DOMESTICA_CASP"
+    },
+    {
+      "case_id": "G07-004",
+      "entity_id": "G05-004",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-004|ESMA_MICA_REGISTER|authorisation_notification_date"],
+      "known_limitations": ["entidad multi-fuente (ESMA+EBA); la conclusion CASP solo depende del lado ESMA"],
+      "probes": "AUTORIZACION_DOMESTICA_CASP_MULTISOURCE"
+    },
+    {
+      "case_id": "G07-005",
+      "entity_id": "G05-004",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["EBA_PSD2_REGISTER / UNKNOWN / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-004|EBA_PSD2_REGISTER|entity_type", "G05-004|EBA_PSD2_REGISTER|ent_aut_raw"],
+      "known_limitations": ["ENT_AUT llega como lista de fechas sin semantica de estado (SEMANTICS_GAP congelado): la presencia en el registro PSD2 no basta para efecto positivo ni negativo"],
+      "probes": "ESTADO_NO_INTERPRETABLE"
+    },
+    {
+      "case_id": "G07-006",
+      "entity_id": "G05-012",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-012|ESMA_MICA_REGISTER|authorisation_notification_date"],
+      "known_limitations": ["LEI con INVALID_LENGTH: excluido del indice de identidad (no soporta joins); la identidad del caso la sustenta el corpus_id y el identificador BDE_REGISTRY_ID alternativo (ES_BE!6950)"],
+      "probes": "IDENTIFICADOR_INVALIDO_IDENTIDAD_ALTERNATIVA"
+    },
+    {
+      "case_id": "G07-007",
+      "entity_id": "G05-012",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["EBA_PSD2_REGISTER / UNKNOWN / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-012|EBA_PSD2_REGISTER|entity_type"],
+      "known_limitations": ["misma limitacion ENT_AUT que G07-005"],
+      "probes": "ESTADO_NO_INTERPRETABLE"
+    },
+    {
+      "case_id": "G07-008",
+      "entity_id": "G05-015",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["ESMA_MICA_REGISTER / ENTITLED_TO_PROVIDE / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-015|ESMA_MICA_REGISTER|authorisation_notification_date"],
+      "known_limitations": ["LEI con INVALID_CHECK_DIGITS (SOURCE_DATA_QUALITY, G0.5-C): preservado raw, sin reparacion, sin join; el caso se sostiene por la via corporativa (corpus_id) ya que el registro ESMA esta pre-vinculado"],
+      "probes": "IDENTIFICADOR_INVALIDO_IDENTIDAD_CORPUS"
+    },
+    {
+      "case_id": "G07-009",
+      "entity_id": "G05-016",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["EBA_PSD2_REGISTER / UNKNOWN / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-016|EBA_PSD2_REGISTER|entity_type", "G05-016|EBA_PSD2_REGISTER|ent_aut_raw"],
+      "known_limitations": ["la entidad es un PI real registrado; la respuesta honesta del sistema con el contrato congelado es INDETERMINATE, no un falso positivo"],
+      "probes": "ESTADO_NO_INTERPRETABLE"
+    },
+    {
+      "case_id": "G07-010",
+      "entity_id": "G05-018",
+      "activity": "E_MONEY_ISSUANCE",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["EBA_PSD2_REGISTER / UNKNOWN / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-018|EBA_PSD2_REGISTER|entity_type"],
+      "known_limitations": [],
+      "probes": "ESTADO_NO_INTERPRETABLE"
+    },
+    {
+      "case_id": "G07-011",
+      "entity_id": "G05-018",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "NO_ENTITLEMENT_EVIDENCED",
+      "expected_reason": "NO_ASSERTIONS_IN_SCOPE",
+      "expected_basis": [],
+      "primary_evidence": [],
+      "known_limitations": ["una EMI puede prestar servicios de pago por ley, pero el ruleset V1 no deriva esa actividad para PSD_EMI: la respuesta es 'no evidenciado', no 'no autorizado'"],
+      "probes": "AUSENCIA_NO_CONCLUYENTE_ACTIVITY_MAPPING"
+    },
+    {
+      "case_id": "G07-012",
+      "entity_id": "G05-020",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "NO_ENTITLEMENT_EVIDENCED",
+      "expected_reason": "NO_ASSERTIONS_IN_SCOPE",
+      "expected_basis": [],
+      "primary_evidence": ["G05-020|EBA_PSD2_REGISTER|entity_type"],
+      "known_limitations": ["PSD_AISP no existe en ENTITY_CLASSES congeladas: finding UNSUPPORTED_ENTITY_CLASS en derivacion; la evidencia existe pero no es expresable sin nueva version de vocabulario"],
+      "probes": "VOCABULARY_GAP_AISP"
+    },
+    {
+      "case_id": "G07-013",
+      "entity_id": "G05-022",
+      "activity": "INVESTMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["CNMV_REGISTRO_EMPRESAS / ENTITLED_TO_PROVIDE / NOTIFICATION / FREEDOM_TO_PROVIDE_SERVICES"],
+      "primary_evidence": ["G05-022|CNMV_ESI_FPS|official_number", "G05-022|CNMV_ESI_FPS|registration_date"],
+      "known_limitations": ["el resumen CNMV no publica estado ni revocacion; una retirada no seria detectable desde esta fuente"],
+      "probes": "FPS_INBOUND_NOTIFICACION"
+    },
+    {
+      "case_id": "G07-014",
+      "entity_id": "G05-026",
+      "activity": "INVESTMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "CONFIRMED_AUTHORISED",
+      "expected_reason": "SUPPORTED_BY_ACTIVE_ASSERTIONS",
+      "expected_basis": ["CNMV_REGISTRO_EMPRESAS / ENTITLED_TO_PROVIDE / NOTIFICATION / FREEDOM_TO_PROVIDE_SERVICES"],
+      "primary_evidence": ["G05-026|CNMV_ESI_FPS|registration_date"],
+      "known_limitations": [],
+      "probes": "FPS_INBOUND_NOTIFICACION"
+    },
+    {
+      "case_id": "G07-015",
+      "entity_id": "G05-030",
+      "activity": "DEPOSIT_TAKING",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["BDE_REGISTRO_ENTIDADES / UNKNOWN / AUTHORISATION / DOMESTIC"],
+      "primary_evidence": ["G05-030|BDE_MFI_CLASSIFICATION_ES|category", "G05-030|BDE_MFI_CLASSIFICATION_ES|european_code"],
+      "known_limitations": ["el listado BdE IFM es clasificacion estadistica oficial: acredita la clase CREDIT_INSTITUTION pero no es enumeracion de autorizaciones (H8 abierto)"],
+      "probes": "CLASIFICACION_NO_ENUMERACION"
+    },
+    {
+      "case_id": "G07-016",
+      "entity_id": "G05-030",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "NO_ENTITLEMENT_EVIDENCED",
+      "expected_reason": "NO_ASSERTIONS_IN_SCOPE",
+      "expected_basis": [],
+      "primary_evidence": [],
+      "known_limitations": ["la regla derivada credit-institution-implies-payment-services no puede dispararse: su base exige ENTITLED y la evidencia BdE es UNKNOWN (finding DERIVED_PRECONDITION_NOT_MET)"],
+      "probes": "DERIVACION_ESTATUTARIA_BLOQUEADA"
+    },
+    {
+      "case_id": "G07-017",
+      "entity_id": "G05-001",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "NO_ENTITLEMENT_EVIDENCED",
+      "expected_reason": "NO_ASSERTIONS_IN_SCOPE",
+      "expected_basis": [],
+      "primary_evidence": [],
+      "known_limitations": ["BBVA presta servicios de pago en el mundo real, pero el corpus congelado no contiene su evidencia (el snapshot MFI de BdE solo cubre G05-030): ausencia no concluyente"],
+      "probes": "AUSENCIA_NO_CONCLUYENTE"
+    },
+    {
+      "case_id": "G07-018",
+      "entity_id": "G05-022",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "NO_ENTITLEMENT_EVIDENCED",
+      "expected_reason": "NO_ASSERTIONS_IN_SCOPE",
+      "expected_basis": [],
+      "primary_evidence": [],
+      "known_limitations": ["ausencia de evidencia en otra actividad no implica nada sobre la entidad; el contrato ESMA es EXPLICIT_NEGATIVE_ONLY"],
+      "probes": "AUSENCIA_NO_CONCLUYENTE_CROSS_DOMAIN"
+    },
+    {
+      "case_id": "G07-019",
+      "entity_id": "G05-002",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "DE",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "UNINTERPRETABLE_EVIDENCE",
+      "expected_basis": ["ESMA_MICA_REGISTER / UNKNOWN / NOTIFICATION / FREEDOM_TO_PROVIDE_SERVICES"],
+      "primary_evidence": ["G05-002|ESMA_MICA_REGISTER|service_countries_raw"],
+      "known_limitations": ["ac_serviceCode_cou documenta intencion ('intends to provide'), no pasaporte confirmado: la evidencia existe pero no establece efecto"],
+      "probes": "INTENT_ONLY_PASSPORT"
+    },
+    {
+      "case_id": "G07-020",
+      "entity_id": "G05-001",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-12-01",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "ALL_EVIDENCE_STALE",
+      "expected_basis": [],
+      "primary_evidence": ["G05-001|ESMA_MICA_REGISTER|authorisation_notification_date"],
+      "known_limitations": ["no es expiracion de entitlement: es caducidad de la evidencia (freshness_at 2026-09-13 + 30d de politica ESMA < as_of)"],
+      "probes": "EVIDENCIA_CADUCADA_TEMPORAL"
+    },
+    {
+      "case_id": "G07-021",
+      "entity_id": "G05-999",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "as_of": "2026-09-13",
+      "expected_assessment": "INDETERMINATE",
+      "expected_reason": "IDENTITY_NOT_FOUND",
+      "expected_basis": [],
+      "primary_evidence": [],
+      "known_limitations": ["entidad sintetica inexistente en el corpus: prueba que el gate de identidad nunca produce un negativo"],
+      "probes": "IDENTIDAD_NO_ENCONTRADA"
+    }
+  ]
+}
