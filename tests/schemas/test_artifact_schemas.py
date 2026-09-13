@@ -66,6 +66,7 @@ ARTIFACT_MAP = {
     "fixtures/g0.7/audit/*.json": "v1/run-audit",
     "fixtures/g1/sources/manifest.json": "v1/source-manifest",
     "fixtures/g1/sources/manifest-g1-b1.json": "v1/source-manifest",
+    "fixtures/g1/sources/manifest-g1-c1.json": "v1/source-manifest",
     "fixtures/g1/derivation-rules.json": "v1.1/derivation-ruleset",
     "fixtures/g1/derived-assertions-*.json": "v1.1/derived-assertions",
     "fixtures/g1/assessment-cases.json": "v1.1/assessment-cases",
