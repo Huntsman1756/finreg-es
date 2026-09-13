@@ -41,11 +41,67 @@ explícita y revisión separada — no forman parte del trabajo de G1.
 
 | Pr. | ID | Hipótesis | Fuente primaria |
 |-----|----|-----------|------------------|
-| P0 | H9 | `ENT_AUT` en EBA PSD2 es fecha de autorización efectiva (no de publicación ni de modificación); su combinación con `EntityType` + servicios sostiene entitlement PI/EMI. | EBA PSD2 methodology/glosario; texto PSD2 arts. |
+| P0 | H9-A | **Data semantics**: el JSON EBA representa mecánicamente `authorisation_from`, `authorisation_withdrawn_at` y estado current/expired sin inferencia heurística. No se asume que `ENT_AUT` coincida 1:1 con la terminología de Reg. (UE) 2019/410 — ese fue el riesgo de G0. | JSON EBA congelado + Reg. 2019/410, 2019/411, RTS/ITS, Q&A 2019_4650 |
+| P0 | H9-B | **Evidentiary sufficiency**: presencia EBA con servicio X + fecha autorización + sin retirada — ¿suficiente para `ENTITLED_TO_PROVIDE` o exige corroboración NCA? Decisión de jerarquía probatoria: el registro EBA central *no confiere derechos* (disclaimer EBA); la autorización es competencia NCA. | Disclaimer EBA register; registros NCA |
 | P0 | H10 | BdE publica export máquina-legible de su registro con cobertura declarada completa (o declara explícitamente lo contrario). | BdE registro de entidades; notas metodológicas |
 | P0 | H11 | Art. 60 MiCA produce entitlement estatutario por notificación distinto de la autorización CASP de art. 63; las etiquetas del listado CNMV/ESMA distinguen ambas vías. | Reg. (UE) 2023/1114 arts. 60/63 consolidado; listados CNMV/ESMA |
 | P1 | H12 | Existen entidades reales con doble ruta de entitlement (p. ej. autorización PI EBA + registro CNMV) para la misma `(entity, activity, ES)`. | Cruce de snapshots congelados G0 + fuentes G1 |
 | P1 | H13 | Alguna fuente G1 publica estados terminados (revocación/withdrawal) con fecha, suficiente para negativo demostrable en entidades fuera de enumeración completa. | Registros BdE/CNMV/EBA |
+
+## G1-A — plan de resolución de H9 (preregistrado)
+
+### Paquete de evidencia a congelar (A1)
+
+```text
+EBA register JSON snapshot          (ya congelado en G0: h4-eba-psd2)
+EBA register landing/disclaimer
+Regulation (EU) 2019/410            (exige fecha de autorización Y
+                                     fecha de retirada para PI)
+Regulation (EU) 2019/411
+EBA final RTS/ITS report
+EBA Q&A 2019_4650
+```
+
+### Invariante explícito
+
+```text
+not found in EBA PSD2  +  entity_class = credit institution
+≠ negative evidence
+```
+
+Las entidades de crédito prestan servicios de pago pero van por el
+Credit Institutions Register, no por el registro PSD2 central.
+
+### Criterios de salida (A4/A5)
+
+```text
+CASE 1  authorisation date + withdrawal date explícita
+        → intervalo de entitlement histórico derivable
+CASE 2  authorisation date + semántica documentada que prueba
+        ausencia de retirada = vigente
+        → candidato a entitlement vigente
+CASE 3  ausencia de campo de retirada es mero dato faltante
+        → INDETERMINATE
+CASE 4  semántica del campo indocumentada/ambigua
+        → INDETERMINATE
+CASE 5  evidencia EBA insuficiente por jerarquía de fuente
+        → requiere corroboración NCA
+```
+
+### Orden
+
+```text
+A1  freeze primary evidence
+A2  map 2019/410 concepts → raw JSON fields
+A3  inspect withdrawn + active real cases
+A4  decide H9-A
+A5  decide H9-B / source hierarchy
+A6  sólo entonces: draft derivation-rule delta
+```
+
+`derivation.py` no se toca antes de A5. G1-A puede cerrar en PASS sin
+cambiar ningún assessment — el objetivo es reducir `INDETERMINATE`
+sólo cuando la evidencia lo soporte.
 
 ## Reglas de G1
 
