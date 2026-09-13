@@ -1,0 +1,128 @@
+{
+  "capture_id": "g1-b1-2026-09-14",
+  "retrieved_at": "2026-09-14",
+  "hash_algorithm": "SHA-256",
+  "encoding": "UTF-8 for text snapshots; binary-preserving for PDF and XLSX snapshots",
+  "snapshots": [
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-registros-entidades-landing.html",
+      "source_url": "https://www.bde.es/wbe/es/punto-informacion/contenidos/registros/registros-entidades/",
+      "bytes": 373546,
+      "sha256": "38c052508fb1214f9e0f6673ab300f8108949de8ad0208ab1f70f877e4628773",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-registros-informacion-otros-registros.html",
+      "source_url": "https://www.bde.es/wbe/es/punto-informacion/contenidos/registros/registros-entidades/informacion-otros-registros.html",
+      "bytes": 370717,
+      "sha256": "092fa1dbf158b4c0cd7b7c6b1db636e1a72bff7bb9ed839d4cc9bb4d37e9dcbd",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-entidades-inscritas-registros-oficiales.pdf",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/Entidades_inscritas_en_los_Registros_Oficiales.pdf",
+      "bytes": 44196,
+      "sha256": "471ac3d2a4ed45f43b5e70944160387d13c8ff79886f8affdd09b54ee687fcd5",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-entidades-extranjeras.html",
+      "source_url": "https://www.bde.es/wbe/es/entidades-extranjeras-9fe9fa956071281.html",
+      "bytes": 378135,
+      "sha256": "689c2e7f64d5a01a73d43fc534eff56b6ca6651278e25dad20961ac9bb7567be",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-sede-autorizacion-entidades-pago.html",
+      "source_url": "https://sedeelectronica.bde.es/sede/es/tramites/autorizacion-entidades-pago-p212.html",
+      "bytes": 200141,
+      "sha256": "7d13fb8ba006b5d1c993bf46836a324fa655561e7bbb7180e4a069c7aff32a62",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-sede-registro-poco-volumen.html",
+      "source_url": "https://sedeelectronica.bde.es/sede/es/tramites/registro-entidades-poco-volumen-p223.html",
+      "bytes": 167656,
+      "sha256": "5b2ad7ccd71e415866abfd8901786c828a56190b8e8dc2b69f146c105da157fd",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-sede-registro-aisp.html",
+      "source_url": "https://sedeelectronica.bde.es/sede/es/tramites/registro-prestadores-informacion-cuentas-p222.html",
+      "bytes": 174158,
+      "sha256": "4faf0cc07065097c91bceca687ffa75af6edd67c649c86c02a7849f25fff2e40",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-sede-registro-exclusion-red-limitada.html",
+      "source_url": "https://sedeelectronica.bde.es/sede/es/tramites/registro-notificaciones-exclusiones-telecomunicaciones-p220.html",
+      "bytes": 124984,
+      "sha256": "876fd53250107f11ec01fe385bc2e7e2bcc46eb28ccaa1b652fff7f978fecb31",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-A",
+      "snapshot_file": "raw/bde-rbe-spa-landing.html",
+      "source_url": "https://app.bde.es/rbe_spa/",
+      "bytes": 8098,
+      "sha256": "76517611d3e49696e5ede9b3f4662e8156c71cbddeb107b5dfe30b169fd02365",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-entidades.xlsx",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_Entidades.xlsx",
+      "bytes": 2301590,
+      "sha256": "b6f91f84cafcb285dc5017f38e47922e949d8c38f24ab4aa87051735e6ff756d",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ServicioPagos.xlsx",
+      "bytes": 226710,
+      "sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-entidades-credito.xlsx",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_EntCredito.xlsx",
+      "bytes": 1450517,
+      "sha256": "c2237eac490bda38a3fb62b4edaf98b8ae89be6a3ba7eaa2d05b751ff386d00c",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-con-establecimiento.xlsx",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ConEstablecimiento.xlsx",
+      "bytes": 1144423,
+      "sha256": "72faee42deb53eef432ce63f957a71f9a3fe703733181b69c79f0803cc535283",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-sin-establecimiento.xlsx",
+      "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_SinEstablecimiento.xlsx",
+      "bytes": 1179642,
+      "sha256": "820dc61b03afcfa89357a4181597e4028d06bbc72be600d1521513881d0ecbe0",
+      "source_as_of": "2026-09-10"
+    },
+    {
+      "hypothesis": "H10-B",
+      "snapshot_file": "raw/bde-registro-psp-excluidos.xlsx",
+      "source_url": "https://www.bde.es/f/webbde/SGE/regis/n-bt/ficheros/es/PSP_excluidos.xlsx",
+      "bytes": 17084,
+      "sha256": "2f953a48b996dce5f771018aeff29e8baae4f440b0b8b987c3c2f2b90bda77fb",
+      "source_as_of": "2026-09-10"
+    }
+  ]
+}
