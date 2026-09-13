@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:finreg-es:schema:openlineage:v1:finreg-contract-common",
+  "title": "FinReg-ES OpenLineage facets: shared contract payload",
+  "description": "Shared $defs for the run-level and job-level FinReg contract facets. Not a facet itself.",
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "input_contract": {
+      "type": "object",
+      "description": "Artifact pins as recorded by the FinReg artifact: sha256 of file bytes and/or git refs, verbatim.",
+      "additionalProperties": {
+        "anyOf": [
+          {"type": "string"},
+          {"type": "object", "additionalProperties": {"type": "string"}}
+        ]
+      }
+    },
+    "code": {
+      "type": "object",
+      "description": "Code identity recorded by the run artifact (content hash + optional commit).",
+      "required": ["sha256"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "commit": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "base_facet": {
+      "type": "object",
+      "required": ["_producer", "_schemaURL"],
+      "properties": {
+        "_producer": {"type": "string"},
+        "_schemaURL": {"type": "string"}
+      }
+    }
+  }
+}

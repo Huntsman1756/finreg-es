@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:finreg-es:schema:openlineage:v1:finreg-artifact",
+  "title": "FinReg-ES OpenLineage custom dataset facet: FinReg artifact",
+  "description": "Dataset facet for FinReg-controlled artifacts (corpus, ledgers, rulesets, run artifacts, git-pinned inputs). Identity is the recorded contract value: file SHA-256 and/or git ref.",
+  "type": "object",
+  "required": ["_producer", "_schemaURL", "artifact_kind"],
+  "properties": {
+    "_producer": {"type": "string"},
+    "_schemaURL": {"type": "string"},
+    "artifact_kind": {"type": "string"},
+    "artifact_version": {"type": "string"},
+    "path": {"type": "string"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "git_ref": {"type": "string"}
+  },
+  "additionalProperties": false
+}

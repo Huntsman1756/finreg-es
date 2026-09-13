@@ -81,10 +81,13 @@ facets = finreg-specific: source_as_of, contract_version, ruleset_version
 ```
 
 Los 337 claims y `SourceAssertion` siguen siendo la fuente de verdad.
-Decisión pendiente dentro del piloto: emitir JSON spec-compliant con
-stdlib vs depender de `openlineage-python`. Criterio: si el cliente OL
-solo se usa para serializar, stdlib + validación por JSON Schema del
-spec puede ser más ligero — medir antes de decidir la dependencia.
+
+**Estado: piloto implementado** — emisor stdlib propio
+(`finreg_es/openlineage_export.py`, read-only, sin red) + validación
+contra la spec oficial 2.0.2 vendored (`schemas/openlineage/`) en
+tooling. Se elige stdlib sobre `openlineage-python`: sin transporte ni
+backend, el cliente solo aportaría serialización. Mapping, UUIDv5
+estables y gate en `docs/openlineage-pilot.md`.
 
 ### PILOT — Frictionless (compatibilidad opcional)
 

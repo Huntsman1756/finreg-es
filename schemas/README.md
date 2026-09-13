@@ -46,3 +46,7 @@ Comunes: `v1/common/{identifiers,temporal,provenance}.schema.json`
 Fuera de v1 (declarado en el test): audits históricos de G0.5,
 `verification-report`, fixture temporal SUSPECT, fixtures sintéticos
 `regulatory/`, y capturas raw de autoridad.
+
+`schemas/openlineage/` es **otra cosa**: spec OpenLineage 2.0.2 vendored
++ custom facets del piloto de exportación. No es contrato de artefactos
+FinReg — ver su propio README.

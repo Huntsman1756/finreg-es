@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:finreg-es:schema:openlineage:v1:finreg-job-contract",
+  "title": "FinReg-ES OpenLineage custom job facet: FinregJobContractJobFacet",
+  "description": "Job facet for static/design-time lineage: artifact-level input contract pins and the freeze instant of the produced artifact. No execution concepts (no run_id, no executed_at): the artifact records none for this step.",
+  "type": "object",
+  "required": ["_producer", "_schemaURL", "finreg_artifact_id",
+               "input_contract", "freeze_commit_time"],
+  "properties": {
+    "_producer": {"type": "string"},
+    "_schemaURL": {"type": "string"},
+    "finreg_artifact_id": {"type": "string"},
+    "finreg_artifact_version": {"type": "string"},
+    "gate": {"type": "string"},
+    "freeze_commit_time": {"type": "string"},
+    "input_contract": {
+      "$ref": "urn:finreg-es:schema:openlineage:v1:finreg-contract-common#/$defs/input_contract"
+    },
+    "output_sha256": {
+      "$ref": "urn:finreg-es:schema:openlineage:v1:finreg-contract-common#/$defs/sha256"
+    }
+  },
+  "additionalProperties": false
+}
