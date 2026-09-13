@@ -120,6 +120,18 @@ ACTIVITIES = (
     # registration de authorisation; AISP presta sólo servicios de
     # información de cuentas (art. 33 PSD2).
     "ACCOUNT_INFORMATION_SERVICES",
+    # G1-C: servicios MiCA art. 3(16) letras a-j, granularidad por
+    # servicio (la vía art. 60/63 se decide por entity x service).
+    "CRYPTO_CUSTODY_ADMINISTRATION",
+    "CRYPTO_TRADING_PLATFORM",
+    "CRYPTO_EXCHANGE_FUNDS",
+    "CRYPTO_EXCHANGE_CRYPTO",
+    "CRYPTO_ORDER_EXECUTION",
+    "CRYPTO_PLACING",
+    "CRYPTO_ORDER_RECEPTION_TRANSMISSION",
+    "CRYPTO_ADVICE",
+    "CRYPTO_PORTFOLIO_MANAGEMENT",
+    "CRYPTO_TRANSFER",
 )
 
 # Clases de entidad (conjunto mínimo congelado para G0).
@@ -142,7 +154,12 @@ ENTITY_CLASSES = (
 # Estados reportados por la capa de registro (G1-A). No son efectos
 # jurídicos: un status WITHDRAWN es un hecho reportado; su lectura
 # jurídica (negativo, expiración) pertenece a G1-E.
-REPORTED_STATUSES = ("ACTIVE", "WITHDRAWN", "UNKNOWN")
+REPORTED_STATUSES = (
+    "ACTIVE",
+    "WITHDRAWN",
+    "UNKNOWN",
+    "TERRITORIAL_ENTITLEMENT_DEFERRED",
+)
 
 # Procedencia probatoria de una aserción (G1-A, política A5):
 # T2 EBA = reporte oficial NCA→EBA, no constitutivo.

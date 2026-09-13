@@ -116,7 +116,8 @@
           "rule_id": {"type": "string"},
           "reported_status": {
             "type": "string",
-            "enum": ["ACTIVE", "WITHDRAWN", "UNKNOWN"]
+            "enum": ["ACTIVE", "WITHDRAWN", "UNKNOWN",
+                     "TERRITORIAL_ENTITLEMENT_DEFERRED"]
           },
           "status_intervals": {
             "type": ["array", "null"],

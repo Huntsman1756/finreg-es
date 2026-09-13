@@ -2,7 +2,8 @@
   "extract_id": "cnmv-psc-2026-09-14",
   "source_snapshot": "raw/cnmv-psc-criptoactivos.pdf",
   "source_sha256": "08305d48ae0550ca68e01154dec3f61068e41eca45bfd0b1f554e84d1f466328",
-  "extractor": "manual+mechanical text extraction over frozen PDF (zlib streams + ToUnicode cmap); human-reviewed",
+  "extractor": "mechanical text extraction over frozen PDF (zlib streams + ToUnicode cmap) + human review",
+  "extractor_version": "CNMV_PSC_EXTRACT_V1",
   "extracted_at": "2026-09-14",
   "categories_observed": [
     "PSC (ESPAÑA)",
@@ -16,6 +17,12 @@
       "entity": "BANCO BILBAO VIZCAYA ARGENTARIA, S.A.",
       "cnmv_category": "ENTIDAD DE CRÉDITO (ESPAÑA)",
       "services_from": "05/03/2025",
+      "mica_route": "art.60 candidate"
+    },
+    {
+      "entity": "OPEN BANK, S.A.",
+      "cnmv_category": "ENTIDAD DE CRÉDITO (ESPAÑA)",
+      "services_from": "24/07/2025",
       "mica_route": "art.60 candidate"
     },
     {
@@ -61,6 +68,24 @@
       "mica_route": "art.63 candidate"
     },
     {
+      "entity": "CRIPTAN TRADE, S.L.",
+      "cnmv_category": "PSC (ESPAÑA)",
+      "services_from": "26/06/2026",
+      "mica_route": "art.63 candidate"
+    },
+    {
+      "entity": "MINOS GLOBAL, S.L.",
+      "cnmv_category": "PSC (ESPAÑA)",
+      "services_from": "30/06/2026",
+      "mica_route": "art.63 candidate"
+    },
+    {
+      "entity": "IQANA TECHNOLOGIES, S.L.",
+      "cnmv_category": "PSC (ESPAÑA)",
+      "services_from": "10/07/2026",
+      "mica_route": "art.63 candidate"
+    },
+    {
       "entity": "DUE NETWORK, S.L.",
       "cnmv_category": "PSC (ESPAÑA)",
       "services_from": "12/06/2026",
@@ -73,16 +98,22 @@
       "mica_route": "art.63 candidate"
     },
     {
+      "entity": "FINTECH PAYMENTS PSC, S.L.",
+      "cnmv_category": "PSC (ESPAÑA)",
+      "services_from": "31/07/2026",
+      "mica_route": "art.63 candidate"
+    },
+    {
       "entity": "IG EUROPE GMBH",
       "cnmv_category": "PSC QUE PRESTA SERVICIOS EN ESPAÑA A TRAVÉS DE SUCURSAL (País de origen: ALEMANIA)",
       "services_from": "10/12/2025",
-      "mica_route": "defer G1-D (branch)"
+      "mica_route": "defer G1-D"
     },
     {
       "entity": "360 TREASURY SYSTEMS AG",
       "cnmv_category": "PSC EN RÉGIMEN DE LP (País de origen: ALEMANIA)",
       "services_from": "03/05/2025",
-      "mica_route": "defer G1-D (LPS)"
+      "mica_route": "defer G1-D"
     }
   ]
 }

@@ -67,9 +67,13 @@ ARTIFACT_MAP = {
     "fixtures/g1/sources/manifest.json": "v1/source-manifest",
     "fixtures/g1/sources/manifest-g1-b1.json": "v1/source-manifest",
     "fixtures/g1/sources/manifest-g1-c1.json": "v1/source-manifest",
+    "fixtures/g1/sources/manifest-g1-c-run.json": "v1/source-manifest",
+    "fixtures/g1/claim-ledger-g1-c-*.json": "v1/claim-ledger",
     "fixtures/g1/derivation-rules.json": "v1.1/derivation-ruleset",
+    "fixtures/g1/derivation-rules-g1-a.json": "v1.1/derivation-ruleset",
     "fixtures/g1/derived-assertions-*.json": "v1.1/derived-assertions",
     "fixtures/g1/assessment-cases.json": "v1.1/assessment-cases",
+    "fixtures/g1/assessment-cases-g1-c.json": "v1.1/assessment-cases",
     "fixtures/g1/runs/*.json": "v1.1/assessment-run",
 }
 

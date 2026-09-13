@@ -156,7 +156,8 @@
           "properties": {
             "reported_status": {
               "type": "string",
-              "enum": ["ACTIVE", "WITHDRAWN", "UNKNOWN"]
+              "enum": ["ACTIVE", "WITHDRAWN", "UNKNOWN",
+                       "TERRITORIAL_ENTITLEMENT_DEFERRED"]
             },
             "reported_status_from": {"$ref": "#/$defs/field_ref"},
             "detail": {"type": "string"}

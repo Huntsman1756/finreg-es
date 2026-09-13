@@ -74,6 +74,22 @@ def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _mica_service_letters(raw: Any) -> str | None:
+    """Letras a-j de ac_serviceCode (robusto a separadores irregulares)."""
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    letters = [c for c in "abcdefghij" if re.search(rf"(?<![A-Za-z]){c}\.", raw)]
+    return "|".join(letters) or None
+
+
+def _mica_foreign_countries(raw: Any, home: Any) -> str | None:
+    """Paises de ac_serviceCode_cou distintos del home member state."""
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    foreign = [c.strip() for c in raw.split("|") if c.strip() and c.strip() != home]
+    return "|".join(foreign) or None
+
+
 def _parse_ddmmyyyy(value: Any) -> str | None:
     if not isinstance(value, str) or not value.strip():
         return None
@@ -144,6 +160,45 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             fields["eba_parent_status"] = status_by_code.get(
                 (par_type, par_code), "UNKNOWN"
             )
+
+    # G1-C: join CNMV_PSC_REGISTER -> ESMA_MICA_REGISTER por corpus_id.
+    # La categoria CNMV ancla el mecanismo juridico (art. 60/63); el CSV
+    # ESMA nunca lo decide por si mismo (ae_authorisationNotificationDate
+    # no distingue autorizacion de notificacion).
+    cnmv_by_entity: dict[str, dict[str, Any]] = {}
+    for group in groups_list:
+        if group["source"] == "CNMV_PSC_REGISTER":
+            cnmv_by_entity[group["corpus_id"]] = group
+    for group in groups_list:
+        if group["source"] != "ESMA_MICA_REGISTER":
+            continue
+        fields = group["fields"]
+        cnmv_group = cnmv_by_entity.get(group["corpus_id"])
+        cnmv = cnmv_group["fields"] if cnmv_group else {}
+        if cnmv_group is not None:
+            # Las aserciones MiCA derivadas se apoyan en los claims CNMV
+            # (categoria ancla del mecanismo): quedan citados como
+            # evidencia corroborante en la procedencia de la asercion.
+            group["corroborating_groups"] = [cnmv_group]
+        fields["cnmv_category"] = cnmv.get("cnmv_category")
+        fields["cnmv_services_from"] = cnmv.get("services_from")
+        fields["mica_service_letters"] = _mica_service_letters(
+            fields.get("service_codes_raw")
+        )
+        fields["mica_foreign_countries"] = _mica_foreign_countries(
+            fields.get("service_countries_raw"), fields.get("home_member_state")
+        )
+        esma_date = _parse_ddmmyyyy(fields.get("authorisation_notification_date"))
+        cnmv_date = _parse_ddmmyyyy(fields.get("cnmv_services_from"))
+        fields["mica_dates_agree"] = (
+            "TRUE" if esma_date and esma_date == cnmv_date
+            else "FALSE" if esma_date and cnmv_date
+            else None
+        )
+        fields["mica_status"] = (
+            "ENDED" if (fields.get("authorisation_end_date") or "").strip()
+            else "ACTIVE"
+        )
 
     return groups_list
 
@@ -256,7 +311,9 @@ def _emit_assertion(
     def _resolve(key: str, failure: str) -> str | None:
         mapped = emit.get(f"{key}_from")
         if mapped is not None:
-            value = fields.get(mapped["field"])
+            # "$ITEM" como field: el item iterado actua como clave del
+            # mapa (p. ej. letra de servicio MiCA -> actividad canonica).
+            value = item if mapped["field"] == "$ITEM" else fields.get(mapped["field"])
             result = mapped["map"].get(value)
             if result is None:
                 findings.append(
@@ -317,8 +374,13 @@ def _emit_assertion(
         "scope": emit["scope"],
         "rule_id": rule["rule_id"],
         "ruleset_version": ruleset_version,
-        "source_claim_ids": group["claim_ids"],
-        "source_assertions": [source_assertion],
+        "source_claim_ids": group["claim_ids"] + [
+            cid
+            for g in group.get("corroborating_groups", [])
+            for cid in g["claim_ids"]
+        ],
+        "source_assertions": [source_assertion]
+        + group.get("corroborating_source_assertions", []),
         "derived_by": None,
         "principal_entity_id": None,
     }
@@ -446,6 +508,11 @@ def derive_entitlements(
     for group in groups:
         fields = group["fields"]
         source_assertion = _source_assertion(group, manifest)
+        if "corroborating_groups" in group:
+            group["corroborating_source_assertions"] = [
+                _source_assertion(g, manifest)
+                for g in group["corroborating_groups"]
+            ]
         for rule in spec["rules"]:
             match = rule["match"]
             if match["source"] != group["source"]:
@@ -517,10 +584,26 @@ def derive_entitlements(
     for rule in spec["derived_rules"]:
         base = rule["base"]
         fired = False
+        emitted_keys: set[tuple] = set()
         for assertion in list(assertions):
             if not all(assertion[k] == v for k, v in base.items()):
                 continue
             fired = True
+            # Una entidad con N aserciones base que acreditan la misma
+            # clase (p.ej. N servicios MiCA art.60) produce UNA asercion
+            # derivada por (entidad, actividad, ambito): la multiplicidad
+            # de evidencia nunca se convierte en multiplicidad juridica.
+            key = (
+                assertion["entity_id"],
+                rule["emit"]["activity"],
+                assertion["jurisdiction"],
+                assertion["territorial_basis"],
+                rule["emit"]["legal_effect"],
+                rule["emit"]["entry_mechanism"],
+            )
+            if key in emitted_keys:
+                continue
+            emitted_keys.add(key)
             derived = {
                 "assertion_id": f"{id_prefix}-asm-{len(assertions) + 1:03d}",
                 "register_id": assertion["register_id"],
@@ -713,12 +796,27 @@ def build_g1_artifact(repo_root: Path) -> dict[str, Any]:
     return _build_artifact(
         repo_root,
         ledger_rel="fixtures/g0.6/claim-provenance-g0.5-a-003.json",
-        ruleset_rel="fixtures/g1/derivation-rules.json",
+        ruleset_rel="fixtures/g1/derivation-rules-g1-a.json",
         corpus_rel="fixtures/g0.5/corpus/entities.json",
         manifest_rel="fixtures/g0.5/sources/manifest.json",
         artifact_version=G1_ARTIFACT_VERSION,
         derivation_version=G1_DERIVATION_VERSION,
         id_prefix="g1a",
+    )
+
+
+def build_g1c_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-C: ledger G1-C (incluye claims CNMV ancla de
+    mecanismo), ruleset G1-C, manifest fusionado."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g1/claim-ledger-g1-c-001.json",
+        ruleset_rel="fixtures/g1/derivation-rules.json",
+        corpus_rel="fixtures/g0.5/corpus/entities.json",
+        manifest_rel="fixtures/g1/sources/manifest-g1-c-run.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1_DERIVATION_VERSION,
+        id_prefix="g1c",
     )
 
 

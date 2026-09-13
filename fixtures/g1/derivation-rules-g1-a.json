@@ -1,0 +1,473 @@
+{
+  "ruleset": {
+    "ruleset_id": "finreg-g1-derivation",
+    "ruleset_version": "FINREG_G1_DERIVATION_V1",
+    "gate": "G1-A",
+    "purpose": "SourceAssertion[] -> EntitlementAssertion[] + reported_facts. Delta G1-A: interpreta ENT_AUT segun la especificacion oficial EBA (secuencia cronologica de cambios de estado; impar=autorizacion/registro, par=retirada — H9-A PROVEN). Reglas no-EBA identicas al ruleset G0.7 congelado. Territorial/FPS sigue UNKNOWN (G1-D); lectura juridica de retiradas es G1-E.",
+    "frozen_inputs": {
+      "claims_ledger": "fixtures/g0.6/claim-provenance-g0.5-a-003.json",
+      "corpus": "fixtures/g0.5/corpus/entities.json",
+      "source_manifest": "fixtures/g0.5/sources/manifest.json",
+      "g1_source_manifest": "fixtures/g1/sources/manifest.json",
+      "contracts_dir": "fixtures/contracts"
+    },
+    "policy": {
+      "multiplicity": "N fuentes que repiten el mismo hecho soportan una unica conclusion: la multiplicidad de evidencia nunca se convierte en multiplicidad juridica",
+      "conservatism": "evidencia insuficiente o no interpretable => ninguna asercion positiva inventada; finding clasificado; el motor decide INDETERMINATE / NO_ENTITLEMENT_EVIDENCED",
+      "no_negative_from_absence": "ninguna regla emite legal_effect NOT_ENTITLED: la retirada registrada (ENT_AUT par) se emite como reported_fact, no como efecto juridico (G1-E)",
+      "no_new_public_state": "los fallos de derivacion son findings internos con taxonomia propia; no introducen valores en el vocabulario publico congelado",
+      "identifier_integrity": "los identificadores con diagnostico LEI distinto de VALID jamas entran en el indice de identidad ni soportan joins; el valor raw se conserva en el claim",
+      "eba_reporting_layer": "A5: EBA PSD2 es capa de reporte NCA oficial (T2), no constitutiva. evidence_basis=NCA_REPORTED_VIA_EBA. entry_mechanism lo gobierna EntityType: PI/EMI=AUTHORISATION, EPI/AISP/EEMI=REGISTRATION. ENL/EXC sin base Annex para status => INSUFFICIENT_LEGAL_BASIS. AG/BR heredan estado del parent: evidencia del parent, nunca autorizacion propia"
+    },
+    "failure_taxonomy": [
+      "REQUIRED_FIELD_MISSING",
+      "REQUIRED_FIELD_UNDERIVABLE",
+      "UNSUPPORTED_ENTITY_CLASS",
+      "UNSUPPORTED_ACTIVITY_MAPPING",
+      "INSUFFICIENT_LEGAL_BASIS",
+      "DERIVED_PRECONDITION_NOT_MET"
+    ],
+    "effective_derivations": {
+      "FIELD_DDMMYYYY": "parse dd/mm/yyyy -> ISO date; si falta o no parsea: finding REQUIRED_FIELD_UNDERIVABLE y no se emite la asercion",
+      "FIELD_DDMMYYYY_OR_NULL": "parse dd/mm/yyyy -> ISO date; vacio/ausente -> null (ventana abierta)",
+      "EVIDENCE_AS_OF": "retrieved_at del snapshot: la fecha mas temprana en que la evidencia atestigua el hecho. NO es la fecha de concesion; se usa cuando la fuente no publica fecha juridica interpretable",
+      "EBA_ENT_AUT_LAST_AUTH": "ultima fecha de la secuencia ENT_AUT en posicion impar (ultima autorizacion/registro); si la secuencia no es valida: REQUIRED_FIELD_UNDERIVABLE"
+    },
+    "rules": [
+      {
+        "rule_id": "esma-mica-casp-art63-domestic",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {"field": "home_member_state", "op": "EQ", "value": "ES"}
+          ]
+        },
+        "required_fields": ["legal_name", "lei", "service_codes_raw", "authorisation_notification_date"],
+        "coverage_preconditions": ["esma-mica-in-casp"],
+        "emit": {
+          "entity_class": "CASP",
+          "activity": "CRYPTO_ASSET_SERVICES",
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "entry_mechanism": "AUTHORISATION",
+          "legal_basis": "MiCA (UE) 2023/1114 art. 63: la seccion CASPS del registro interino ESMA documenta ac_authorisationNotificationDate como fecha de autorizacion del CASP conforme al art. 63 (h7-esma-fields.csv)",
+          "scope": "servicios sobre criptoactivos como CASP autorizado en Espana; granularidad por servicio (letras a-j) conservada raw en evidencia, sin mapeo de actividad adicional",
+          "effective_from": {"derivation": "FIELD_DDMMYYYY", "field": "authorisation_notification_date"},
+          "effective_to": {"derivation": "FIELD_DDMMYYYY_OR_NULL", "field": "authorisation_end_date"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "La presencia en la seccion CASPS con fecha de autorizacion es la evidencia primaria de autorizacion CASP art. 63.",
+        "known_limitations": [
+          "H1 abierto: la distincion art. 60 (entidad financiera, notificacion) vs art. 63 (CASP, autorizacion) no es resoluble desde las columnas del CSV; todas las filas derivan AUTHORISATION art. 63 segun la documentacion del propio fichero",
+          "ac_serviceCode_cou lista estados donde el CASP 'intends to provide': intencion declarada, no pasaporte confirmado (ver regla esma-mica-casp-intent-only-passport)"
+        ]
+      },
+      {
+        "rule_id": "esma-mica-casp-intent-only-passport",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {"field": "service_countries_raw", "op": "NOT_NULL"}
+          ]
+        },
+        "required_fields": ["service_countries_raw", "authorisation_notification_date"],
+        "coverage_preconditions": ["esma-mica-in-casp"],
+        "emit_per": {
+          "iterate": {
+            "field": "service_countries_raw",
+            "mode": "SPLIT",
+            "separator": "|",
+            "exclude_field_value": "home_member_state"
+          },
+          "emit": {
+            "entity_class": "CASP",
+            "activity": "CRYPTO_ASSET_SERVICES",
+            "jurisdiction": "$ITEM",
+            "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+            "legal_effect": "UNKNOWN",
+            "entry_mechanism": "NOTIFICATION",
+            "legal_basis": "MiCA (UE) 2023/1114 art. 65 (prestacion transfronteriza): ac_serviceCode_cou documenta estados donde el CASP 'intends to provide' — intencion declarada por la autoridad de origen, no confirmacion de pasaporte por el estado de acogida",
+            "scope": "intencion declarada de prestacion transfronteriza; efecto juridico no establecido por esta evidencia",
+            "effective_from": {"derivation": "FIELD_DDMMYYYY", "field": "authorisation_notification_date"},
+            "effective_to": {"derivation": "FIELD_DDMMYYYY_OR_NULL", "field": "authorisation_end_date"}
+          }
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "La evidencia menciona la jurisdiccion pero no permite fijar efecto: UNKNOWN preserva la evidencia y fuerza INDETERMINATE, distinguiendola de la ausencia pura (NO_ENTITLEMENT_EVIDENCED).",
+        "known_limitations": [
+          "los paises no-ES no reciben asercion positiva aunque el listado los nombre: 'intends' no es notificacion confirmada"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-domestic-active",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_PI", "PSD_EMI"]},
+            {"field": "country", "op": "EQ", "value": "ES"},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "ACTIVE"}
+          ]
+        },
+        "required_fields": ["legal_name", "entity_code", "entity_type", "ent_aut_raw"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit": {
+          "entity_class_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_INSTITUTION", "PSD_EMI": "E_MONEY_INSTITUTION"}},
+          "activity_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_SERVICES", "PSD_EMI": "E_MONEY_ISSUANCE"}},
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "entry_mechanism": "AUTHORISATION",
+          "evidence_basis": "NCA_REPORTED_VIA_EBA",
+          "reported_status": "ACTIVE",
+          "status_intervals_from": {"field": "eba_ent_aut_intervals"},
+          "legal_basis": "PSD2 (UE) 2015/2366 / LPSE (RD-ley 19/2018) + Reg. (UE) 2019/410 Table 1/4: ENT_AUT par-impar = secuencia de autorizacion/retirada notificada por la NCA (spec oficial EBA JSON). Nivel T2: reporte NCA oficial via EBA, no constitutivo (politica A5)",
+          "scope": "autorizacion home reportada vigente en el registro PSD2; entitlement territorial transfronterizo es G1-D",
+          "effective_from": {"derivation": "EBA_ENT_AUT_LAST_AUTH"},
+          "effective_to": {"derivation": "CONSTANT_NULL"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Secuencia ENTAUT impar documentada por la autoridad = ultima transicion es autorizacion vigente reportada por la NCA.",
+        "known_limitations": [
+          "la capacidad de una EMI para prestar servicios de pago no se deriva en esta version: PSD_EMI mapea solo a E_MONEY_ISSUANCE",
+          "evidence T2: si la NCA rectifica, la asercion sigue al snapshot siguiente; el acto constitutivo vive en el registro NCA (T0/T1)"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-domestic-withdrawn",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_PI", "PSD_EMI"]},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "WITHDRAWN"}
+          ]
+        },
+        "required_fields": ["entity_code", "entity_type", "ent_aut_raw"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit_status_fact": {
+          "reported_status_from": {"field": "eba_ent_aut_status"},
+          "detail": "NCA reporta via EBA retirada de la autorizacion (secuencia ENT_AUT par, spec oficial). Hecho registrado; la lectura juridica de la retirada (negativo/expiracion) es G1-E."
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "La retirada es un hecho positivo registrado (presencia, no ausencia); no se materializa como EntitlementAssertion ni NOT_ENTITLED en G1-A.",
+        "known_limitations": [
+          "los intervalos quedan preservados en el fact; cualquier inferencia negativa requiere G1-E + enumeracion verificada"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-domestic-status-unknown",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_PI", "PSD_EMI"]},
+            {"field": "country", "op": "EQ", "value": "ES"},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "UNKNOWN"}
+          ]
+        },
+        "required_fields": ["legal_name", "entity_code", "entity_type"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit": {
+          "entity_class_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_INSTITUTION", "PSD_EMI": "E_MONEY_INSTITUTION"}},
+          "activity_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_SERVICES", "PSD_EMI": "E_MONEY_ISSUANCE"}},
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC",
+          "legal_effect": "UNKNOWN",
+          "entry_mechanism": "AUTHORISATION",
+          "reported_status": "UNKNOWN",
+          "legal_basis": "PSD2 (UE) 2015/2366 / LPSE: presencia en el registro PSD2 con ENT_AUT ausente o no interpretable como secuencia de estados (invariantes de parser G1-A)",
+          "scope": "presencia en el registro PSD2; estado de autorizacion no resoluble desde la secuencia ENT_AUT",
+          "effective_from": {"derivation": "EVIDENCE_AS_OF"},
+          "effective_to": {"derivation": "CONSTANT_NULL"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Presencia real pero estado no derivable: la asercion queda UNKNOWN y la causa se registra en el finding asociado.",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "eba-psd2-domestic-status-unknown-finding",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_PI", "PSD_EMI"]},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "UNKNOWN"}
+          ]
+        },
+        "required_fields": ["entity_type"],
+        "coverage_preconditions": [],
+        "emit": null,
+        "finding": {
+          "classification": "REQUIRED_FIELD_UNDERIVABLE",
+          "detail": "ENT_AUT ausente, vacio o no interpretable como secuencia cronologica de cambios de estado (invariantes de parser G1-A): no se deriva status"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Invariante preregistrado: secuencia no interpretable => UNKNOWN + finding, nunca active por defecto.",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "eba-psd2-passport-services",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_PI", "PSD_EMI"]}
+          ]
+        },
+        "required_fields": ["entity_type", "services_raw"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit_per": {
+          "iterate": {
+            "field": "services_raw",
+            "mode": "DICT_KEYS",
+            "exclude_values": ["ES"]
+          },
+          "emit": {
+            "entity_class_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_INSTITUTION", "PSD_EMI": "E_MONEY_INSTITUTION"}},
+            "activity_from": {"field": "entity_type", "map": {"PSD_PI": "PAYMENT_SERVICES", "PSD_EMI": "E_MONEY_ISSUANCE"}},
+            "jurisdiction": "$ITEM",
+            "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+            "legal_effect": "UNKNOWN",
+            "entry_mechanism": "NOTIFICATION",
+            "evidence_basis": "NCA_REPORTED_VIA_EBA",
+            "reported_status_from": {"field": "eba_ent_aut_status"},
+            "status_intervals_from": {"field": "eba_ent_aut_intervals"},
+            "legal_basis": "PSD2 (UE) 2015/2366 pasaporte: services_raw mapea servicio por pais de acogida; reported_status adjunta el estado ENT_AUT pero el entitlement territorial es G1-D",
+            "scope": "servicio mapeado a pais de acogida en el registro PSD2; efecto no establecido (territorial = G1-D)",
+            "effective_from": {"derivation": "EVIDENCE_AS_OF"},
+            "effective_to": {"derivation": "CONSTANT_NULL"}
+          }
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "El mapeo servicio-pais del registro es evidencia de pasaporte declarado; el estado ya es interpretable pero la suficiencia territorial no esta decidida en G1-A.",
+        "known_limitations": [
+          "la modalidad (FPS vs sucursal) no es distinguible desde services_raw: se asigna FREEDOM_TO_PROVIDE_SERVICES por ser la modalidad observable; si la realidad fuese sucursal la evidencia no lo demuestra"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-registered-active",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_EPI", "PSD_AISP", "PSD_EEMI"]},
+            {"field": "country", "op": "EQ", "value": "ES"},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "ACTIVE"}
+          ]
+        },
+        "required_fields": ["legal_name", "entity_code", "entity_type", "ent_aut_raw"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit": {
+          "entity_class_from": {"field": "entity_type", "map": {"PSD_EPI": "EXEMPTED_PAYMENT_INSTITUTION", "PSD_AISP": "ACCOUNT_INFORMATION_SERVICE_PROVIDER", "PSD_EEMI": "EXEMPTED_E_MONEY_INSTITUTION"}},
+          "activity_from": {"field": "entity_type", "map": {"PSD_EPI": "PAYMENT_SERVICES", "PSD_AISP": "ACCOUNT_INFORMATION_SERVICES", "PSD_EEMI": "E_MONEY_ISSUANCE"}},
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "entry_mechanism": "REGISTRATION",
+          "evidence_basis": "NCA_REPORTED_VIA_EBA",
+          "reported_status": "ACTIVE",
+          "status_intervals_from": {"field": "eba_ent_aut_intervals"},
+          "legal_basis": "PSD2 art. 32/33 / EMD2 art. 9 + Reg. (UE) 2019/410 Tables 2/3/5: date of REGISTRATION, no authorisation — el mecanismo lo gobierna EntityType, nunca AUTHORISATION para estos tipos",
+          "scope": "registro home vigente reportado via EBA; un AISP registrado NO esta autorizado para payment services general",
+          "effective_from": {"derivation": "EBA_ENT_AUT_LAST_AUTH"},
+          "effective_to": {"derivation": "CONSTANT_NULL"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Annex 2019/410: estos tipos son registrados, no autorizados. Secuencia ENTAUT impar = registro vigente reportado por la NCA.",
+        "known_limitations": [
+          "la actividad se asigna por tipo, no por service_codes: un EPI presta payment services solo dentro de su exencion art. 32; el alcance exacto vive en el registro NCA"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-registered-withdrawn",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_EPI", "PSD_AISP", "PSD_EEMI"]},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "WITHDRAWN"}
+          ]
+        },
+        "required_fields": ["entity_code", "entity_type", "ent_aut_raw"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit_status_fact": {
+          "reported_status_from": {"field": "eba_ent_aut_status"},
+          "detail": "NCA reporta via EBA retirada del registro (secuencia ENT_AUT par). Hecho registrado; lectura juridica = G1-E."
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Retirada de registro como hecho reportado, no asercion ni efecto negativo.",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "eba-psd2-registered-unknown-finding",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_EPI", "PSD_AISP", "PSD_EEMI"]},
+            {"field": "eba_ent_aut_status", "op": "EQ", "value": "UNKNOWN"}
+          ]
+        },
+        "required_fields": ["entity_type"],
+        "coverage_preconditions": [],
+        "emit": null,
+        "finding": {
+          "classification": "REQUIRED_FIELD_UNDERIVABLE",
+          "detail": "ENT_AUT ausente, vacio o no interpretable como secuencia de estados para tipo registrado: no se deriva status"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Invariante preregistrado: secuencia no interpretable => UNKNOWN + finding.",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "eba-psd2-enl-exc-insufficient-basis",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_ENL", "PSD_EXC"]}
+          ]
+        },
+        "required_fields": ["entity_type"],
+        "coverage_preconditions": [],
+        "emit": null,
+        "finding": {
+          "classification": "INSUFFICIENT_LEGAL_BASIS",
+          "detail": "PSD_ENL (art. 2(5), Table 7) y PSD_EXC (art. 3, Table 8): el Annex 2019/410 no exige secuencia de estado para estos tipos; ENT_AUT observable no tiene base normativa equivalente — no se deriva status"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Que EBA publique ENT_AUT no basta para atribuirle la fuerza normativa de PI/EMI si el Annex no exige ese dato (politica A5).",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "eba-psd2-agent-branch-parent-status",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "IN", "value": ["PSD_AG", "PSD_BR"]}
+          ]
+        },
+        "required_fields": ["entity_type"],
+        "coverage_preconditions": ["eba-psd2-in-eea"],
+        "emit_status_fact": {
+          "reported_status_from": {"field": "eba_parent_status"},
+          "detail": "Estado heredado del parent (DER_CHI_ENT_AUT / resolucion parent->child): evidencia del estado regulatorio del principal, nunca autorizacion propia del agente/sucursal."
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Spec EBA: DER_CHI_ENT_AUT hereda del parent; parent authorised + child declared != child independently authorised (A4).",
+        "known_limitations": [
+          "requiere claims ent_cod_par_ent/ent_typ_par_ent del adapter EBA; sin ellos eba_parent_status no se resuelve y no se emite el hecho"
+        ]
+      },
+      {
+        "rule_id": "eba-psd2-unsupported-entity-type",
+        "required_source_contract": "EBA_PSD2_REGISTER",
+        "match": {
+          "source": "EBA_PSD2_REGISTER",
+          "conditions": [
+            {"field": "entity_type", "op": "NOT_IN", "value": ["PSD_PI", "PSD_EMI", "PSD_EPI", "PSD_AISP", "PSD_EEMI", "PSD_ENL", "PSD_EXC", "PSD_AG", "PSD_BR"]}
+          ]
+        },
+        "required_fields": ["entity_type"],
+        "coverage_preconditions": [],
+        "emit": null,
+        "finding": {
+          "classification": "UNSUPPORTED_ENTITY_CLASS",
+          "detail": "entity_type fuera de los nueve tipos del Annex 2019/410 reconocidos por el ruleset G1"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Catch-all residual: los nueve EntityType observados tienen regla explicita; cualquier tipo nuevo es finding, no silencio.",
+        "known_limitations": []
+      },
+      {
+        "rule_id": "cnmv-esi-fps-inbound-notification",
+        "required_source_contract": "CNMV_REGISTRO_EMPRESAS",
+        "match": {
+          "source": "CNMV_ESI_FPS",
+          "conditions": [
+            {"field": "official_number", "op": "NOT_NULL"},
+            {"field": "country", "op": "NOT_NULL"}
+          ]
+        },
+        "required_fields": ["legal_name", "official_number", "registration_date", "country"],
+        "coverage_preconditions": ["cnmv-in-inbound"],
+        "emit": {
+          "entity_class": "INVESTMENT_FIRM_ESI",
+          "activity": "INVESTMENT_SERVICES",
+          "jurisdiction": "ES",
+          "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "entry_mechanism": "NOTIFICATION",
+          "legal_basis": "MiFID II 2014/65/UE art. 34 / Ley 6/2023 (LMV) regimen de libre prestacion de ESI del EEE: el listado oficial CNMV de ESI en libre prestacion enumera entidades con notificacion cursada a Espana",
+          "scope": "prestacion de servicios de inversion en Espana en regimen de libre prestacion notificada",
+          "effective_from": {"derivation": "FIELD_DDMMYYYY", "field": "registration_date"},
+          "effective_to": {"derivation": "CONSTANT_NULL"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "El listado CNMV ESI-FPS existe precisamente para enumerar las notificaciones de libre prestacion: la presencia es la evidencia primaria de la notificacion.",
+        "known_limitations": [
+          "registration_date es la fecha de registro oficial CNMV (mejor proxy documentado de la notificacion), no necesariamente la fecha legal exacta del pasaporte",
+          "el resumen no publica estado ni revocacion: una retirada no seria detectable desde esta fuente (nota RAW_FACTS_ONLY del extractor G0.5); la politica de staleness del contrato acota esa debilidad"
+        ]
+      },
+      {
+        "rule_id": "bde-mfi-credit-institution-classification",
+        "required_source_contract": "BDE_REGISTRO_ENTIDADES",
+        "match": {
+          "source": "BDE_MFI_CLASSIFICATION_ES",
+          "conditions": [
+            {"field": "category", "op": "EQ", "value": "Entidad de crédito"}
+          ]
+        },
+        "required_fields": ["legal_name", "european_code", "category"],
+        "coverage_preconditions": ["bde-in-domestic"],
+        "emit": {
+          "entity_class": "CREDIT_INSTITUTION",
+          "activity": "DEPOSIT_TAKING",
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC",
+          "legal_effect": "UNKNOWN",
+          "entry_mechanism": "AUTHORISATION",
+          "legal_basis": "Ley 10/2014 (LOSSE): la categoria 'Entidad de crédito' del listado BdE IFM es clasificacion oficial que presupone autorizacion, pero el listado no es enumeracion de autorizaciones (preregistro corpus G05-030; H8 abierto)",
+          "scope": "clasificacion oficial como entidad de credito; efecto de entitlement no establecido por esta fuente",
+          "effective_from": {"derivation": "EVIDENCE_AS_OF"},
+          "effective_to": {"derivation": "CONSTANT_NULL"}
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "La clasificacion IFM acredita la clase CREDIT_INSTITUTION; convertirla en ENTITLED seria tratar una lista estadistica como registro de autorizacion.",
+        "known_limitations": [
+          "H8: las garantias de mantenimiento del listado IFM no estan verificadas; si una version futura las estableciera, el efecto podria revisarse con evidencia nueva"
+        ]
+      }
+    ],
+    "derived_rules": [
+      {
+        "rule_id": "credit-institution-implies-payment-services",
+        "ruleset_version": "1.0.0",
+        "type": "DERIVED",
+        "base": {
+          "entity_class": "CREDIT_INSTITUTION",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "jurisdiction": "ES",
+          "territorial_basis": "DOMESTIC"
+        },
+        "emit": {
+          "activity": "PAYMENT_SERVICES",
+          "legal_effect": "ENTITLED_TO_PROVIDE",
+          "entry_mechanism": "AUTHORISATION",
+          "legal_basis": "PSD2 art. 1(3)(d) / LPSE: la entidad de credito puede prestar servicios de pago en virtud de su autorizacion bancaria (misma regla congelada del fixture regulatorio asm-002)",
+          "scope": "servicios de pago del anexo PSD2 en Espana, por cuenta propia"
+        },
+        "untriggered_finding": {
+          "classification": "DERIVED_PRECONDITION_NOT_MET",
+          "detail": "existe evidencia de clase CREDIT_INSTITUTION pero sin asercion base ENTITLED_TO_PROVIDE: la regla estatutaria no puede dispararse sobre una base UNKNOWN"
+        }
+      }
+    ]
+  }
+}
