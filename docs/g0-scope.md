@@ -188,8 +188,17 @@ G0.5-B        PASS_WITH_FINDINGS
 G0.5-C        PASS
 G0.6          PASS
 
-G0.7          IN_PROGRESS   (A PASS / B–D pendientes)
+G0.7          IN_PROGRESS   (A, B PASS / C–D pendientes)
 ```
+
+## Estado despues de G0.7-B
+
+El run `g0.7-001` ejecuta `assess()` sobre los 21 casos preregistrados
+con inputs fijados por sha256 y verificados en el propio artefacto:
+**21/21 MATCH** (assessment y reason), replay offline byte-identico,
+`result_sha 5da2e828`. Distribucion: 8 `CONFIRMED_AUTHORISED`,
+8 `INDETERMINATE`, 5 `NO_ENTITLEMENT_EVIDENCED`, 0 negativos. Detalle en
+[`docs/g0.7-b-assessment-run.md`](g0.7-b-assessment-run.md).
 
 ## Estado despues de G0.7-A
 
