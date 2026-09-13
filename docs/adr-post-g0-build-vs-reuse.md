@@ -82,12 +82,14 @@ facets = finreg-specific: source_as_of, contract_version, ruleset_version
 
 Los 337 claims y `SourceAssertion` siguen siendo la fuente de verdad.
 
-**Estado: piloto implementado** — emisor stdlib propio
+**Estado: PILOT PASS / LOCAL_ONLY** (`17860a8`) — emisor stdlib propio
 (`finreg_es/openlineage_export.py`, read-only, sin red) + validación
 contra la spec oficial 2.0.2 vendored (`schemas/openlineage/`) en
 tooling. Se elige stdlib sobre `openlineage-python`: sin transporte ni
 backend, el cliente solo aportaría serialización. Mapping, UUIDv5
-estables y gate en `docs/openlineage-pilot.md`.
+estables y gate en `docs/openlineage-pilot.md`. Limitación declarada:
+custom facets con `_schemaURL` URN = registry local; portabilidad
+completa requiere remote público (procedimiento commit-A/B documentado).
 
 ### PILOT — Frictionless (compatibilidad opcional)
 
@@ -97,6 +99,12 @@ CSV, EBA PSD2 zip). `SourceContract` sigue siendo la autoridad
 semántica: cobertura, evidencia negativa, política de staleness y base
 jurídica no son expresables en TableSchema. Frictionless solo describe
 lo estructural. Validación en tooling, no runtime.
+
+**Estado: REJECT tras evaluación medida** — `docs/frictionless-evaluation.md`.
+Contra snapshots reales: EBA PSD2 es JSON EAV anidado (no tabular),
+CNMV es HTML de detalle, y los dos CSVs describibles requerirían una
+segunda descripción sin consumidor. WRAP/EXPORT queda documentado como
+la forma si aparece consumidor Frictionless real.
 
 ### KEEP — todo el núcleo regulador
 
