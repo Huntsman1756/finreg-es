@@ -45,7 +45,8 @@
       "source_url": "https://euclid.eba.europa.eu/register/downloads/PSDMD/20260913/download-PSDMD-202609130800.zip",
       "source_as_of": "2026-09-13T08:00:04Z",
       "bytes": 19902187,
-      "sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31"
+      "sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+      "embedded_payload_sha256": "120cc5a49d077b2f086a66d1c8763df72a2a3a6cc0c81712579e1af34b7f5ab5"
     },
     {
       "hypothesis": "H4",

@@ -1,0 +1,81 @@
+{
+  "ground_truth_id": "g0.5-ground-truth-2026-09-13",
+  "as_of": "2026-09-13",
+  "written_before_extractor_run": true,
+  "basis": "Hechos observables en los snapshots de fuentes primarias; no se convierte presencia de registro en assessment agregado.",
+  "global_rules": [
+    "La presencia en una fuente es un hecho positivo de fuente, no una conclusión agregada de autorización.",
+    "La ausencia en ESMA, EBA PSD2, CNMV FPS o la clasificación MFI de BdE no soporta por sí sola un negativo.",
+    "El cruce ESMA/EBA necesita revisión de identidad: EBA aporta EntityCode nacional y nombre, mientras ESMA aporta LEI.",
+    "Los registros EBA cuyo snapshot muestra ENT_AUT como fechas deben conservar el valor bruto hasta resolver su semántica."
+  ],
+  "source_expectations": [
+    {
+      "source": "ESMA_MICA_REGISTER",
+      "snapshot_file": "raw/h7-esma-casps.csv",
+      "expected_presence": "PRESENT",
+      "expected_identity": ["LEI", "legal_name"],
+      "expected_home_member_state": "ES",
+      "expected_competent_authority": "CNMV",
+      "expected_aggregate_assessment": "NOT_RUN",
+      "negative_inference": "BLOCKED_NO_NEGATIVE_INFERENCE"
+    },
+    {
+      "source": "EBA_PSD2_REGISTER",
+      "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+      "expected_presence": "PRESENT",
+      "expected_identity": ["EntityCode", "ENT_NAT_REF_COD", "ENT_NAM"],
+      "expected_aggregate_assessment": "NOT_RUN",
+      "negative_inference": "BLOCKED_SOURCE_DISCLAIMER",
+      "expected_contract_risks": ["SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]
+    },
+    {
+      "source": "CNMV_ESI_FPS",
+      "snapshot_file": "raw/h6-cnmv-esi-fps.html",
+      "expected_presence": "PRESENT",
+      "expected_identity": ["official_number", "legal_name", "country"],
+      "expected_aggregate_assessment": "NOT_RUN",
+      "negative_inference": "BLOCKED_HOME_NCA_AND_COMPLETENESS_UNKNOWN"
+    },
+    {
+      "source": "BDE_MFI_CLASSIFICATION_ES",
+      "snapshot_file": "raw/h8-bde-mfi-es.csv",
+      "expected_presence": "PRESENT",
+      "expected_identity": ["CÓDIGO EUROPEO", "LEI", "NOMBRE"],
+      "expected_aggregate_assessment": "NOT_RUN",
+      "negative_inference": "BLOCKED_PARTIAL_CLASSIFICATION"
+    }
+  ],
+  "entity_expectations": [
+    {"corpus_id": "G05-001", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-002", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-003", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-004", "expected_source_presence": ["ESMA_MICA_REGISTER", "EBA_PSD2_REGISTER"], "expected_facts": ["cross_source_name_variant", "esma_lei_present", "eba_entity_code_present"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SOURCE_CONTRACT_GAP"]},
+    {"corpus_id": "G05-005", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-006", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-007", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-008", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present", "passport_countries_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-009", "expected_source_presence": ["ESMA_MICA_REGISTER", "EBA_PSD2_REGISTER"], "expected_facts": ["cross_source_name_variant", "esma_lei_present", "eba_entity_code_present"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SOURCE_CONTRACT_GAP"]},
+    {"corpus_id": "G05-010", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-011", "expected_source_presence": ["ESMA_MICA_REGISTER", "EBA_PSD2_REGISTER"], "expected_facts": ["cross_source_name_variant", "esma_lei_present", "eba_entity_code_present", "transition_boundary_candidate"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-012", "expected_source_presence": ["ESMA_MICA_REGISTER", "EBA_PSD2_REGISTER"], "expected_facts": ["cross_source_name_variant", "esma_lei_present", "eba_entity_code_present"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SOURCE_CONTRACT_GAP"]},
+    {"corpus_id": "G05-013", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present", "post_transition_date_candidate"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-014", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present", "commercial_name_present"], "expected_contract_risks": ["IDENTITY_GAP"]},
+    {"corpus_id": "G05-015", "expected_source_presence": ["ESMA_MICA_REGISTER"], "expected_facts": ["home_state_ES", "lei_present", "services_present", "passport_countries_present"], "expected_contract_risks": ["COVERAGE_GAP"]},
+    {"corpus_id": "G05-016", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_PI", "entity_code_present", "national_reference_present", "ent_aut_raw_is_date_array"], "expected_contract_risks": ["SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-017", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_PI", "entity_code_present", "multiple_ent_aut_dates", "status_semantics_unresolved"], "expected_contract_risks": ["SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-018", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_EMI", "entity_code_present", "national_reference_present", "ent_aut_raw_is_date_array"], "expected_contract_risks": ["SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-019", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_EMI", "entity_code_present", "commercial_name_may_be_present", "ent_aut_raw_is_date_array"], "expected_contract_risks": ["SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-020", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_AISP", "service_PS_080", "ent_aut_raw_is_date_array"], "expected_contract_risks": ["COVERAGE_GAP", "SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-021", "expected_source_presence": ["EBA_PSD2_REGISTER"], "expected_facts": ["entity_type_PSD_AISP", "service_PS_080", "ent_aut_raw_is_date_array"], "expected_contract_risks": ["COVERAGE_GAP", "SOURCE_CONTRACT_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-022", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-023", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-024", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-025", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-026", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "old_registration_date", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-027", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "old_registration_date", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "SEMANTICS_GAP"]},
+    {"corpus_id": "G05-028", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-029", "expected_source_presence": ["CNMV_ESI_FPS"], "expected_facts": ["fps_listing_present", "official_number_present", "country_present", "no_lei_in_summary"], "identity_join": "REVIEW_REQUIRED", "expected_contract_risks": ["IDENTITY_GAP", "COVERAGE_GAP"]},
+    {"corpus_id": "G05-030", "expected_source_presence": ["BDE_MFI_CLASSIFICATION_ES"], "expected_facts": ["mfi_row_present", "european_code_present", "lei_present", "category_credit_institution", "source_is_partial_classification"], "expected_contract_risks": ["COVERAGE_GAP"]}
+  ]
+}

@@ -98,6 +98,19 @@ G0.5 REAL-WORLD CORPUS
   READY TO START
 ```
 
+## Estado actual de G0.5
+
+El freeze anterior conserva el estado histórico de 55 tests. G0.5 ya está en curso:
+se ha comprometido la baseline `g0.5-p0-2026-09-13`, con 18 snapshots y hashes
+verificados, y el manifest contiene 30 entidades jurídicas distintas. H4 queda
+verificada para capacidad de snapshot; H1, H3, H6 y H8 permanecen parciales por
+mapping o completitud jurídica. H2, H5 y H7 siguen abiertas.
+
+El detalle de la evidencia está en
+[`docs/g0.5-source-verification.md`](g0.5-source-verification.md) y la auditoría del
+corpus en [`docs/g0.5-corpus-audit.md`](g0.5-corpus-audit.md). El corte actual suma
+58 tests: 55 del freeze y 3 de integridad de G0.5.
+
 El contrato de ingeniería está congelado; algunos hechos regulatorios aún no. Los tests no
 demuestran que FinReg funcione con el mundo real: demuestran que existe una semántica
 explícita para que el mundo real **no pueda ser forzado silenciosamente** dentro de
