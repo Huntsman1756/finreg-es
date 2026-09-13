@@ -180,33 +180,114 @@ Evidencia:
 - 2019/411 art. 17(1): la descarga estandarizada es obligación de EBA
   — el JSON *es* el formato oficial de difusión, no un subproducto.
 
-### Propuesta A5 — jerarquía de fuentes (pendiente de ratificación)
+### Política A5 — CONGELADA (suficiencia y conflicto)
+
+Jerarquía de fuentes (no una regla `T0>T1>T2>T3`; la suficiencia es
+**claim-specific**):
 
 ```text
-Nivel 0  acto constitutivo           registro NCA (BdE/CNMV/…)
-Nivel 1  reporte NCA→EBA             registro central EBA (esta fuente)
-Nivel 2  clasificación/estadística   p. ej. BdE MFI (nunca constitutivo)
+T0  ACTO / DECISIÓN CONSTITUTIVA NCA    autorización, retirada…
+T1  REGISTRO PRIMARIO NCA             publicación oficial del estado
+T2  EBA CENTRAL REGISTER              reporte NCA→EBA, oficial,
+                                      no constitutivo
+T3  CLASIFICACIÓN ESTADÍSTICA/AUX.    BdE IFM, etc.
 ```
 
-Consecuencia propuesta:
+Suficiencia por claim:
 
 ```text
-EBA presence + ENT_AUT impar + servicio X + territorio
-  → SourceAssertion fuerte: NCA_REPORTED_AUTH_STATUS=ACTIVE
-  → puede sostener ENTITLED_TO_PROVIDE como evidencia oficial de
-    reporte, marcada evidence_level=NCA_REPORTED (no NCA_CONSTITUTIVE)
+T0/T1 → pueden sostener estado jurídico positivo si identidad,
+        categoría, actividad, tiempo y ámbito encajan.
 
-CONFIRMED_AUTHORISED
-  → exige corroboración NCA (CASE 5) o decisión explícita de
-    jerarquía que declare NCA_REPORTED suficiente para el output
-    público — esa declaración es una decisión de política de
-    evidencia de G1, no un default del parser
+T2 EBA → sostiene NCA_REPORTED_AUTH_STATUS = ACTIVE/WITHDRAWN
+         con plena trazabilidad de ENT_AUT.
+         Para PSD_PI/PSD_EMI puede alimentar EntitlementAssertion
+         positiva cuando servicio y demás dimensiones estén
+         explícitamente cubiertos.
+         NO significa "EBA autoriza" ni la convierte en constitutiva.
+
+T3     → nunca sostiene por sí solo ENTITLED_TO_PROVIDE.
 ```
 
-Alternativa evaluada y descartada: tratar `ENT_AUT` impar como
-autorización constitutiva — contradice el disclaimer y la
-distribución de competencias del propio marco (art. 11 PSD2: granting
-queda en NCA).
+Regla conceptual de G1-A (se detiene aquí — el assessment final sigue
+siendo `(entity, activity, jurisdiction)` y `ENT_AUT` sólo resuelve
+una pieza):
+
+```text
+PSD_PI / PSD_EMI
++ exact identity
++ valid ordered ENT_AUT
++ odd final position
++ activity explicitly covered
+────────────────────────────────
+home_authorisation_status = ACTIVE
+evidence_basis  = NCA_REPORTED_VIA_EBA
+entry_mechanism = AUTHORISATION
+```
+
+```text
+PSD_EPI / PSD_AISP / PSD_EEMI
++ odd ENT_AUT
+→ REGISTERED_ACTIVE
+→ ENTRY_MECHANISM = REGISTRATION    (nunca AUTHORISATION)
+
+PSD_AG / PSD_BR
++ DER_CHI_ENT_AUT
+→ parent regulatory status evidence
+→ 0 independent authorisation inference
+
+PSD_ENL / PSD_EXC
++ field observable + parity mechanically readable
++ no Annex basis for equivalent status semantics
+→ UNKNOWN / finding   (insufficient legal basis)
+```
+
+Home authorisation ACTIVE + actividad autorizada **no** demuestra
+entitlement en España vía FPS para una entidad extranjera — eso es
+G1-D, no G1-A.
+
+### Regla de conflicto (preregistrada)
+
+Los niveles superiores **no ganan silenciosamente**:
+
+```text
+T1 says ACTIVE / T2 says WITHDRAWN
+→ comprobar: ¿effective time distinto? ¿snapshot time distinto?
+  ¿lag EBA? ¿retirada + reautorización?
+→ si no se reconcilia mecánicamente:
+  CONFLICTING_SOURCE_ASSERTIONS → INDETERMINATE
+```
+
+Cero resolución silenciosa de conflictos — principio G0 intacto.
+
+### Dictamen A5
+
+```text
+H9-A  PROVEN
+
+H9-B  PROVEN WITH QUALIFICATION
+
+EBA PSD2 = official NCA-reporting evidence layer,
+           non-constitutive, but evidentially sufficient
+           for reported regulatory status.
+           NOT globally sufficient by itself for
+           (entity, activity, jurisdiction) entitlement.
+```
+
+Alternativa evaluada y descartada: exigir siempre corroboración NCA —
+reduciría el registro central a dato informativo pese a contener datos
+NCA estructurados y semánticamente definidos.
+
+### Frontera de fases
+
+```text
+G1-A rule delta → temporal regulatory status
+G1-D            → territorial entitlement / FPS
+G1-E            → withdrawal, expiry, negative assessment
+```
+
+El corpus real de 2 552 entidades retiradas queda congelado como
+evidencia para G1-E — no se adelantan reglas.
 
 ### Invariante separado (confirmado en fuente primaria)
 
