@@ -23,7 +23,8 @@ from .canonical import canonical_json, strict_json_loads
 from .identity import is_valid_lei
 
 
-RUN_VERSION = "FINREG_G05A_EXTRACTION_V1"
+RUN_VERSION = "FINREG_G05A_EXTRACTION_V2"
+EXPECTATION_ANNOTATION_RULE = "CLASSIFICATION_IN_ENTITY_EXPECTED_CONTRACT_RISKS"
 EXPECTED_COMMIT_SHA = {
     "corpus_sha": "a3ed773",
     "contracts_sha": "83754ec",
@@ -623,13 +624,13 @@ def _semantics_layer(
                         "layer": "SEMANTICS",
                         "classification": "SOURCE_CONTRACT_GAP",
                         "reason": "ENT_AUT_SHAPE_CONFLICTS_WITH_METADATA_ENUM",
-                        "expected_in_ground_truth": True,
+                        "expected_in_ground_truth": False,
                     },
                     {
                         "layer": "SEMANTICS",
                         "classification": "SEMANTICS_GAP",
                         "reason": "ENT_AUT_DATE_HAS_NO_SAFE_STATUS_MAPPING",
-                        "expected_in_ground_truth": True,
+                        "expected_in_ground_truth": False,
                     },
                 ]
             )
@@ -643,7 +644,7 @@ def _semantics_layer(
                     "layer": "SEMANTICS",
                     "classification": "COVERAGE_GAP",
                     "reason": "PSD_AISP_NOT_IN_FROZEN_VOCABULARY",
-                    "expected_in_ground_truth": True,
+                    "expected_in_ground_truth": False,
                 }
             )
         return result, divergences
@@ -665,7 +666,7 @@ def _semantics_layer(
                 "layer": "SEMANTICS",
                 "classification": "COVERAGE_GAP",
                 "reason": "MICA_ENTITY_CLASS_ROUTE_REQUIRES_H1_H2_MAPPING",
-                "expected_in_ground_truth": True,
+                "expected_in_ground_truth": False,
             }
         )
         return result, divergences
@@ -694,7 +695,7 @@ def _semantics_layer(
             "layer": "SEMANTICS",
             "classification": "COVERAGE_GAP",
             "reason": "BDE_MFI_IS_PARTIAL_CLASSIFICATION",
-            "expected_in_ground_truth": True,
+            "expected_in_ground_truth": False,
         }
     )
     return result, divergences
@@ -806,6 +807,7 @@ def run_extraction(
     contracts_sha: str = EXPECTED_COMMIT_SHA["contracts_sha"],
     source_baseline_sha: str = EXPECTED_COMMIT_SHA["source_baseline_sha"],
     executed_at: str | None = None,
+    supersedes_run_id: str | None = None,
 ) -> dict[str, Any]:
     sources_dir = repo_root / "fixtures" / "g0.5" / "sources"
     corpus_path = repo_root / "fixtures" / "g0.5" / "corpus" / "entities.json"
@@ -919,8 +921,9 @@ def run_extraction(
             divergences.extend(semantics_divergences)
             expected_risks = set(expectation.get("expected_contract_risks", []))
             for divergence in divergences:
-                if divergence["classification"] in expected_risks:
-                    divergence["expected_in_ground_truth"] = True
+                divergence["expected_in_ground_truth"] = (
+                    divergence["classification"] in expected_risks
+                )
             attempts.append(
                 {
                     "corpus_id": entity["corpus_id"],
@@ -998,6 +1001,8 @@ def run_extraction(
         "run": {
             "run_id": run_id,
             "run_version": RUN_VERSION,
+            "supersedes_run_id": supersedes_run_id,
+            "expectation_annotation_rule": EXPECTATION_ANNOTATION_RULE,
             "corpus_sha": corpus_sha,
             "contracts_sha": contracts_sha,
             "source_baseline_sha": source_baseline_sha,
@@ -1037,6 +1042,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
+    parser.add_argument("--supersedes-run-id")
     parser.add_argument("--corpus-sha", default=EXPECTED_COMMIT_SHA["corpus_sha"])
     parser.add_argument("--contracts-sha", default=EXPECTED_COMMIT_SHA["contracts_sha"])
     parser.add_argument("--source-baseline-sha", default=EXPECTED_COMMIT_SHA["source_baseline_sha"])
@@ -1048,6 +1054,7 @@ def main(argv: list[str] | None = None) -> int:
         contracts_sha=args.contracts_sha,
         source_baseline_sha=args.source_baseline_sha,
         executed_at=args.executed_at,
+        supersedes_run_id=args.supersedes_run_id,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:
