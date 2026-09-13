@@ -156,10 +156,15 @@ def run_assessment(
                 "assertion_evaluations": [
                     dict(evaluation) for evaluation in result.assertion_evaluations
                 ],
-                "expected_assessment": case["expected_assessment"],
-                "expected_reason": case["expected_reason"],
-                "match": str(result.assessment) == case["expected_assessment"],
-                "reason_match": str(result.reason) == case["expected_reason"],
+                # expected_* es salida-comparacion, nunca entrada del
+                # motor: ausente no rompe la evaluacion, mutado solo
+                # cambia los flags de match.
+                "expected_assessment": case.get("expected_assessment"),
+                "expected_reason": case.get("expected_reason"),
+                "match": case.get("expected_assessment") is not None
+                and str(result.assessment) == case["expected_assessment"],
+                "reason_match": case.get("expected_reason") is not None
+                and str(result.reason) == case["expected_reason"],
             }
         )
 

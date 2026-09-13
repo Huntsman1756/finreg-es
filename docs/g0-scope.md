@@ -188,14 +188,28 @@ G0.5-B        PASS_WITH_FINDINGS
 G0.5-C        PASS
 G0.6          PASS
 
-G0.7          IN_PROGRESS   (A, B PASS / C–D pendientes)
+G0.7          IN_PROGRESS   (A PASS, B PASS_WITH_FINDINGS → auditado / C PASS / D pendiente)
 ```
+
+## Estado despues de G0.7-C
+
+Audit formal del run `g0.7-001` sobre review externo: **0 divergencias**,
+3 findings clasificados y resueltos sin tocar el run ni el preregistro —
+F01 (independencia de `expected_*` probada mecanicamente con tests
+metamorficos mutar/eliminar), F02 (`code_commit` ambiguo: documentado,
+renombrado programado para V2 del runner, artefacto inmutable), F03
+(rama DOMESTIC+FPS sin ejercitar en el corpus: `COVERAGE_GAP` fijada con
+test unitario sintetico fuera del preregistro). Artefacto en
+`fixtures/g0.7/audit/g0.7-c-run-audit.json`; detalle en
+[`docs/g0.7-c-divergence-audit.md`](g0.7-c-divergence-audit.md).
 
 ## Estado despues de G0.7-B
 
 El run `g0.7-001` ejecuta `assess()` sobre los 21 casos preregistrados
 con inputs fijados por sha256 y verificados en el propio artefacto:
-**21/21 MATCH** (assessment y reason), replay offline byte-identico,
+**21/21 MATCH** (assessment y reason), replay offline con casos y
+resumen byte-identicos (la huella `code_sha` puede divergir tras
+evolucion legitima del codigo — para eso existe el campo),
 `result_sha 5da2e828`. Distribucion: 8 `CONFIRMED_AUTHORISED`,
 8 `INDETERMINATE`, 5 `NO_ENTITLEMENT_EVIDENCED`, 0 negativos. Detalle en
 [`docs/g0.7-b-assessment-run.md`](g0.7-b-assessment-run.md).

@@ -1,0 +1,94 @@
+{
+  "audit": {
+    "audit_version": "FINREG_G07C_AUDIT_V1",
+    "gate": "G0.7-C",
+    "run_id": "g0.7-001",
+    "run_sha256": "c9bc7d81da85280b8c0fe9660a7119aaf0daff430444d1a009c905b44979911d",
+    "run_status": "VALID_IMMUTABLE",
+    "review_verdict": "PASS_WITH_FINDINGS",
+    "divergences_total": 0,
+    "divergences": [],
+    "audited_at": "post-b79712b",
+    "principle": "Ningun caso fue re-ejecutado para 'arreglar' el resultado; g0.7-001 es el resultado que debe conservarse."
+  },
+  "divergence_taxonomy": [
+    "DERIVATION_BUG",
+    "ASSESSMENT_BUG",
+    "SOURCE_CONTRACT_GAP",
+    "COVERAGE_GAP",
+    "SEMANTICS_GAP",
+    "GROUND_TRUTH_ERROR",
+    "SOURCE_DATA_QUALITY",
+    "INSUFFICIENT_EVIDENCE"
+  ],
+  "findings": [
+    {
+      "finding_id": "F01",
+      "title": "expected-data independence not mechanically proven",
+      "classification": "VALIDITY_CONTROL",
+      "severity": "CONTROL",
+      "statement": "El bundle demostraba que expected_* no se modifico; no demostraba que el runner no lo leyera para producir el resultado real.",
+      "resolution": "RESOLVED_BY_TEST",
+      "evidence": [
+        "finreg_es/assessment_run.py: expected_* se lee unicamente para copiarlo en la salida y computar match/reason_match (case.get); nunca entra en assess() ni en la seleccion de aserciones.",
+        "tests/g07/test_g07c_audit.py::test_f01_mutated_expectations_do_not_change_actuals: expected mutado a CONFIRMED_NOT_AUTHORISED/EXPLICIT_NEGATIVE_EVIDENCE -> los 21 resultados reales byte-identicos; solo cambian los flags de match.",
+        "tests/g07/test_g07c_audit.py::test_f01_stripped_expectations_do_not_change_actuals: expected_* eliminado por completo -> mismos 21 resultados reales; match=false por ausencia de expectativa."
+      ],
+      "notes": "La variante 'strip' obligo a hacer el runner tolerante a expected ausente (case.get): antes requeria su presencia para registrarlo, lo cual era un acoplamiento de formato, no de computo. El cambio altera code_sha de g0.7-001 en replay, por eso el test de replay verifica equivalencia de resultado (cases+summary+meta sin huella de codigo) en lugar de byte-identidad absoluta."
+    },
+    {
+      "finding_id": "F02",
+      "title": "code_commit lineage field semantically ambiguous",
+      "classification": "LINEAGE_FIELD_AMBIGUITY",
+      "severity": "METADATA",
+      "statement": "run.code_commit='1785352' identifica el freeze contra el que se ejecuto, pero el nombre sugiere 'commit del codigo ejecutado', que incluye assessment_run.py (nuevo en B) publicado en b79712b.",
+      "resolution": "DOCUMENTED_DEFERRED",
+      "evidence": [
+        "g0.7-001.run.code_sha (eb634fa8...) es la huella de contenido real del codigo ejecutado y cierra la reproducibilidad tecnica.",
+        "Escribir b79712b dentro de un artefacto contenido en b79712b seria circular: artifact_commit es por definicion metadato externo al run."
+      ],
+      "scheduled": "En la siguiente version del runner (FINREG_G07B_ASSESSMENT_V2, si hubiera run sucesor): derivation_freeze_commit + execution_base_commit + code_content_sha256 + artifact_commit (post-run).",
+      "notes": "g0.7-001 NO se reescribe. La ambigüedad queda clasificada, no corregida en el artefacto historico."
+    },
+    {
+      "finding_id": "F03",
+      "title": "DOMESTIC+FPS overlap branch not exercised",
+      "classification": "COVERAGE_GAP",
+      "severity": "TEST_GAP",
+      "statement": "territorial_basis=None admite simultaneamente aserciones DOMESTIC y FREEDOM_TO_PROVIDE_SERVICES sobre la misma unidad (entity x activity x jurisdiction). El corpus congelado no contiene ese solape, por lo que la rama no estaba ejercitada.",
+      "resolution": "RESOLVED_BY_TEST",
+      "evidence": [
+        "tests/g07/test_g07c_audit.py::test_f03_domestic_plus_fps_same_unit_is_not_conflicting: aserciones sinteticas DOMESTIC+FPS ENTITLED sobre la misma unidad -> CONFIRMED_AUTHORISED con ambas en used_assertion_ids (multiplicidad de evidencia, no de derechos; sin conflicto); con filtro territorial explicito cada via se evalua por separado.",
+        "No se anadio ningun caso al preregistro de 21: hacerlo tras ver el resultado contaminaria G0.7-B. El test unitario fija la semantica para futuras fuentes (p.ej. una entidad con via domestica y pasaporte simultaneos)."
+      ],
+      "notes": "territorial_basis deliberadamente NO forma parte de la query key en el modelo congelado; es filtro opcional, no particion."
+    }
+  ],
+  "minor_notes": [
+    {
+      "note_id": "N01",
+      "statement": "G05-012/G05-015 resuelven EXACT via corpus_id/entity_id con LEI invalido excluido del indice. Demuestra que assessment no usa identificadores invalidos; NO demuestra que un usuario externo pudiera resolver la entidad empezando exclusivamente por ese LEI (la resolucion de identidad es anterior al assessment). No describir como prueba del resolver."
+    }
+  ],
+  "closure_criteria": {
+    "unsupported_legal_inferences": 0,
+    "not_found_to_negative": 0,
+    "register_presence_to_authorisation_without_rule": 0,
+    "invalid_identifier_joins": 0,
+    "silent_conflict_resolution": 0,
+    "expired_entitlement_to_global_negative": 0,
+    "unknown_to_entitled": 0,
+    "evidence_multiplicity_to_right_multiplicity": 0,
+    "entitlement_assertions_traceable_to_source": "257/257",
+    "derived_fields_traceable_to_versioned_rules": "100%",
+    "cases_reproducible_offline": "21/21",
+    "divergences_classified": "0 pendientes",
+    "expected_modified_after_run": false
+  },
+  "distribution_confirmed": {
+    "CONFIRMED_AUTHORISED": 8,
+    "INDETERMINATE": 8,
+    "NO_ENTITLEMENT_EVIDENCED": 5,
+    "CONFIRMED_NOT_AUTHORISED": 0
+  }
+}
