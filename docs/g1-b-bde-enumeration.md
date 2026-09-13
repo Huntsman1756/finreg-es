@@ -232,6 +232,104 @@ H10-C  ausencia domestic candidata fuerte; LPS-CI weak (ventana de
        publicación); LPS-PI/EMI no interpretable; agentes/distribuidores/
        excluidos fuera de la inferencia negativa
 H10    NO global — sólo por slice (ruta × actividad × fecha)
+
+B4  ejecutado — ver resultados arriba
+POPULATION_COMPLETENESS
+  domestic PI/EMI/AISP/excluidos  PROVEN en este corpus
+    (cross-ref EBA↔BdE: 0 activos ES ausentes; excluidos enrutados)
+  PI/EMI extranjera LPS           CONTRADICTED (vive en EBA)
+CAPABILITY_COMPLETENESS
+  acuerdo código-a-código EBA↔BdE demostrado (B4-04)
+  divergencia real existente (B4-03 Fintonic) → no promover
+  capability-negative sin resolver T1↔T2 primero
+  historia por actividad: NO reconstruible (sin fecha de cese)
+PUBLICATION_TIMELINESS
+  domestic/branch  SAFE candidato · LPS-CI  LAG_RISK ·
+  LPS-PI/EMI  N/A (otro registro)
+```
+
+## B4 — Casos adversariales preregistrados (comparador independiente)
+
+Regla anti-circularidad: ningún caso se valida con otro extracto del
+mismo XLSX. Comparador primario = snapshot EBA PSD2 congelado
+(`h4-eba-psd2-20260913.zip`, reporte NCA→EBA, con `ENT_NAT_REF_COD`
+= CÓDIGO BE) + fuentes de ruta específica (PSP_excluidos, age_www,
+distribuidores).
+
+**Hecho de cross-ref ya establecido**: todas las entidades ES
+`PSD_PI/EMI/EPI/AISP` activas en EBA están presentes en BdE; las
+`PSD_EXC` ausentes de ServicioPagos aparecen TODAS en
+`PSP_excluidos` → cobertura enrutada, no hueco.
+
+| Caso | Entidad real | Comparador | Esperado |
+|---|---|---|---|
+| B4-01 ACTIVE_DOMESTIC_PI | 6950 PROSEGUR CUSTODIA ACTIVOS DIGITALES | EBA PSD_PI ACTIVE | presente + actividades coherentes |
+| B4-02 ACTIVE_DOMESTIC_EMI | 6722 GETNET EMONEY EDE | EBA PSD_EMI ACTIVE | presente + A/B/C e-money |
+| B4-03 ACTIVE_AISP | 6935 FINTONIC AGREGACIÓN | EBA PSD_AISP ACTIVE | presente, mecanismo REGISTRATION |
+| B4-04 PARTIAL_CAPABILITY | 6950 PROSEGUR | EBA `PS_03C` único ↔ BdE `3.C` único | acuerdo código-a-código; ausencia de otros códigos = candidata negativa |
+| B4-05 RETAINED_WITHDRAWN | 8832 BANKINTER CONSUMER FINANCE | EBA WITHDRAWN + FECHA_BAJA BdE | filas conservadas; 0 entitlement actual |
+| B4-06 ACTIVE_BRANCH | 6804 AMERICAN EXPRESS PAYMENT SERVICES (TESEPC) | inscripción previa obligatoria | presencia obligatoria en slice |
+| B4-07 FPS_CREDIT_INSTITUTION | E024 REDIEM CAPITAL AB (cod 21) | autoridad origen (FI) | ausencia nunca → negativo (lag) |
+| B4-08 FPS_PI_EMI | 329 PI extranjeras activas con servicio ES en EBA (ej. PIPO LU, LU_CSSF) | registro EBA | ausentes de BdE → demuestra que el universo vive en EBA |
+| B4-09 DISTRIBUTOR | ERSTE BANK et al. en Listado_distribuidores | registro delegado | capacidad delegada; 0 entitlement propio |
+| B4-10 EXCLUDED_PSP | S41C ZALANDO PAYMENTS GMBH | EBA PSD_EXC ACTIVE | EXCLUDED_ACTIVITY_NOTIFIED; ≠ autorización ≠ negativo |
+
+**Divergencia detectada durante la selección (a documentar en B4):**
+FINTONIC 6935 — EBA reporta sólo `PS_080` (AIS); BdE le atribuye
+códigos `7` (PIS), `8` (AIS) y `1`. Si BdE T1 y EBA T2 discrepan en
+el capability set, la regla de conflicto preregistrada en A5
+(`CONFLICTING_SOURCE_ASSERTIONS → INDETERMINATE`) es la correcta;
+no se resuelve por tier silenciosamente.
+
+**Regla temporal fijada:**
+
+```text
+entity FECHA_BAJA != null + filas de actividad conservadas
+→ current capability = INACTIVE (la actividad es histórica)
+
+activity rows alone ≠ current entitlement
+```
+
+**Taxonomía de resultados por slice (B4/B5):**
+
+```text
+POPULATION_COMPLETENESS  PROVEN | NOT_PROVEN | CONTRADICTED
+CAPABILITY_COMPLETENESS  PROVEN | NOT_PROVEN | CONTRADICTED
+PUBLICATION_TIMELINESS   SAFE_FOR_NEGATIVE | LAG_RISK | N/A
+```
+
+### B4 — Resultados de ejecución
+
+```text
+B4-01  PROSEGUR 6950     PASS — presente (TEEP), sin baja, EBA ACTIVE
+B4-02  GETNET 6722       PASS — presente (TEEDE), A+B+C e-money + 3.C
+B4-03  FINTONIC 6935     DIVERGENCIA REAL —
+       BdE: tipo TEEP, actividades {7 PIS, 8 AIS, 1}
+       EBA: PSD_AISP, services {PS_080=AIS}
+       T1 y T2 discrepan en clase Y capability → caso semilla para
+       CONFLICTING_SOURCE_ASSERTIONS → INDETERMINATE
+B4-04  PROSEGUR 6950     PASS — acuerdo código-a-código exacto:
+       EBA PS_03C ↔ BdE 3.C (único servicio en ambos). La ausencia de
+       otros códigos coincide con la evidencia independiente →
+       capability-absence es candidata negativa FUERTE para este slice
+B4-05  BANKINTER 8832    PASS con matiz — 12 filas históricas
+       conservadas; BdE FECHA_BAJA 22/02/2019 (motivo:
+       "transformación en otro tipo de entidad") ≠ EBA withdrawal
+       2026-07-01. FECHA_BAJA BdE tiene semántica de entidad
+       (baja/transformación), NO equivalente a retirada de
+       autorización. Las dos fechas responden a hechos distintos.
+B4-06  AMEX branch 6804  PASS — TESEPC presente con actividad 5
+B4-07  REDIEM E024       cod 21 presente; ausencia seguiría siendo
+       débil (lag notificación→publicación)
+B4-08  FPS_PI_EMI        CONFIRMADO — 588 PI/EMI extranjeras activas
+       con servicio ES en EBA; sólo 5 presentes en BdE (probablemente
+       dual-listed con sucursal). El universo LPS-PI/EMI no existe
+       en la enumeración pública BdE.
+B4-09  DISTRIBUIDORES    listado separado con principales (incluye
+       entidades extranjeras: Erste Bank, Sparkassen AT) → capacidad
+       delegada, nunca independiente
+B4-10  ZALANDO S41C      presente en PSP_excluidos + EBA PSD_EXC
+       ACTIVE → EXCLUDED_ACTIVITY_NOTIFIED confirmado
 ```
 
 ## Próximos pasos
@@ -239,7 +337,8 @@ H10    NO global — sólo por slice (ruta × actividad × fecha)
 ```text
 B3  DONE — 47/47 tipos asignados a ruta legal; 0 códigos sin explicar;
     hallazgo clave: LPS-PI/EMI no enumeradas en BdE
-B4  casos reales positivos + ausentes (slice preregistrado)
+B4  casos preregistrados con comparador EBA independiente;
+    pendiente ejecución de los checks mecánicos por caso
 B5  decidir H10-A/B/C por clase, no globalmente
 B6  sólo si COMPLETE_ENUMERATION queda probado para algún slice:
     diseñar regla negativa acotada (entity_class × activity ×
