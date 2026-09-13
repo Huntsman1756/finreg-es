@@ -1,0 +1,425 @@
+{
+  "as_of_reference": "2026-09-13",
+  "nota": "Aserciones sinteticas para congelar semantica G0.4. Los sha256 de raw_value se rellenan por script y un test contractual comprueba su consistencia.",
+  "assertions": [
+    {
+      "assertion_id": "asm-001",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-001",
+      "entity_class": "CREDIT_INSTITUTION",
+      "activity": "DEPOSIT_TAKING",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Ley 10/2014 (articulo por verificar H7); autorizacion de entidad de credito",
+      "effective_from": "1999-06-14",
+      "effective_to": null,
+      "scope": "captacion de fondos reembolsables del publico en Espana",
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-001",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": "2026-08-31",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|BANCO MERIDIANO, S.A.|NIF A12345676|ENTIDAD DE CREDITO|SITUACION: ALTA",
+          "raw_snapshot_sha256": "b251142a0f213e014049530f29438e12eb68b147923e3ca15e9c5065e08778ed",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-002",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-001",
+      "entity_class": "CREDIT_INSTITUTION",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 art. 1(5)(a); Ley 10/2014: la entidad de credito puede prestar servicios de pago en virtud de su autorizacion bancaria",
+      "effective_from": "1999-06-14",
+      "effective_to": null,
+      "scope": "servicios de pago del anexo PSD2 en Espana, por cuenta propia",
+      "derived_by": {
+        "rule_id": "credit-institution-implies-payment-services",
+        "ruleset_version": "1.0.0",
+        "effective_from": "2025-01-01"
+      },
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-001",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": "2026-08-31",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|BANCO MERIDIANO, S.A.|NIF A12345676|ENTIDAD DE CREDITO|SITUACION: ALTA",
+          "raw_snapshot_sha256": "b251142a0f213e014049530f29438e12eb68b147923e3ca15e9c5065e08778ed",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-003",
+      "register_id": "ESMA_MICA_REGISTER",
+      "entity_id": "ent-001",
+      "entity_class": "CREDIT_INSTITUTION",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "NOTIFICATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "MiCA regimen de entidad financiera (articulo por verificar H1); notificacion previa",
+      "effective_from": "2025-03-02",
+      "effective_to": null,
+      "scope": "servicios sobre criptoactivos prestados por entidad de credito en Espana",
+      "source_assertions": [
+        {
+          "authority": "ESMA",
+          "register_id": "ESMA_MICA_REGISTER",
+          "source_url": "https://example.invalid/esma-mica/ent-001",
+          "retrieved_at": "2026-09-05",
+          "source_as_of": "2026-09-04",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "ESMA-MICA|BANCO MERIDIANO, S.A.|ES|SERVICES:CAS|MECHANISM:NOTIFICATION(FINANCIAL_ENTITY)",
+          "raw_snapshot_sha256": "4463e967c5f46da43912c6f266f5e9862b64c5130460656446847d9a1f229a3a",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-004",
+      "register_id": "EBA_PSD2_REGISTER",
+      "entity_id": "ent-002",
+      "entity_class": "E_MONEY_INSTITUTION",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+      "legal_basis": "PSD2 pasaporte desde LT; autorizacion EMI otorgada por Lietuvos Bankas",
+      "effective_from": "2024-11-05",
+      "effective_to": null,
+      "scope": "servicios de pago en ES en regimen de libertad de servicios",
+      "source_assertions": [
+        {
+          "authority": "EBA",
+          "register_id": "EBA_PSD2_REGISTER",
+          "source_url": "https://example.invalid/eba-psd2/ent-002",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": "2026-08-30",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "PSD2|PAYVISTA EUROPE UAB|LT|EMI|LT-EMI-021|SERVICES:3,5,7|PASSPORT:ES(FPS)",
+          "raw_snapshot_sha256": "909d1d1e56c4994c1a2810a53067162325976401c8e69a2608c42029f194a2a9",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-005",
+      "register_id": "ESMA_MICA_REGISTER",
+      "entity_id": "ent-003",
+      "entity_class": "CASP",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "MiCA autorizacion CASP tras fin del regimen transitorio",
+      "effective_from": "2025-07-01",
+      "effective_to": null,
+      "scope": "servicios sobre criptoactivos como CASP autorizado",
+      "source_assertions": [
+        {
+          "authority": "ESMA",
+          "register_id": "ESMA_MICA_REGISTER",
+          "source_url": "https://example.invalid/esma-mica/ent-003",
+          "retrieved_at": "2026-09-05",
+          "source_as_of": "2026-09-04",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "ESMA-MICA|CRYPTO CATALINA, S.L.|ES|CASP-AUTHORISED|SERVICES:CAS",
+          "raw_snapshot_sha256": "45977ed73412e97a9c720498e72d531b59e2a9f1827e00741245859f63f666e0",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-006",
+      "register_id": "CNMV_MICA_CASP_LIST",
+      "entity_id": "ent-003",
+      "entity_class": "CASP",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "REGISTRATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Regimen transitorio MiCA (articulo por verificar H1): prestacion heredada del regimen nacional",
+      "effective_from": "2024-12-30",
+      "effective_to": "2026-06-30",
+      "scope": "prestacion bajo regimen transitorio; ventana cerrada al 2026-06-30 (H1: verificar fecha)",
+      "source_assertions": [
+        {
+          "authority": "CNMV",
+          "register_id": "CNMV_MICA_CASP_LIST",
+          "source_url": "https://example.invalid/cnmv-mica/ent-003",
+          "retrieved_at": "2026-03-10",
+          "source_as_of": "2026-03-08",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "CNMV-MICA|CRYPTO CATALINA, S.L.|(sin NIF ni LEI en listado)|Régimen transitorio",
+          "raw_snapshot_sha256": "7ff674442beab5ab43f1721dba9769e2863960e653cbd5e096705a9a61c9e6d8",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-007",
+      "register_id": "CNMV_REGISTRO_EMPRESAS",
+      "entity_id": "ent-004",
+      "entity_class": "FINANCIAL_ADVISER_EAF",
+      "activity": "INVESTMENT_ADVICE_NON_MIFID",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "REGISTRATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "LVV y regimen EAF (articulos por verificar H7); inscripcion en registro de EAF",
+      "effective_from": "2011-03-15",
+      "effective_to": null,
+      "scope": "asesoramiento financiero no MiFID en Espana",
+      "source_assertions": [
+        {
+          "authority": "CNMV",
+          "register_id": "CNMV_REGISTRO_EMPRESAS",
+          "source_url": "https://example.invalid/cnmv/ent-004",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": null,
+          "source_date_reliability": "UNAVAILABLE",
+          "raw_value": "CNMV|INVERSIONES VEGA EAF, S.A.|REGISTRO EAF 241|SITUACION: ALTA|FECHA ALTA: 15/03/2011",
+          "raw_snapshot_sha256": "b5add60c297e3686858ff33027b090846f24e8304da6ba552716be837d9cbc87",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-008",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-010",
+      "entity_class": "CREDIT_INSTITUTION",
+      "activity": "DEPOSIT_TAKING",
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Revocacion explicita de autorizacion (evidencia negativa explicita, G0.3/A)",
+      "effective_from": "2026-03-01",
+      "effective_to": null,
+      "scope": "revocacion; la baja no extingue por si sola derechos residuales en liquidacion (H5)",
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-010",
+          "retrieved_at": "2026-08-30",
+          "source_as_of": "2026-08-28",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|BANCO MERIDIANO DOIS, S.A.|SITUACION: AUTORIZACION REVOCADA|FECHA EFECTO: 01/03/2026",
+          "raw_snapshot_sha256": "02450fb4fe9c86869f4fd03bbc8280b2385b99adbf18682a08990849eaeaa4a9",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-009",
+      "register_id": "EBA_CREDIT_INSTITUTIONS_REGISTER",
+      "entity_id": "ent-010",
+      "entity_class": "CREDIT_INSTITUTION",
+      "activity": "DEPOSIT_TAKING",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Listado CIR aun activo (lag entre fuentes; C2)",
+      "effective_from": "2010-01-01",
+      "effective_to": null,
+      "scope": "listado agregado con lag respecto del registro nacional",
+      "source_assertions": [
+        {
+          "authority": "EBA",
+          "register_id": "EBA_CREDIT_INSTITUTIONS_REGISTER",
+          "source_url": "https://example.invalid/eba-cir/ent-010",
+          "retrieved_at": "2026-09-05",
+          "source_as_of": "2026-09-01",
+          "source_date_reliability": "SUSPECT",
+          "raw_value": "EBA-CIR|BANCO MERIDIANO DOIS, S.A.|ES|STATUS: AUTHORISED|DEPOSIT: YES",
+          "raw_snapshot_sha256": "0f2a5b1efaa274a4258b121e8be31b7affdb029eea0acd2163eb1f907b93874d",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-010",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-011",
+      "entity_class": "PAYMENT_INSTITUTION",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Baja con revocacion explicita (evidencia negativa explicita, G0.3/A)",
+      "effective_from": "2026-05-20",
+      "effective_to": null,
+      "scope": "revocacion de autorizacion de entidad de pago",
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-011",
+          "retrieved_at": "2026-09-10",
+          "source_as_of": "2026-09-08",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|FINTECH AGOTADA, S.L.|SITUACION: AUTORIZACION REVOCADA|FECHA EFECTO: 20/05/2026",
+          "raw_snapshot_sha256": "03ac9850b5e84e70f7a9556fe3a87829b8736da96da6c6171ae4b84c8f22a23f",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-011",
+      "register_id": "EBA_PSD2_REGISTER",
+      "entity_id": "ent-002",
+      "entity_class": "E_MONEY_INSTITUTION",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "entry_mechanism": "AUTHORISATION",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "Negativo por enumeracion (G0.3/B): snapshot del registro PSD2 sin sucursal ES para la entidad",
+      "effective_from": "2026-04-01",
+      "effective_to": null,
+      "scope": "ausencia de pasaporte en modalidad sucursal en ES; el FPS sigue vigente (asm-004)",
+      "enumeration_snapshot": {
+        "enumeration_snapshot_sha256": "43a6454605230c6f9c7783ea40f313717af68253cb1070cee0907430623ba14b",
+        "enumeration_retrieved_at": "2026-04-01",
+        "enumeration_source_as_of": "2026-03-30",
+        "coverage_rule_id": "eba-psd2-in-eea",
+        "coverage_ruleset_version": "1.0.0"
+      },
+      "source_assertions": [
+        {
+          "authority": "EBA",
+          "register_id": "EBA_PSD2_REGISTER",
+          "source_url": "https://example.invalid/eba-psd2/snapshot-2026-04-01",
+          "retrieved_at": "2026-04-01",
+          "source_as_of": "2026-03-30",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "PSD2-SNAPSHOT-2026-04-01|entidades con pasaporte BRANCH a ES: 214 registros; PAYVISTA EUROPE UAB no incluida",
+          "raw_snapshot_sha256": "e0fdb10a2d93331b6f6faafb3af35110f948e0e822beffa15fe55f7f410daf11",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-012",
+      "register_id": "CNMV_MICA_CASP_LIST",
+      "entity_id": "ent-005",
+      "entity_class": "FUND_MANAGER_SGIIC",
+      "activity": "CRYPTO_ASSET_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "UNKNOWN",
+      "entry_mechanism": "REGISTRATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Etiqueta del listado no interpretable sin verificacion H1/H5",
+      "effective_from": "2025-02-01",
+      "effective_to": null,
+      "scope": "listado MiCA CNMV con etiqueta ambigua",
+      "source_assertions": [
+        {
+          "authority": "CNMV",
+          "register_id": "CNMV_MICA_CASP_LIST",
+          "source_url": "https://example.invalid/cnmv-mica/ent-005",
+          "retrieved_at": "2026-09-02",
+          "source_as_of": "2026-08-29",
+          "source_date_reliability": "SUSPECT",
+          "raw_value": "CNMV-MICA|GESTORA VEGA SGIIC, S.A.|etiqueta: OTROS|estado: NO ESPECIFICADO",
+          "raw_snapshot_sha256": "1b9a7fb5f0e50d70862ae4eef9e86380bab36e44153b8eced956eceb2541ec7f",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-013",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-008",
+      "entity_class": "PSP_AGENT",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "REGISTRATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Agente registrado de entidad de pago; presta por cuenta de Pagos del Sur EMPS S.A. (W1)",
+      "effective_from": "2020-02-01",
+      "effective_to": null,
+      "scope": "servicios de pago prestados por cuenta y bajo responsabilidad del principal ent-009",
+      "principal_entity_id": "ent-009",
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-008",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": "2026-08-31",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|AGENTE PAGO DEL SUR, S.L.|AGENTE DE: PAGOS DEL SUR EMPS S.A.|SITUACION: ALTA",
+          "raw_snapshot_sha256": "afad64a792c78eab7ec127202d8a3ba662fedfaed7524501dccb893e07955e5b",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    },
+    {
+      "assertion_id": "asm-014",
+      "register_id": "BDE_REGISTRO_ENTIDADES",
+      "entity_id": "ent-013",
+      "entity_class": "PSP_AGENT",
+      "activity": "PAYMENT_SERVICES",
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "entry_mechanism": "REGISTRATION",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Fila de agente sin principal identificado: inadmisible (W1)",
+      "effective_from": "2020-02-01",
+      "effective_to": null,
+      "scope": "fila de registro de agente sin enlace al principal",
+      "source_assertions": [
+        {
+          "authority": "Banco de Espana",
+          "register_id": "BDE_REGISTRO_ENTIDADES",
+          "source_url": "https://example.invalid/bde/registro/ent-013",
+          "retrieved_at": "2026-09-01",
+          "source_as_of": "2026-08-31",
+          "source_date_reliability": "TRUSTED",
+          "raw_value": "BDE|AGENTE NORTE, S.L.|AGENTE DE: (SIN IDENTIFICAR)|SITUACION: ALTA",
+          "raw_snapshot_sha256": "0c1e7a96151675301d1f983e873108ae737531c2fff0660f0c9a8423ef00cc1d",
+          "extractor_version": "g0-manual-1",
+          "observed_current": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "register_id": "ESMA_MICA_REGISTER",
+  "contract_version": "1.0.0",
+  "g0_freeze": "G0.1",
+  "authority": "European Securities and Markets Authority (ESMA)",
+  "register_name": "ESMA Register under MiCA (CASPs y emisores de criptoactivos)",
+  "official_url": "https://www.esma.europa.eu/esma-register/mica",
+  "legal_basis": "Reglamento (UE) 2023/1114 (MiCA): registros centrales ESMA (articulos 107/109 por verificar, H7)",
+  "entity_classes_covered": ["CASP"],
+  "excluded_entity_classes": ["PAYMENT_INSTITUTION", "E_MONEY_INSTITUTION", "FINANCIAL_ADVISER_EAF", "FUND_MANAGER_SGIIC", "PSP_AGENT"],
+  "activities_covered": ["CRYPTO_ASSET_SERVICES"],
+  "jurisdictions": ["EEA"],
+  "territorial_regimes": ["DOMESTIC", "BRANCH", "FREEDOM_TO_PROVIDE_SERVICES", "OTHER"],
+  "update_cadence": "UNKNOWN (H7)",
+  "max_positive_staleness_days": 30,
+  "max_negative_staleness_days": 15,
+  "supports_source_as_of": null,
+  "negative_evidence_capability": "EXPLICIT_NEGATIVE_ONLY",
+  "identity_fields": ["legal_name", "LEI", "HOME_STATE_ID", "ESMA_MICA_ID"],
+  "raw_format": "HTML con detalle por entidad (H7: verificar exportacion y campos)",
+  "supports_bulk_snapshot": null,
+  "coverage_rules": [
+    {
+      "rule_id": "esma-mica-in-casp",
+      "scope": "IN",
+      "entity_class": "CASP",
+      "activities": null,
+      "jurisdictions": null,
+      "territorial_bases": null,
+      "valid_from": null,
+      "valid_to": null,
+      "note": "CASP autorizados y pasaportados; la distincion sucursal/FPS no esta verificada (H7): territorial_basis puede ser OTHER"
+    }
+  ],
+  "notes": [
+    "Fuente portadora de identificadores para G0.2: al no dar el listado CNMV NIF/LEI (H2), la identidad MiCA se resuelve aqui por adopcion W6.",
+    "Para CREDIT_INSTITUTION no hay regla: coverage() = UNKNOWN. Las entidades financieras que prestan CAS por notificacion (H1) no se asumen cubiertas ni excluidas; sus positivos exigen asercion con evidencia directa.",
+    "La ausencia de una entidad aqui NO es negativa (lag de feeds NCAs, completitud sin verificar)."
+  ],
+  "verification": {
+    "legal_basis": {"status": "PENDING", "source_url": null, "note": "H7: verificar articulos del mandato del registro (107/109) y alcance exacto"},
+    "identity_fields": {"status": "PENDING", "source_url": null, "note": "H7: verificar LEI y numero estable por entidad"},
+    "territorial_regimes": {"status": "PENDING", "source_url": null, "note": "H7: verificar si el registro distingue sucursal vs FPS en pasaportes"},
+    "update_cadence": {"status": "PENDING", "source_url": null, "note": "H7"},
+    "supports_bulk_snapshot": {"status": "PENDING", "source_url": null, "note": "H7/C3"},
+    "max_positive_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
+    "max_negative_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
+    "negative_evidence_capability": {"status": "PROPOSED", "source_url": null, "note": "Conservador"}
+  }
+}

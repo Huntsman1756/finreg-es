@@ -1,0 +1,61 @@
+{
+  "register_id": "CNMV_REGISTRO_EMPRESAS",
+  "contract_version": "1.0.0",
+  "g0_freeze": "G0.1",
+  "authority": "CNMV",
+  "register_name": "Registros de la CNMV (empresas de servicios de inversion, EAF, sociedades gestoras)",
+  "official_url": "https://www.cnmv.es/portal/consultas/entidades.aspx?lang=es",
+  "legal_basis": "Ley 24/1988, de 28 de julio, del Mercado de Valores (articulos de registros por verificar H7); reglamento ESI RD 217/2008",
+  "entity_classes_covered": ["INVESTMENT_FIRM_ESI", "FINANCIAL_ADVISER_EAF", "FUND_MANAGER_SGIIC"],
+  "excluded_entity_classes": ["CREDIT_INSTITUTION", "PAYMENT_INSTITUTION", "E_MONEY_INSTITUTION"],
+  "activities_covered": ["INVESTMENT_SERVICES", "INVESTMENT_ADVICE_NON_MIFID", "FUND_MANAGEMENT"],
+  "jurisdictions": ["ES"],
+  "territorial_regimes": ["DOMESTIC", "BRANCH", "FREEDOM_TO_PROVIDE_SERVICES"],
+  "update_cadence": "UNKNOWN (H8)",
+  "max_positive_staleness_days": 90,
+  "max_negative_staleness_days": 45,
+  "supports_source_as_of": null,
+  "negative_evidence_capability": "EXPLICIT_NEGATIVE_ONLY",
+  "identity_fields": ["legal_name", "NIF", "CNMV_REGISTRY_ID", "LEI"],
+  "raw_format": "Datos publicados por CNMV + exportacion por verificar (H8)",
+  "supports_bulk_snapshot": null,
+  "coverage_rules": [
+    {
+      "rule_id": "cnmv-in-domestic",
+      "scope": "IN",
+      "entity_class": null,
+      "activities": null,
+      "jurisdictions": ["ES"],
+      "territorial_bases": ["DOMESTIC"],
+      "valid_from": null,
+      "valid_to": null,
+      "note": "ESI/EAF/SGIIC inscritas con autorizacion nacional"
+    },
+    {
+      "rule_id": "cnmv-in-inbound",
+      "scope": "IN",
+      "entity_class": null,
+      "activities": null,
+      "jurisdictions": ["ES"],
+      "territorial_bases": ["BRANCH", "FREEDOM_TO_PROVIDE_SERVICES"],
+      "valid_from": null,
+      "valid_to": null,
+      "note": "H6: CNMV publica listados de entidades extranjeras (sucursal y FPS); la completitud de esos listados esta PENDIENTE de verificar antes de permitir negativos por enumeracion (la capacidad ya la bloquea)"
+    }
+  ],
+  "notes": [
+    "W3: los listados de entidades extranjeras en FPS pueden no ser enumeraciones completas; no producir negativos desde ellos (capacidad EXPLICIT_NEGATIVE_ONLY).",
+    "El mecanismo juridico NO se deriva de etiquetas simplificadas del listado (premisa del enunciado): la etiqueta solo orientacion, el ground truth viene de fuente primaria en G0.5.",
+    "No cubre actividades bancarias ni cripto (ver CNMV_MICA_CASP_LIST para el listado MiCA)."
+  ],
+  "verification": {
+    "authority": {"status": "VERIFIED", "source_url": "https://www.cnmv.es/", "note": "CNMV mantiene registros de ESI/EAF/gestoras"},
+    "entity_classes_covered": {"status": "PENDING", "source_url": null, "note": "H6/H7: verificar secciones y regimenes actuales (p. ej. regimen EAF actual)"},
+    "update_cadence": {"status": "PENDING", "source_url": null, "note": "H8"},
+    "supports_source_as_of": {"status": "PENDING", "source_url": null, "note": "H8"},
+    "supports_bulk_snapshot": {"status": "PENDING", "source_url": null, "note": "C3"},
+    "max_positive_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
+    "max_negative_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
+    "negative_evidence_capability": {"status": "PROPOSED", "source_url": null, "note": "Conservador hasta verificar completitud de listados"}
+  }
+}
