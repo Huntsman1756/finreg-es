@@ -43,3 +43,20 @@ def response_freshness(freshness_list: list[Freshness]) -> date | None:
     if not freshness_list:
         return None
     return min(f.freshness_at for f in freshness_list)
+
+
+def suspect_source_as_of(
+    content_hash_t1: str,
+    content_hash_t2: str,
+    source_as_of_t1: str | None,
+    source_as_of_t2: str | None,
+) -> bool:
+    """Regla congelada de fiabilidad de fecha de fuente.
+
+    ``content_hash(t1) != content_hash(t2) AND source_as_of(t1) ==
+    source_as_of(t2)`` => ``SUSPECT``: la fuente cambio el contenido sin
+    mover su fecha declarada. Puede ser una correccion editorial, no un
+    error: se marca, no se descarta. Dos observaciones distintas con
+    ``source_as_of`` distinto son una revision legitima, no sospecha.
+    """
+    return content_hash_t1 != content_hash_t2 and source_as_of_t1 == source_as_of_t2

@@ -186,6 +186,21 @@ G0.5 corpus   FROZEN
 G0.5-A        PASS_WITH_KNOWN_RUNNER_DEFECT
 G0.5-B        PASS_WITH_FINDINGS
 G0.5-C        PASS
+G0.6          PASS
 
-G0.6          NOT_STARTED
+G0.7          NOT_STARTED
 ```
+
+## Estado despues de G0.6
+
+G0.6 cierra como gate de verificacion (no construccion): replay offline
+byte-identico del run sucesor, 337/337 claims con provenance por campo,
+deteccion de mutacion de fuente, traza raw->normalized reconstruible,
+provenance temporal con la regla SUSPECT hecha ejecutable e inmutabilidad
+automatica de los artefactos historicos de G0.5. Ledger e informe en
+`fixtures/g0.6/`; detalle en
+[`docs/g0.6-provenance-verification.md`](g0.6-provenance-verification.md).
+El corte suma 85 tests.
+
+El siguiente salto es G0.7: por primera vez se ejecutaria el
+authorisation assessment sobre datos reales.

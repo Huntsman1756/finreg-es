@@ -1,0 +1,50 @@
+{
+  "fixture_id": "g0.6-suspect-source-as-of",
+  "frozen_rule": "content_hash(t1) != content_hash(t2) AND source_as_of(t1) == source_as_of(t2) => SUSPECT",
+  "source": "SYNTHETIC_AUTHORITY_REGISTER",
+  "note": "Fixture sintetico G0.6-E: dos observaciones del mismo identificador de fuente. La regla marca SUSPECT, no descarta: un source_as_of inmovil con contenido distinto puede ser una correccion editorial.",
+  "cases": [
+    {
+      "case_id": "content_changed_same_as_of",
+      "t1": {
+        "captured_at": "2026-09-05",
+        "source_as_of": "2026-09-01",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA"}
+      },
+      "t2": {
+        "captured_at": "2026-09-13",
+        "source_as_of": "2026-09-01",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA CONDICIONADA"}
+      },
+      "expected": "SUSPECT"
+    },
+    {
+      "case_id": "content_changed_new_as_of",
+      "t1": {
+        "captured_at": "2026-09-05",
+        "source_as_of": "2026-09-01",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA"}
+      },
+      "t2": {
+        "captured_at": "2026-09-13",
+        "source_as_of": "2026-09-12",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA CONDICIONADA"}
+      },
+      "expected": "NOT_SUSPECT"
+    },
+    {
+      "case_id": "content_identical_same_as_of",
+      "t1": {
+        "captured_at": "2026-09-05",
+        "source_as_of": "2026-09-01",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA"}
+      },
+      "t2": {
+        "captured_at": "2026-09-13",
+        "source_as_of": "2026-09-01",
+        "payload": {"entity": "ENTIDAD EJEMPLO SA", "status": "ALTA"}
+      },
+      "expected": "NOT_SUSPECT"
+    }
+  ]
+}
