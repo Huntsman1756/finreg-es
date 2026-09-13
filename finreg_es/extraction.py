@@ -20,10 +20,10 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .canonical import canonical_json, strict_json_loads
-from .identity import is_valid_lei
+from .identity import is_valid_lei, lei_diagnostic
 
 
-RUN_VERSION = "FINREG_G05A_EXTRACTION_V2"
+RUN_VERSION = "FINREG_G05A_EXTRACTION_V3"
 EXPECTATION_ANNOTATION_RULE = "CLASSIFICATION_IN_ENTITY_EXPECTED_CONTRACT_RISKS"
 EXPECTED_COMMIT_SHA = {
     "corpus_sha": "a3ed773",
@@ -245,6 +245,7 @@ class EsmaCaspsAdapter(SnapshotAdapter):
                         "legal_name": row["ae_lei_name"],
                         "lei": row["ae_lei"],
                         "lei_valid": is_valid_lei(row["ae_lei"]),
+                        "lei_diagnostic": lei_diagnostic(row["ae_lei"]),
                         "home_member_state": row["ae_homeMemberState"],
                         "competent_authority": row["ae_competentAuthority"],
                         "commercial_name": row["ae_commercial_name"],
@@ -396,6 +397,7 @@ class BdeMfiAdapter(SnapshotAdapter):
                         "european_code": row["CÓDIGO EUROPEO"],
                         "lei": lei or None,
                         "lei_valid": is_valid_lei(lei) if lei else False,
+                        "lei_diagnostic": lei_diagnostic(lei),
                         "category": row["CATEGORÍA"],
                         "supervisor_code": row.get("CÓDIGO DE SUPERVISOR", ""),
                     },
@@ -516,6 +518,7 @@ def _identity_layer(
             "identifier_kind": "LEI",
             "identifier": observed.get("lei"),
             "identifier_valid": observed.get("lei_valid"),
+            "identifier_diagnostic": observed.get("lei_diagnostic"),
             "legal_name_match": name_match,
             "cross_source_join": "NOT_APPLICABLE",
         }
@@ -524,7 +527,8 @@ def _identity_layer(
                 {
                     "layer": "IDENTITY",
                     "classification": "IDENTITY_GAP",
-                    "reason": "LEI_CHECKSUM_INVALID",
+                    "reason": "LEI_INVALID",
+                    "lei_diagnostic": observed.get("lei_diagnostic"),
                     "expected_in_ground_truth": False,
                 }
             )
@@ -537,6 +541,7 @@ def _identity_layer(
             "identifier_kind": "LEI",
             "identifier": observed.get("lei"),
             "identifier_valid": observed.get("lei_valid"),
+            "identifier_diagnostic": observed.get("lei_diagnostic"),
             "legal_name_match": name_match,
             "cross_source_join": "NOT_APPLICABLE",
         }
@@ -546,6 +551,7 @@ def _identity_layer(
                     "layer": "IDENTITY",
                     "classification": "IDENTITY_GAP",
                     "reason": "BDE_LEI_MISSING_OR_INVALID",
+                    "lei_diagnostic": observed.get("lei_diagnostic"),
                     "expected_in_ground_truth": False,
                 }
             )

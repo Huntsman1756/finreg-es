@@ -70,14 +70,42 @@ def _lei_check_digits(base18: str) -> str:
     return f"{98 - (int(converted) % 97):02d}"
 
 
-def is_valid_lei(lei: str) -> bool:
-    """Formato ISO 17442 (20 caracteres alfanumericos, mod 97-10)."""
+LEI_DIAGNOSTIC_VERSION = "FINREG_LEI_DIAGNOSTIC_V2"
+LEI_DIAGNOSTICS = (
+    "VALID",
+    "MISSING",
+    "INVALID_LENGTH",
+    "INVALID_CHARSET",
+    "INVALID_CHECK_DIGITS",
+)
+
+
+def lei_diagnostic(lei: str | None) -> str:
+    """Diagnostico ISO 17442 versionado (FINREG_LEI_DIAGNOSTIC_V2).
+
+    Separa los defectos que la validez booleana mezclaba: ausencia,
+    longitud, alfabeto y digitos de control. El orden es el de
+    evaluabilidad: el checksum solo se computa cuando longitud y
+    alfabeto permiten interpretar el valor. Nunca repara el valor.
+    """
     if not isinstance(lei, str) or not lei.strip():
-        return False
+        return "MISSING"
     v = normalize_identifier("LEI", lei)
-    if len(v) != 20 or any(c not in _LEI_ALPHABET for c in v):
-        return False
-    return _lei_check_digits(v[:18]) == v[18:]
+    if len(v) != 20:
+        return "INVALID_LENGTH"
+    if any(c not in _LEI_ALPHABET for c in v):
+        return "INVALID_CHARSET"
+    if _lei_check_digits(v[:18]) != v[18:]:
+        return "INVALID_CHECK_DIGITS"
+    return "VALID"
+
+
+def is_valid_lei(lei: str) -> bool:
+    """Formato ISO 17442 (20 caracteres alfanumericos, mod 97-10).
+
+    Capa agregada booleana sobre ``lei_diagnostic``.
+    """
+    return lei_diagnostic(lei) == "VALID"
 
 
 @dataclass(frozen=True)

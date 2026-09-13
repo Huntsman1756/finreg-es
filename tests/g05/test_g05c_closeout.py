@@ -18,6 +18,7 @@ from finreg_es.canonical import canonical_json
 ROOT = Path(__file__).parents[2]
 RUN_V1_PATH = ROOT / "fixtures" / "g0.5" / "runs" / "g0.5-a-2026-09-13-001.json"
 RUN_V2_PATH = ROOT / "fixtures" / "g0.5" / "runs" / "g0.5-a-2026-09-13-002.json"
+RUN_V3_PATH = ROOT / "fixtures" / "g0.5" / "runs" / "g0.5-a-2026-09-13-003.json"
 AUDIT_PATH = ROOT / "fixtures" / "g0.5" / "audit" / "g0.5-b-corpus-audit.json"
 RESOLUTION_PATH = (
     ROOT / "fixtures" / "g0.5" / "audit" / "g0.5-b-preregistration-resolution.json"
@@ -292,3 +293,86 @@ def test_g05c_g05_015_residual_is_source_data_quality_preserved():
     assert entry["audit_finding_id"] == "G05-B-F02"
     assert entry["disposition"] == "RETAIN_RAW_BLOCK_INVALID_LEI_JOIN"
     assert entry["status"] == "RESOLVED_PRESERVED"
+
+
+def test_g05c_lei_diagnostics_versioned_in_v3_run():
+    """G05-B-F03: el extractor V3 separa INVALID_LENGTH de
+    INVALID_CHECK_DIGITS sin tocar la validez agregada ni los flags."""
+    run = _read(RUN_V3_PATH)
+    previous = _read(RUN_V2_PATH)
+    original = _read(RUN_V1_PATH)
+    risks = _expected_risks()
+
+    assert run["run"]["run_version"] == "FINREG_G05A_EXTRACTION_V3"
+    assert run["run"]["supersedes_run_id"] == "g0.5-a-2026-09-13-002"
+    for field in (
+        "corpus_sha",
+        "contracts_sha",
+        "source_baseline_sha",
+        "corpus_manifest_sha256",
+        "ground_truth_sha256",
+        "source_snapshot_sha",
+    ):
+        assert run["run"][field] == original["run"][field]
+    assert run["summary"]["unexpected_divergences"] == 9
+    assert run["summary"]["divergences_total"] == 40
+    assert run["summary"]["ground_truth_entities"] == {"MATCH": 30}
+    assert run["result_sha"] == _result_sha(run)
+    assert _annotation_mismatches(run, risks) == []
+    assert _strict_unexpected(run, risks) == OMISSION_DIVERGENCE_IDS + [24]
+
+    # Fuera de las dos divergencias LEI, el resultado es identico al V2.
+    for index, (before, after) in enumerate(
+        zip(previous["divergences"], run["divergences"]), start=1
+    ):
+        if index in {18, 24}:
+            continue
+        assert before == after
+
+    lei_divergences = {
+        row["corpus_id"]: row
+        for row in run["divergences"]
+        if row["reason"] == "LEI_INVALID"
+    }
+    assert set(lei_divergences) == {"G05-012", "G05-015"}
+    assert lei_divergences["G05-012"]["lei_diagnostic"] == "INVALID_LENGTH"
+    assert lei_divergences["G05-015"]["lei_diagnostic"] == "INVALID_CHECK_DIGITS"
+
+
+def test_g05c_invalid_lei_values_preserved_and_never_joined():
+    """Regla de identidad: LEI invalido -> valor raw preservado, sin
+    reparacion silenciosa, sin join automatico por LEI y sin promover a
+    AMBIGUOUS por el solo checksum."""
+    run = _read(RUN_V3_PATH)
+    expected_raw = {
+        "G05-012": "59800G0P3PV13KLX615",
+        "G05-015": "549300746K71T6YJCV41",
+    }
+    for attempt in run["attempts"]:
+        corpus_id = attempt["corpus_id"]
+        if attempt["source"] != "ESMA_MICA_REGISTER":
+            continue
+        identity = attempt["identity"]
+        observed = attempt["parse"]["record"]["observed"]
+        assert observed["lei"] == identity["identifier"]
+        assert observed["lei_valid"] == (
+            observed["lei_diagnostic"] == "VALID"
+        )
+        if corpus_id in expected_raw:
+            assert identity["identifier"] == expected_raw[corpus_id]
+            assert identity["status"] == "IDENTITY_GAP"
+            assert identity["identifier_valid"] is False
+            assert identity["identifier_diagnostic"] in {
+                "INVALID_LENGTH",
+                "INVALID_CHECK_DIGITS",
+            }
+        assert identity["cross_source_join"] not in {
+            "EXACT",
+            "AUTOMATIC",
+            "FUZZY",
+        }
+    assert not any(
+        "AMBIGUOUS" in divergence.get("reason", "")
+        or "AMBIGUOUS" in divergence.get("classification", "")
+        for divergence in run["divergences"]
+    )

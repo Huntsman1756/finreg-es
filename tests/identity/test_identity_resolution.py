@@ -2,8 +2,10 @@
 import pytest
 
 from finreg_es.identity import (
+    LEI_DIAGNOSTIC_VERSION,
     is_valid_lei,
     is_valid_nif,
+    lei_diagnostic,
     resolve_by_identifier,
     resolve_by_name,
     adopt_identifiers_from_source,
@@ -25,6 +27,36 @@ def test_lei_iso17442_validation():
     bad = "MERIDIANOBANK0000168"
     assert not is_valid_lei(bad)
     assert not is_valid_lei("TOOSHORT")
+
+
+def test_lei_diagnostic_v2_separates_defect_classes():
+    """FINREG_LEI_DIAGNOSTIC_V2: ausencia, longitud, alfabeto y checksum
+    son diagnosticos distintos; ninguno repara el valor."""
+    assert LEI_DIAGNOSTIC_VERSION == "FINREG_LEI_DIAGNOSTIC_V2"
+    assert lei_diagnostic("MERIDIANOBANK0000167") == "VALID"
+    assert lei_diagnostic(None) == "MISSING"
+    assert lei_diagnostic("") == "MISSING"
+    assert lei_diagnostic("   ") == "MISSING"
+    # G05-012: 19 caracteres — el checksum no es evaluable.
+    assert lei_diagnostic("59800G0P3PV13KLX615") == "INVALID_LENGTH"
+    assert lei_diagnostic("549300746K71T6YJCV4!") == "INVALID_CHARSET"
+    # G05-015: longitud y alfabeto correctos; digitos de control erroneos.
+    assert lei_diagnostic("549300746K71T6YJCV41") == "INVALID_CHECK_DIGITS"
+    assert lei_diagnostic("MERIDIANOBANK0000168") == "INVALID_CHECK_DIGITS"
+
+
+def test_lei_diagnostic_is_the_aggregate_behind_is_valid_lei():
+    values = [
+        "MERIDIANOBANK0000167",
+        "549300746K71T6YJCV41",
+        "59800G0P3PV13KLX615",
+        "549300746K71T6YJCV4!",
+        "TOOSHORT",
+        None,
+        "",
+    ]
+    for value in values:
+        assert is_valid_lei(value) == (lei_diagnostic(value) == "VALID")
 
 
 def test_exact_resolution_via_identifier(identity_index):
