@@ -137,6 +137,27 @@
       "source_url": "https://app.bde.es/age_www/age_wwwias/xml/Arranque.html",
       "bytes": 5108,
       "sha256": "d99e3104351e059723974bdc269a240dd63478349c4878e163b389409d6ba4ad"
+    },
+    {
+      "hypothesis": "H10-C",
+      "snapshot_file": "raw/boe-rdl-19-2018.html",
+      "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2018-16036",
+      "bytes": 559240,
+      "sha256": "efefa9d0f596b2612870e2b8c63065687fddcb7fd71d7220107bfb508d90b574"
+    },
+    {
+      "hypothesis": "H10-C",
+      "snapshot_file": "raw/boe-rd-736-2019.html",
+      "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2019-18425",
+      "bytes": 282296,
+      "sha256": "74aebe946a5d0b5286cdc5af5d4536f29f82436958b6fcd25d97d32a7efd3373"
+    },
+    {
+      "hypothesis": "H10-C",
+      "snapshot_file": "raw/eba-psd2-register-landing-v2.html",
+      "source_url": "https://www.eba.europa.eu/risk-and-data-analysis/data/registers/payment-institutions-register",
+      "bytes": 70049,
+      "sha256": "d7cd7dfe6ab9e03fc6471b94b5569f6f421a1e7d2707fe08a34838edbe79ff8a"
     }
   ]
 }

@@ -332,15 +332,115 @@ B4-10  ZALANDO S41C      presente en PSP_excluidos + EBA PSD_EXC
        ACTIVE → EXCLUDED_ACTIVITY_NOTIFIED confirmado
 ```
 
+## B5 — Decisión sobre H10 (capacidad negativa por slice)
+
+### Corrección de método aplicada
+
+EBA **no** es un comparador factual independiente para entidades ES:
+sus datos proceden de la propia NCA (BdE). El cross-ref EBA↔BdE
+demuestra consistencia entre capas de publicación, no verificación
+por autoridades distintas. La base normativa fuerte es legal:
+
+- **RDL 19/2018 art. 13** (BOE-A-2018-16036, congelado): las PI deben
+  "antes de iniciar sus actividades, quedar inscritas en el registro
+  especial del Banco de España" y "en dicho registro se harán constar
+  los servicios de pago para los que se haya habilitado a cada
+  entidad de pago, sus agentes y sucursales" → obligación de
+  inclusión + obligación de enumerar capability, **ambas legales**.
+- **RD 736/2019** (BOE-A-2019-18425, congelado): el Registro Especial
+  "estará a disposición pública, será accesible en línea y se
+  actualizará sin demora" → garantía de timeliness.
+
+### Decisión por slice
+
+```text
+GLOBAL BdE            → EXPLICIT_NEGATIVE_ONLY
+
+DOMESTIC PI  (TEEP)   → COMPLETE_ENUMERATION current entity+activity
+DOMESTIC EMI (TEEDE)  → COMPLETE_ENUMERATION current entity+activity
+AISP         (TEPSIC) → COMPLETE_ENUMERATION para el hecho de estar
+                        registrado como AISP y para
+                        ACCOUNT_INFORMATION_SERVICES;
+                        NO para negar otros servicios de la misma
+                        persona jurídica (multi-role)
+TEEPEX (art.14)       → candidato COMPLETE_ENUMERATION, pendiente
+                        cerrar semántica de ACTIVIDADES
+BRANCH                → candidato COMPLETE_ENUMERATION current-state
+                        si la actividad concreta está enumerada
+LPS-CI (cod 21/11.2)  → EXPLICIT_NEGATIVE_ONLY (lag notificación→pub.)
+LPS-PI/EMI en BdE     → NO_NEGATIVE_INFERENCE (universo no cubierto)
+AGENTES/DISTRIBUIDORES→ NO_NEGATIVE_INFERENCE independiente
+PSP_EXCLUIDOS         → NO_NEGATIVE_INFERENCE sobre entitlement
+```
+
+### Preconditions duras para cualquier inferencia negativa
+
+```text
+exact identity
+AND route ∈ complete-enumeration allowlist
+AND territorial_basis cubierto
+AND effective_date = current snapshot scope
+AND entity state compatible with current operation
+AND exact activity-code mapping
+AND source freshness acceptable
+AND no alternative legal route left open   (multi-role)
+AND no conflicting positive SourceAssertion (Fintonic rule)
+```
+
+Las dos últimas son las esenciales: FinReg admite multi-role
+(una misma persona jurídica puede tener la actividad bajo otra ruta),
+y la divergencia Fintonic fija que **ninguna cobertura completa
+autoriza a ignorar evidencia oficial contradictoria**:
+
+```text
+BdE says X / EBA says Y → NO silent tier winner
+→ CONFLICTING_SOURCE_ASSERTIONS → negative blocked → INDETERMINATE
+```
+
+### Current ≠ Historical
+
+```text
+COMPLETE_ENUMERATION_CURRENT ≠ COMPLETE_ENUMERATION_HISTORICAL
+```
+
+`FECHA_BAJA` es semántica de entidad (BANKINTER: transformación 2019
+≠ retirada EBA 2026); no hay fecha de cese por actividad. Una query
+histórica no puede fabricar negativo histórico desde ausencia actual.
+Expresable vía `coverage(..., effective_date)` sin enum nuevo.
+
+### Frontera con G1-E
+
+B5 declara que una ausencia es **evidencia negativa jurídicamente
+admisible** en los slices indicados. La transformación
+`negative evidence → CONFIRMED_NOT_ENTITLED` sigue preregistrada
+en G1-E (junto a withdrawal/expiry semantics).
+
+### Veredicto H10
+
+```text
+H10-A  PROVEN, scoped — rutas domestic/branch exigen inclusión previa
+H10-B  PROVEN, scoped — PI/EMI actuales: el registro enumera
+       actividades habilitadas (obligación legal, no sólo estructura)
+H10-C  PROVEN WITH QUALIFICATION — ausencia = negative evidence sólo
+       en slices cerrados bajo todas las preconditions
+GLOBAL COMPLETE_ENUMERATION — DISPROVEN
+```
+
+### Estado final
+
+```text
+G1-B1  PASS   G1-B3  PASS   G1-B4  PASS   G1-B5  DECIDIDO
+G1-B6  sólo si se implementa la regla negativa acotada (pendiente)
+```
+
 ## Próximos pasos
 
 ```text
-B3  DONE — 47/47 tipos asignados a ruta legal; 0 códigos sin explicar;
-    hallazgo clave: LPS-PI/EMI no enumeradas en BdE
-B4  casos preregistrados con comparador EBA independiente;
-    pendiente ejecución de los checks mecánicos por caso
-B5  decidir H10-A/B/C por clase, no globalmente
-B6  sólo si COMPLETE_ENUMERATION queda probado para algún slice:
-    diseñar regla negativa acotada (entity_class × activity ×
-    territorial_basis × ventana temporal)
+B3  DONE — 47/47 tipos asignados a ruta legal
+B4  DONE — 10 casos adversariales ejecutados con comparador
+    independiente; divergencia Fintonic documentada
+B5  DONE — decisión por slice tomada; H10 cerrado con calificaciones
+B6  OPCIONAL — implementación de la regla negativa acotada queda
+    para cuando el usuario decida activarla (entity_class × activity
+    × territorial_basis × effective_date + preconditions)
 ```
