@@ -1,0 +1,29 @@
+{
+  "evidence_type": "GLEIF_EXACT_LEI_LOOKUP",
+  "authority": "Global Legal Entity Identifier Foundation",
+  "api_documentation_url": "https://www.gleif.org/en/lei-data/gleif-api",
+  "retrieved_at": "2026-09-13T14:03:36Z",
+  "not_part_of_g05a_inputs": true,
+  "queries": [
+    {
+      "lei": "59800G0P3PV13KLX615",
+      "url": "https://api.gleif.org/api/v1/lei-records/59800G0P3PV13KLX615",
+      "accept": "application/vnd.api+json",
+      "http_status": 404,
+      "content_type": "application/vnd.api+json",
+      "response_date": "Sun, 13 Sep 2026 14:03:36 GMT",
+      "response_body": "{\"errors\":[{\"status\":\"404\",\"title\":\"Not Found\"}]}",
+      "response_body_sha256": "de95a4b4a09bec3f218bb4ccbd34d90ec8d4a76f7c94d9b573fdb8b9c4706a34"
+    },
+    {
+      "lei": "549300746K71T6YJCV41",
+      "url": "https://api.gleif.org/api/v1/lei-records/549300746K71T6YJCV41",
+      "accept": "application/vnd.api+json",
+      "http_status": 404,
+      "content_type": "application/vnd.api+json",
+      "response_date": "Sun, 13 Sep 2026 14:03:36 GMT",
+      "response_body": "{\"errors\":[{\"status\":\"404\",\"title\":\"Not Found\",\"detail\":\"Resource lei-records with id 549300746K71T6YJCV41 does not exist.\"}]}",
+      "response_body_sha256": "2135b7daf7bcb79f8398a71726be0678f72ba3a7fe96841e826e651f2f20175d"
+    }
+  ]
+}

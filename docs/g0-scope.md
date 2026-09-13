@@ -149,3 +149,16 @@ regulatorio.
 
 Cualquier cambio posterior en estos contratos pasa por nueva versión de contrato/regla y
 actualización de fixtures, no por edición silenciosa.
+## Estado despues de G0.5-B
+
+G0.5-B queda auditado como `PASS_WITH_FINDINGS`: las 40 divergencias del run
+estan clasificadas y tienen referencia al resultado y al snapshot de origen.
+El ledger es `fixtures/g0.5/audit/g0.5-b-corpus-audit.json`.
+
+El audit confirma `G05-015` como `SOURCE_DATA_QUALITY`: su LEI bruto se
+conserva, la validez es `INVALID` y el join automatico esta prohibido. Tambien
+deja documentados el defecto de anotacion de expectativas del runner y ocho
+omisiones de `expected_contract_risks`, sin modificar el run ni el ground truth.
+
+G0.6 permanece bloqueado hasta resolver esos findings en commits sucesores con
+la evidencia y las decisiones explicitas exigidas por G0.
