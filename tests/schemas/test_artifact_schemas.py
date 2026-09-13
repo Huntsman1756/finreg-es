@@ -52,6 +52,7 @@ ARTIFACT_MAP = {
     "fixtures/g0.5/corpus/entities.json": "entity-corpus",
     "fixtures/g0.5/corpus/ground-truth.json": "ground-truth",
     "fixtures/g0.5/sources/manifest.json": "source-manifest",
+    "fixtures/g1/sources/manifest.json": "source-manifest",
     "fixtures/g0.5/runs/*.json": "extraction-run",
     "fixtures/g0.6/claim-provenance-*.json": "claim-ledger",
     "fixtures/g0.7/derivation-rules.json": "derivation-ruleset",
