@@ -53,7 +53,7 @@ configurado, sin linter/formatter, sin backend de packaging en
 
 ## Decisiones
 
-### ADOPT — JSON Schema (tooling-only)
+### ADOPT — JSON Schema (tooling-only) — IMPLEMENTADO
 
 Formalizar como esquemas públicos (`schemas/*.schema.json`) los
 artefactos que hoy son contratos de facto: `SourceContract`,
@@ -62,6 +62,12 @@ artefactos que hoy son contratos de facto: `SourceContract`,
 en **dependencia opcional/dev** — nunca en el path runtime de
 `assess()`. Valor: convierte el formato interno en interfaz declarada y
 detecta deriva de artefactos sin código imperativo.
+
+**Estado: implementado** — `schemas/v1/` (3 common + 11 artefactos),
+`tests/schemas/test_artifact_schemas.py` (47 tests: validación de
+artefactos congelados + integridad de bytes + negativos por tipo +
+guardarraíl anti-semántica + runtime sin dependencia). Ver
+`schemas/README.md`.
 
 ### PILOT — OpenLineage exporter
 

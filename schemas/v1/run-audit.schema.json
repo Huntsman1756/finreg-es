@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinReg-ES gate audit artifact (fixtures/g0.7/audit/*.json)",
+  "type": "object",
+  "required": ["audit", "findings"],
+  "properties": {
+    "audit": {
+      "type": "object",
+      "required": ["audit_version", "gate", "run_id", "run_sha256",
+                   "run_status", "divergences_total", "divergences"],
+      "properties": {
+        "audit_version": {"type": "string"},
+        "gate": {"type": "string"},
+        "run_id": {"type": "string"},
+        "run_sha256": {"$ref": "common/identifiers.schema.json#/$defs/sha256"},
+        "run_status": {"type": "string"},
+        "review_verdict": {"type": "string"},
+        "divergences_total": {"type": "integer", "minimum": 0},
+        "divergences": {"type": "array"},
+        "audited_at": {"type": "string"},
+        "principle": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "divergence_taxonomy": {"type": "array", "items": {"type": "string"}},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "title", "classification",
+                     "severity", "statement", "resolution", "evidence"],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "title": {"type": "string"},
+          "classification": {"type": "string"},
+          "severity": {"type": "string"},
+          "statement": {"type": "string"},
+          "resolution": {"type": "string"},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "scheduled": {"type": "string"},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "minor_notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["note_id", "statement"],
+        "properties": {
+          "note_id": {"type": "string"},
+          "statement": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "closure_criteria": {"type": "object"},
+    "distribution_confirmed": {
+      "type": "object",
+      "additionalProperties": {"type": "integer"}
+    }
+  },
+  "additionalProperties": false
+}

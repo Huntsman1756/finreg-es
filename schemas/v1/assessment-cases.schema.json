@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinReg-ES preregistered assessment cases (fixtures/g0.7/assessment-cases.json)",
+  "type": "object",
+  "required": ["cases_meta", "cases"],
+  "properties": {
+    "cases_meta": {
+      "type": "object",
+      "required": ["version", "gate", "unit", "entity_id_semantics",
+                   "preregistered_before_assessment", "match_definition",
+                   "categories_not_representable_in_frozen_corpus"],
+      "properties": {
+        "version": {"type": "string"},
+        "gate": {"type": "string"},
+        "unit": {"type": "string"},
+        "entity_id_semantics": {"type": "string"},
+        "preregistered_before_assessment": {"type": "string"},
+        "match_definition": {"type": "string"},
+        "categories_not_representable_in_frozen_corpus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category", "reason"],
+            "properties": {
+              "category": {"type": "string"},
+              "reason": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["case_id", "entity_id", "activity", "jurisdiction",
+                     "as_of", "expected_assessment", "expected_reason",
+                     "expected_basis", "primary_evidence",
+                     "known_limitations", "probes"],
+        "properties": {
+          "case_id": {"type": "string", "pattern": "^G07-[0-9]{3}$"},
+          "entity_id": {"type": "string"},
+          "activity": {"type": "string"},
+          "jurisdiction": {"type": "string"},
+          "as_of": {"$ref": "common/temporal.schema.json#/$defs/iso_date"},
+          "expected_assessment": {
+            "type": "string",
+            "enum": ["CONFIRMED_AUTHORISED", "NO_ENTITLEMENT_EVIDENCED",
+                     "CONFIRMED_NOT_AUTHORISED", "INDETERMINATE"]
+          },
+          "expected_reason": {"type": "string"},
+          "expected_basis": {"type": "array", "items": {"type": "string"}},
+          "primary_evidence": {"type": "array", "items": {"type": "string"}},
+          "known_limitations": {"type": "array", "items": {"type": "string"}},
+          "probes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

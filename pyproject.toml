@@ -3,6 +3,12 @@ name = "finreg-es"
 version = "0.0.1"
 description = "Registro unificado y verificable de autorizaciones financieras en Espana (G0)"
 requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+# Tooling/CI only: JSON Schema validation of artifact contracts.
+# finreg_es runtime must remain stdlib-only (zero-dep auditability).
+tooling = ["jsonschema>=4.21,<5"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

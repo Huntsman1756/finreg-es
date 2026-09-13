@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinReg-ES common identifier primitives",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "git_ref": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,64}$"
+    },
+    "sha256_nullable": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "version_tag": {
+      "type": "string",
+      "pattern": "^FINREG_[A-Z0-9_]+_V[0-9]+$"
+    },
+    "corpus_id": {
+      "type": "string",
+      "pattern": "^G05-[0-9]{3}$"
+    },
+    "nonempty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "identifier": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "$ref": "temporal.schema.json#/$defs/iso_date"
+        },
+        "source_url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
