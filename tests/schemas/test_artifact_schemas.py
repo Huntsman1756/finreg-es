@@ -23,15 +23,20 @@ from referencing.jsonschema import DRAFT202012
 
 
 ROOT = Path(__file__).parents[2]
-SCHEMA_V1 = ROOT / "schemas" / "v1"
+SCHEMAS = ROOT / "schemas"
 
 
 def _registry() -> Registry:
     resources = []
-    for path in sorted(SCHEMA_V1.rglob("*.schema.json")):
-        uri = path.relative_to(SCHEMA_V1).as_posix()
+    for path in sorted(SCHEMAS.rglob("*.schema.json")):
+        uri = path.relative_to(SCHEMAS).as_posix()
         doc = json.loads(path.read_text(encoding="utf-8"))
-        resources.append((uri, Resource.from_contents(doc, default_specification=DRAFT202012)))
+        res = Resource.from_contents(doc, default_specification=DRAFT202012)
+        resources.append((uri, res))
+        if uri.startswith("v1/"):
+            # Alias sin prefijo: los $ref internos de v1 ("common/x")
+            # se resuelven contra base-uri vacia del documento raiz.
+            resources.append((uri[3:], res))
     return Registry().with_resources(resources)
 
 
@@ -40,7 +45,7 @@ REGISTRY = _registry()
 
 def _validator(schema_name: str):
     doc = json.loads(
-        (SCHEMA_V1 / f"{schema_name}.schema.json").read_text(encoding="utf-8")
+        (SCHEMAS / f"{schema_name}.schema.json").read_text(encoding="utf-8")
     )
     return jsonschema.Draft202012Validator(doc, registry=REGISTRY)
 
@@ -48,18 +53,20 @@ def _validator(schema_name: str):
 # Superficie contractual: glob -> schema. Todo JSON de fixtures debe
 # validar contra un esquema o aparecer explicitamente en UNSCOPED.
 ARTIFACT_MAP = {
-    "fixtures/contracts/*.json": "source-contract",
-    "fixtures/g0.5/corpus/entities.json": "entity-corpus",
-    "fixtures/g0.5/corpus/ground-truth.json": "ground-truth",
-    "fixtures/g0.5/sources/manifest.json": "source-manifest",
-    "fixtures/g1/sources/manifest.json": "source-manifest",
-    "fixtures/g0.5/runs/*.json": "extraction-run",
-    "fixtures/g0.6/claim-provenance-*.json": "claim-ledger",
-    "fixtures/g0.7/derivation-rules.json": "derivation-ruleset",
-    "fixtures/g0.7/derived-assertions-*.json": "derived-assertions",
-    "fixtures/g0.7/assessment-cases.json": "assessment-cases",
-    "fixtures/g0.7/runs/*.json": "assessment-run",
-    "fixtures/g0.7/audit/*.json": "run-audit",
+    "fixtures/contracts/*.json": "v1/source-contract",
+    "fixtures/g0.5/corpus/entities.json": "v1/entity-corpus",
+    "fixtures/g0.5/corpus/ground-truth.json": "v1/ground-truth",
+    "fixtures/g0.5/sources/manifest.json": "v1/source-manifest",
+    "fixtures/g0.5/runs/*.json": "v1/extraction-run",
+    "fixtures/g0.6/claim-provenance-*.json": "v1/claim-ledger",
+    "fixtures/g0.7/derivation-rules.json": "v1/derivation-ruleset",
+    "fixtures/g0.7/derived-assertions-*.json": "v1/derived-assertions",
+    "fixtures/g0.7/assessment-cases.json": "v1/assessment-cases",
+    "fixtures/g0.7/runs/*.json": "v1/assessment-run",
+    "fixtures/g0.7/audit/*.json": "v1/run-audit",
+    "fixtures/g1/sources/manifest.json": "v1/source-manifest",
+    "fixtures/g1/derivation-rules.json": "v1.1/derivation-ruleset",
+    "fixtures/g1/derived-assertions-*.json": "v1.1/derived-assertions",
 }
 
 # Artefactos historicos de analisis / fixtures sinteticos fuera del
@@ -134,7 +141,7 @@ def _first_artifact(schema_name: str) -> dict:
 @pytest.mark.parametrize("schema_name", sorted(set(ARTIFACT_MAP.values())))
 def test_negative_missing_required_property_fails(schema_name):
     schema = json.loads(
-        (SCHEMA_V1 / f"{schema_name}.schema.json").read_text(encoding="utf-8")
+        (SCHEMAS / f"{schema_name}.schema.json").read_text(encoding="utf-8")
     )
     required_key = schema["required"][0]
     doc = _mutate(
@@ -156,21 +163,21 @@ def test_negative_unknown_property_fails_on_closed_contract(schema_name):
 
 
 def test_negative_wrong_enum_fails():
-    doc = _first_artifact("assessment-cases")
+    doc = _first_artifact("v1/assessment-cases")
     doc["cases"][0]["expected_assessment"] = "NOT_A_REAL_ASSESSMENT"
-    assert not _validator("assessment-cases").is_valid(doc)
+    assert not _validator("v1/assessment-cases").is_valid(doc)
 
 
 def test_negative_wrong_primitive_type_fails():
-    doc = _first_artifact("claim-ledger")
+    doc = _first_artifact("v1/claim-ledger")
     doc["claims"][0]["snapshot_sha256"] = 12345
-    assert not _validator("claim-ledger").is_valid(doc)
+    assert not _validator("v1/claim-ledger").is_valid(doc)
 
 
 def test_negative_bad_sha256_pattern_fails():
-    doc = _first_artifact("assessment-run")
+    doc = _first_artifact("v1/assessment-run")
     doc["run"]["code_sha"] = "zz" * 32
-    assert not _validator("assessment-run").is_valid(doc)
+    assert not _validator("v1/assessment-run").is_valid(doc)
 
 
 def test_schemas_do_not_encode_regulatory_semantics():
@@ -179,7 +186,7 @@ def test_schemas_do_not_encode_regulatory_semantics():
     La semantica vive en el runtime, no en la capa contractual."""
     forbidden = {"if", "then", "else", "dependencies", "dependentRequired",
                  "format"}
-    for path in SCHEMA_V1.rglob("*.schema.json"):
+    for path in sorted(SCHEMAS.glob("v1*/**/*.schema.json")):
         doc = json.loads(path.read_text(encoding="utf-8"))
 
         def walk(node):

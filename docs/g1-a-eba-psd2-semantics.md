@@ -289,6 +289,172 @@ G1-E            → withdrawal, expiry, negative assessment
 El corpus real de 2 552 entidades retiradas queda congelado como
 evidencia para G1-E — no se adelantan reglas.
 
+## A6 — draft del delta de reglas (pendiente de aprobación)
+
+Alcance: **temporal regulatory status** únicamente. Territorial = G1-D;
+semántica de negativos/retirada = G1-E.
+
+### Estado actual (lo que G1-A resuelve)
+
+`_semantics_layer` (`extraction.py:612`) bloquea deliberadamente:
+`ENT_AUT_DATE_ARRAY_NOT_STATUS_ENUM` → `BLOCKED_SEMANTICS_GAP`. El
+ledger G0.6 ya lleva `ent_aut_raw` por claim (110 claims EBA); el
+ruleset G0.7 emite `legal_effect: UNKNOWN` con la limitación
+documentada verbatim en `legal_basis`. La evidencia existe; falta la
+interpretación autorizada.
+
+### Delta del motor (`derivation.py`)
+
+Una sola derivación efectiva nueva, retrocompatible (el ruleset G0.7
+no la usa → output G0 byte-idéntico):
+
+```text
+EBA_ENT_AUT_SEQUENCE  sobre  ent_aut_raw
+  missing / [] / no-lista      → status UNKNOWN + finding
+  elemento no-fecha            → status UNKNOWN + finding
+  secuencia válida impar       → status ACTIVE
+  secuencia válida par         → status WITHDRAWN
+  siempre: intervals = [{from,to},...] preservados
+```
+
+Necesita además un mecanismo de *emit condicionado por estado*: la
+regla G1 expresa `legal_effect` y `entry_mechanism` en función del
+status derivado — implementación propuesta: el motor expone
+`ent_aut_status`/`ent_aut_intervals` como campos derivados del grupo
+de claims (namespace `eba_*`), y las condiciones de regla pueden
+hacer match sobre ellos. Así la lógica queda en el ruleset
+declarativo, no hardcodeada.
+
+`build_artifact` se parametriza (rutas + versiones); el artefacto G0.7
+sigue reproduciéndose byte-idéntico con sus constantes congeladas.
+
+### Delta del ruleset (`fixtures/g1/derivation-rules.json`, nuevo)
+
+```text
+eba-psd2-domestic-presence  (G1)
+  match: PI/EMI + country=ES + ent_aut_status=ACTIVE
+  emit:  ENTITLED_TO_PROVIDE, AUTHORISATION, DOMESTIC,
+         effective_from = última fecha impar (última autorización),
+         effective_to = null, evidence_basis = NCA_REPORTED_VIA_EBA
+
+eba-psd2-domestic-presence-withdrawn  (G1, nuevo)
+  match: PI/EMI + country=ES + ent_aut_status=WITHDRAWN
+  → NO aserción positiva; status WITHDRAWN + intervals registrados
+  (la lectura jurídica de la retirada es G1-E)
+
+eba-psd2-passport-services  (G1)
+  sin cambio de legal_effect (UNKNOWN): territorial = G1-D;
+  se adjunta reported_status como atributo
+
+eba-psd2-registered-types  (G1, nuevo)
+  match: EPI/AISP/EEMI + ent_aut_status=ACTIVE
+  emit:  REGISTERED_ACTIVE, entry_mechanism=REGISTRATION
+  ⚠ requiere extensión de ENTITY_CLASSES/activities (ver abajo)
+
+eba-psd2-enl-exc  (G1, nuevo)
+  match: ENL/EXC
+  → finding INSUFFICIENT_LEGAL_BASIS (sin base Annex para status)
+
+eba-psd2-agent-branch  (G1, nuevo)
+  match: AG/BR con DER_CHI_ENT_AUT
+  → evidencia de estado del parent; join parent→child requiere
+    soporte cross-record del motor — DECISIÓN: incluir en G1-A o
+    aplazar
+```
+
+### Delta del schema de aserciones (v1.1)
+
+Tres campos nuevos en `derived-assertions`:
+
+```text
+evidence_basis      "NCA_REPORTED_VIA_EBA" | "NCA_PRIMARY" | …
+reported_status     "ACTIVE" | "WITHDRAWN" | "UNKNOWN"
+status_intervals    [{"from": ..., "to": ...|null}, ...]
+```
+
+Retrocompatible: los campos serían `required` sólo en el artefacto G1
+(schema `derived-assertions` v1.1 nuevo; v1 congelado no se toca).
+
+### Decisiones tomadas (usuario)
+
+1. **Vocabulario**: extender `vocab.py` — `ACCOUNT_INFORMATION_
+   SERVICE_PROVIDER`, `EXEMPTED_PAYMENT_INSTITUTION`,
+   `EXEMPTED_E_MONEY_INSTITUTION`, actividad `ACCOUNT_INFORMATION_
+   SERVICES`; más constantes `REPORTED_STATUSES` y `EVIDENCE_BASES`.
+2. **Agentes/sucursales**: join parent→child incluido en G1-A —
+   `ent_cod_par_ent`/`ent_typ_par_ent` resuelven contra
+   `(entity_type, ent_cod)` del parent y exponen `eba_parent_status`.
+   Sin casos AG/BR en el corpus g0.5 (mecanismo inerte aquí; casos
+   reales quedan para G1 posterior).
+3. **Retiradas**: `WITHDRAWN` se materializa como `reported_facts`
+   (hecho reportado, no EntitlementAssertion; sin `NOT_ENTITLED`).
+
+## A6 — Registro de ejecución
+
+Ruleset `fixtures/g1/derivation-rules.json`
+(`FINREG_G1_DERIVATION_V1`), artefacto
+`fixtures/g1/derived-assertions-g1-a-001.json`
+(`FINREG_G1_DERIVED_ASSERTIONS_V1`):
+
+```text
+python -m finreg_es.derivation --g1 \
+    --out fixtures/g1/derived-assertions-g1-a-001.json
+```
+
+Inputs congelados: corpus g0.5 + claim-ledger g0.6-a-003 + manifest
+g0.5 (sin nuevas extracciones; la delta se aplica sobre claims EBA ya
+capturados en G0).
+
+Resultado:
+
+```text
+assertions      258   (G0: 257)
+findings          1   (G0: 3)
+reported_facts    1   (nuevo tipo de registro)
+```
+
+Divergencias exactas G0 → G1 (sólo en claims `eba-psd2-register`):
+
+```text
+eba-psd2-domestic-presence UNKNOWN  ×8  → 0
+eba-psd2-domestic-active ENTITLED   ×0  → 7   (PI/EMI ES, ACTIVE,
+                                             AUTHORISATION,
+                                             effective_from = última
+                                             fecha impar ENT_AUT)
+eba-psd2-registered-active ENTITLED ×0  → 2   (AISP ES, ACTIVE,
+                                             REGISTRATION,
+                                             ACCOUNT_INFORMATION_
+                                             SERVICES)
+finding UNSUPPORTED_ENTITY_CLASS    ×2  → 0   (los 2 AISP ahora
+                                             soportados)
+G05-017 (PSD_PI, secuencia par)         → reported_fact WITHDRAWN
+                                          intervalo 2019-03-15 →
+                                          2026-07-01; sin aserción
+finding DERIVED_PRECONDITION_NOT_MET    → 1 (sin cambio; G05-030 CI)
+```
+
+Todas las aserciones EBA llevan `evidence_basis=NCA_REPORTED_VIA_EBA`,
+`reported_status` e `status_intervals`. Las aserciones passport EBA
+conservan `legal_effect=UNKNOWN` (G1-D) aunque ahora portan el estado
+reportado. Reglas no-EBA: verbatim del ruleset G0.7.
+
+### Verificación / gate
+
+```text
+artefacto G0.7   → regeneración byte-idéntica verificada
+                   (ruleset G0 no referencia constructos v1.1)
+185 tests        → PASS
+schema v1        → congelado; artefactos G0 revalidados sin cambio
+schema v1.1      → nuevo: +evidence_basis, +reported_status,
+                   +status_intervals, +reported_facts, +emit_status_fact;
+                   todo opcional → artefactos v1 siguen siendo válidos
+```
+
+Pendiente para cierre de G1-A: preregistro de casos de assessment G1
+(active/withdrawn/malformed/AISP/parent-child) antes de tratar este
+output como resultado de assessment; la semántica jurídica de
+WITHDRAWN (expiración/negativo) queda en G1-E.
+
 ### Invariante separado (confirmado en fuente primaria)
 
 ```text

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -32,6 +33,33 @@ from .vocab import LegalEffect
 
 DERIVATION_VERSION = "FINREG_G07_DERIVATION_V1"
 ARTIFACT_VERSION = "FINREG_G07_DERIVED_ASSERTIONS_V1"
+G1_DERIVATION_VERSION = "FINREG_G1_DERIVATION_V1"
+G1_ARTIFACT_VERSION = "FINREG_G1_DERIVED_ASSERTIONS_V1"
+
+_EBA_ENT_AUT_DATE = r"\d{4}-\d{2}-\d{2}"
+
+
+def _eba_ent_aut_derived(ent_aut: Any) -> dict[str, Any]:
+    """Interpreta ENT_AUT segun la especificacion oficial EBA (G1-A,
+    H9-A PROVEN): lista cronologica de cambios de estado; posicion
+    impar = autorizacion/registro, par = retirada. Semantica
+    documentada por la autoridad, no heuristica.
+
+    Devuelve status (ACTIVE/WITHDRAWN/UNKNOWN), intervalos
+    [aut, retirada) preservados y la ultima fecha de autorizacion.
+    """
+    out = {"status": "UNKNOWN", "intervals": [], "last_auth": None}
+    if not isinstance(ent_aut, list) or not ent_aut:
+        return out
+    if not all(
+        isinstance(d, str) and re.fullmatch(_EBA_ENT_AUT_DATE, d) for d in ent_aut
+    ):
+        return out
+    pairs = zip(ent_aut[0::2], ent_aut[1::2] + [None])
+    out["intervals"] = [{"from": a, "to": w} for a, w in pairs]
+    out["status"] = "ACTIVE" if len(ent_aut) % 2 == 1 else "WITHDRAWN"
+    out["last_auth"] = ent_aut[-2] if len(ent_aut) % 2 == 0 else ent_aut[-1]
+    return out
 
 # Identificadores admitidos como clave de join en el indice de identidad
 # del corpus. Los LEI solo entran si su diagnostico V2 es VALID.
@@ -85,7 +113,39 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
         group["fields"][claim["field"]] = claim["normalized_value"]
         group["raws"][claim["field"]] = claim["raw_value"]
         group["claim_ids"].append(claim["claim_id"])
-    return list(groups.values())
+
+    groups_list = list(groups.values())
+
+    # G1-A: campos derivados EBA (namespace eba_*), calculados por el
+    # motor para que las reglas puedan hacer match sobre ellos sin
+    # hardcodear la semantica ENT_AUT en las condiciones.
+    status_by_code: dict[tuple[str | None, str | None], str] = {}
+    for group in groups_list:
+        if group["source"] == "EBA_PSD2_REGISTER":
+            fields = group["fields"]
+            derived = _eba_ent_aut_derived(fields.get("ent_aut_raw"))
+            fields["eba_ent_aut_status"] = derived["status"]
+            fields["eba_ent_aut_intervals"] = derived["intervals"]
+            fields["eba_ent_aut_last_auth"] = derived["last_auth"]
+            status_by_code[
+                (fields.get("entity_type"), fields.get("entity_code"))
+            ] = derived["status"]
+
+    # G1-A: resolucion parent->child para PSD_AG/PSD_BR. El estado del
+    # hijo es evidencia DEL PARENT (spec EBA: DER_CHI_ENT_AUT hereda);
+    # nunca autorizacion independiente.
+    for group in groups_list:
+        fields = group["fields"]
+        if group["source"] != "EBA_PSD2_REGISTER":
+            continue
+        par_code = fields.get("ent_cod_par_ent")
+        par_type = fields.get("ent_typ_par_ent")
+        if par_code and par_type:
+            fields["eba_parent_status"] = status_by_code.get(
+                (par_type, par_code), "UNKNOWN"
+            )
+
+    return groups_list
 
 
 def _source_assertion(group: dict[str, Any], manifest: dict[str, Any]) -> dict:
@@ -167,6 +227,11 @@ def _resolve_effective(
         return parsed, parsed is not None
     if kind == "FIELD_DDMMYYYY_OR_NULL":
         return _parse_ddmmyyyy(fields.get(spec["field"])), True
+    if kind == "EBA_ENT_AUT_LAST_AUTH":
+        # G1-A: ultima fecha de autorizacion/registro de la secuencia
+        # ENT_AUT ya interpretada por _eba_ent_aut_derived.
+        value = fields.get("eba_ent_aut_last_auth")
+        return value, value is not None
     raise ValueError(f"derivacion efectiva desconocida: {kind}")
 
 
@@ -179,6 +244,7 @@ def _emit_assertion(
     item: str | None,
     findings: list[dict[str, Any]],
     rule: dict[str, Any],
+    ruleset_version: str,
 ) -> dict[str, Any] | None:
     """Materializa una asercion desde el bloque emit de la regla.
 
@@ -235,7 +301,7 @@ def _emit_assertion(
         )
         return None
 
-    return {
+    assertion = {
         "assertion_id": assertion_id,
         "register_id": group["context"]["register_id"],
         "entity_id": group["corpus_id"],
@@ -250,12 +316,27 @@ def _emit_assertion(
         "effective_to": effective_to,
         "scope": emit["scope"],
         "rule_id": rule["rule_id"],
-        "ruleset_version": DERIVATION_VERSION,
+        "ruleset_version": ruleset_version,
         "source_claim_ids": group["claim_ids"],
         "source_assertions": [source_assertion],
         "derived_by": None,
         "principal_entity_id": None,
     }
+    # G1-A: campos opcionales declarados por el emit. Solo se incluyen
+    # si la regla los declara — los artefactos G0 no los llevan.
+    if "evidence_basis" in emit:
+        assertion["evidence_basis"] = emit["evidence_basis"]
+    if "reported_status" in emit:
+        assertion["reported_status"] = emit["reported_status"]
+    elif "reported_status_from" in emit:
+        assertion["reported_status"] = fields.get(
+            emit["reported_status_from"]["field"]
+        )
+    if "status_intervals_from" in emit:
+        assertion["status_intervals"] = fields.get(
+            emit["status_intervals_from"]["field"]
+        )
+    return assertion
 
 
 def _finding(
@@ -350,6 +431,9 @@ def derive_entitlements(
     ruleset: dict[str, Any],
     manifest: dict[str, Any],
     corpus: dict[str, Any],
+    *,
+    derivation_version: str = DERIVATION_VERSION,
+    id_prefix: str = "g07",
 ) -> dict[str, Any]:
     """Ejecuta el ruleset sobre el ledger: aserciones + findings + indice."""
     spec = ruleset["ruleset"]
@@ -357,6 +441,7 @@ def derive_entitlements(
     evidence_as_of = manifest["retrieved_at"]
     assertions: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
+    reported_facts: list[dict[str, Any]] = []
 
     for group in groups:
         fields = group["fields"]
@@ -377,6 +462,29 @@ def derive_entitlements(
                     )
                 )
                 continue
+            if "emit_status_fact" in rule:
+                # G1-A: hecho de estado reportado (p. ej. WITHDRAWN).
+                # No es una EntitlementAssertion ni un efecto juridico
+                # negativo — la lectura juridica es de assessment/G1-E.
+                fact_spec = rule["emit_status_fact"]
+                status = fact_spec.get("reported_status")
+                if status is None:
+                    status = fields.get(fact_spec["reported_status_from"]["field"])
+                if status is None:
+                    # sin estado resoluble no se emite medio hecho
+                    continue
+                reported_facts.append(
+                    {
+                        "fact_id": f"{id_prefix}-fact-{len(reported_facts) + 1:03d}",
+                        "corpus_id": group["corpus_id"],
+                        "source": group["source"],
+                        "rule_id": rule["rule_id"],
+                        "reported_status": status,
+                        "status_intervals": fields.get("eba_ent_aut_intervals"),
+                        "detail": fact_spec.get("detail"),
+                    }
+                )
+                continue
             if "emit_per" in rule:
                 items = _iterate_items(fields, rule["emit_per"]["iterate"])
                 if not items:
@@ -392,7 +500,7 @@ def derive_entitlements(
                 emits = [(rule["emit"], None)]
             for emit, item in emits:
                 assertion = _emit_assertion(
-                    f"g07-asm-{len(assertions) + 1:03d}",
+                    f"{id_prefix}-asm-{len(assertions) + 1:03d}",
                     emit,
                     group,
                     evidence_as_of,
@@ -400,6 +508,7 @@ def derive_entitlements(
                     item,
                     findings,
                     rule,
+                    derivation_version,
                 )
                 if assertion is not None:
                     assertions.append(assertion)
@@ -413,7 +522,7 @@ def derive_entitlements(
                 continue
             fired = True
             derived = {
-                "assertion_id": f"g07-asm-{len(assertions) + 1:03d}",
+                "assertion_id": f"{id_prefix}-asm-{len(assertions) + 1:03d}",
                 "register_id": assertion["register_id"],
                 "entity_id": assertion["entity_id"],
                 "entity_class": assertion["entity_class"],
@@ -456,7 +565,7 @@ def derive_entitlements(
                 )
 
     for index, finding in enumerate(findings, start=1):
-        finding["finding_id"] = f"g07-fnd-{index:03d}"
+        finding["finding_id"] = f"{id_prefix}-fnd-{index:03d}"
 
     # Clases evidenciadas: union de las clases de las aserciones emitidas.
     index, invalid = build_identity_index(corpus, groups, manifest)
@@ -468,12 +577,17 @@ def derive_entitlements(
     for entry in index:
         entry["entity_classes"] = sorted(classes_by_entity.get(entry["entity_id"], ()))
 
-    return {
+    result = {
         "assertions": assertions,
         "findings": findings,
         "identity_index": index,
         "invalid_identifiers": invalid,
     }
+    # G1-A: hechos de estado reportados. Solo presente cuando el
+    # ruleset emite al menos uno — los artefactos G0 no llevan la clave.
+    if reported_facts:
+        result["reported_facts"] = reported_facts
+    return result
 
 
 def to_entitlement_assertions(artifact: dict[str, Any]) -> list[EntitlementAssertion]:
@@ -497,6 +611,11 @@ def to_entitlement_assertions(artifact: dict[str, Any]) -> list[EntitlementAsser
             ),
             derived_by=a.get("derived_by"),
             principal_entity_id=a.get("principal_entity_id"),
+            evidence_basis=a.get("evidence_basis"),
+            reported_status=a.get("reported_status"),
+            status_intervals=(
+                tuple(a["status_intervals"]) if a.get("status_intervals") else None
+            ),
         )
         for a in artifact["assertions"]
     ]
@@ -523,23 +642,39 @@ def to_identity_index(artifact: dict[str, Any]) -> list[IdentityIndexEntry]:
     ]
 
 
-def build_artifact(repo_root: Path) -> dict[str, Any]:
-    """Artefacto congelado de G0.7-A: inputs fijados por sha256."""
-    ledger_path = repo_root / "fixtures" / "g0.6" / "claim-provenance-g0.5-a-003.json"
-    ruleset_path = repo_root / "fixtures" / "g0.7" / "derivation-rules.json"
-    corpus_path = repo_root / "fixtures" / "g0.5" / "corpus" / "entities.json"
-    manifest_path = repo_root / "fixtures" / "g0.5" / "sources" / "manifest.json"
+def _build_artifact(
+    repo_root: Path,
+    *,
+    ledger_rel: str,
+    ruleset_rel: str,
+    corpus_rel: str,
+    manifest_rel: str,
+    artifact_version: str,
+    derivation_version: str,
+    id_prefix: str,
+) -> dict[str, Any]:
+    ledger_path = repo_root / ledger_rel
+    ruleset_path = repo_root / ruleset_rel
+    corpus_path = repo_root / corpus_rel
+    manifest_path = repo_root / manifest_rel
 
     ledger = strict_json_loads(ledger_path.read_text(encoding="utf-8"))
     ruleset = strict_json_loads(ruleset_path.read_text(encoding="utf-8"))
     corpus = strict_json_loads(corpus_path.read_text(encoding="utf-8"))
     manifest = strict_json_loads(manifest_path.read_text(encoding="utf-8"))
 
-    result = derive_entitlements(ledger, ruleset, manifest, corpus)
-    return {
+    result = derive_entitlements(
+        ledger,
+        ruleset,
+        manifest,
+        corpus,
+        derivation_version=derivation_version,
+        id_prefix=id_prefix,
+    )
+    artifact = {
         "artifact": {
-            "artifact_version": ARTIFACT_VERSION,
-            "derivation_version": DERIVATION_VERSION,
+            "artifact_version": artifact_version,
+            "derivation_version": derivation_version,
             "ruleset_version": ruleset["ruleset"]["ruleset_version"],
             "claims_ledger_sha256": _sha256_file(ledger_path),
             "derivation_ruleset_sha256": _sha256_file(ruleset_path),
@@ -552,15 +687,50 @@ def build_artifact(repo_root: Path) -> dict[str, Any]:
         },
         **result,
     }
+    if result.get("reported_facts"):
+        artifact["artifact"]["reported_facts_emitted"] = len(
+            result["reported_facts"]
+        )
+    return artifact
+
+
+def build_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto congelado de G0.7-A: inputs fijados por sha256."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g0.6/claim-provenance-g0.5-a-003.json",
+        ruleset_rel="fixtures/g0.7/derivation-rules.json",
+        corpus_rel="fixtures/g0.5/corpus/entities.json",
+        manifest_rel="fixtures/g0.5/sources/manifest.json",
+        artifact_version=ARTIFACT_VERSION,
+        derivation_version=DERIVATION_VERSION,
+        id_prefix="g07",
+    )
+
+
+def build_g1_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-A: mismo ledger/corpus G0 congelados, ruleset G1."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g0.6/claim-provenance-g0.5-a-003.json",
+        ruleset_rel="fixtures/g1/derivation-rules.json",
+        corpus_rel="fixtures/g0.5/corpus/entities.json",
+        manifest_rel="fixtures/g0.5/sources/manifest.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1_DERIVATION_VERSION,
+        id_prefix="g1a",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--g1", action="store_true", help="ruleset G1 (default: G0.7)")
     args = parser.parse_args(argv)
 
-    artifact = build_artifact(args.repo_root.resolve())
+    builder = build_g1_artifact if args.g1 else build_artifact
+    artifact = builder(args.repo_root.resolve())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:
         stream.write(canonical_json(artifact) + "\n")

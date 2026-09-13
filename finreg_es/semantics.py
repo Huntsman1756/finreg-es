@@ -65,6 +65,11 @@ class EntitlementAssertion:
     source_assertions: tuple[SourceAssertion, ...]
     derived_by: dict | None = None  # {rule_id, ruleset_version, effective_from}
     principal_entity_id: str | None = None  # obligatorio para agentes
+    # G1-A: procedencia probatoria y estado temporal reportado (política
+    # A5). None en artefactos G0 — retrocompatible.
+    evidence_basis: str | None = None
+    reported_status: str | None = None
+    status_intervals: tuple | None = None
 
     def latest_freshness(self) -> Freshness:
         claims = [

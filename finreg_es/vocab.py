@@ -97,6 +97,10 @@ ACTIVITIES = (
     "INVESTMENT_ADVICE_NON_MIFID",
     "FUND_MANAGEMENT",
     "CRYPTO_ASSET_SERVICES",
+    # G1: resolución H9-A — Annex 2019/410 Tables 2/3/5 distinguen
+    # registration de authorisation; AISP presta sólo servicios de
+    # información de cuentas (art. 33 PSD2).
+    "ACCOUNT_INFORMATION_SERVICES",
 )
 
 # Clases de entidad (conjunto mínimo congelado para G0).
@@ -109,4 +113,18 @@ ENTITY_CLASSES = (
     "FUND_MANAGER_SGIIC",
     "CASP",
     "PSP_AGENT",
+    # G1: tipos EBA PSD2 registrados (no autorizados) — Annex 2019/410
+    # Tables 2/3/5 exigen "date of registration", no "of authorisation".
+    "EXEMPTED_PAYMENT_INSTITUTION",
+    "EXEMPTED_E_MONEY_INSTITUTION",
+    "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
 )
+
+# Estados reportados por la capa de registro (G1-A). No son efectos
+# jurídicos: un status WITHDRAWN es un hecho reportado; su lectura
+# jurídica (negativo, expiración) pertenece a G1-E.
+REPORTED_STATUSES = ("ACTIVE", "WITHDRAWN", "UNKNOWN")
+
+# Procedencia probatoria de una aserción (G1-A, política A5):
+# T2 EBA = reporte oficial NCA→EBA, no constitutivo.
+EVIDENCE_BASES = ("NCA_REPORTED_VIA_EBA", "NCA_PRIMARY", "STATISTICAL")
