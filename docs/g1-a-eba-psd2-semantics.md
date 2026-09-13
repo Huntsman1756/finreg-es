@@ -455,6 +455,98 @@ Pendiente para cierre de G1-A: preregistro de casos de assessment G1
 output como resultado de assessment; la semántica jurídica de
 WITHDRAWN (expiración/negativo) queda en G1-E.
 
+## A7 — ASSESSMENT_SEMANTICS_V2 (preregistrado, sin ejecutar)
+
+El caso AISP demostró que el enum público de G0 es incoherente:
+`CONFIRMED_AUTHORISED` + `entry_mechanism=REGISTRATION` es
+contradictorio, y G1-C añadirá `NOTIFICATION`/`STATUTORY_ENTITLEMENT`.
+La pregunta real de FinReg es «¿puede esta entidad prestar esta
+actividad en esta jurisdicción?» — el resultado público responde
+**qué**, `entry_mechanism` explica **por qué**.
+
+### Taxonomía versionada
+
+```text
+ASSESSMENT_SEMANTICS_V1 (congelada, artefactos G0)
+  CONFIRMED_AUTHORISED / NO_ENTITLEMENT_EVIDENCED /
+  CONFIRMED_NOT_AUTHORISED / INDETERMINATE
+
+ASSESSMENT_SEMANTICS_V2 (G1+)
+  CONFIRMED_ENTITLED          (ex CONFIRMED_AUTHORISED)
+  NO_ENTITLEMENT_EVIDENCED    (sin cambio)
+  CONFIRMED_NOT_ENTITLED      (ex CONFIRMED_NOT_AUTHORISED)
+  INDETERMINATE               (sin cambio)
+```
+
+No se reescribe historia: los artefactos y casos G0 permanecen en V1;
+`assess()` seleccionará la versión semántica explícitamente
+(`semantics_version`), y el replay G0 sigue byte-idéntico.
+
+### Política de `reported_facts` en assessment
+
+`reported_facts` no es una segunda ruta hacia el resultado: sigue la
+arquitectura `SourceAssertion → derivation → EntitlementAssertion →
+assess()`. Un reported_fact puede **bloquear o explicar**, nunca
+elevar ni crear un negativo:
+
+```text
+EntitlementAssertion ACTIVE     → puede producir CONFIRMED_ENTITLED
+reported_fact WITHDRAWN         → NO produce CONFIRMED_NOT_ENTITLED
+                                  (transformación jurídica = G1-E);
+                                  bloquea el positivo -> INDETERMINATE
+reported_fact MALFORMED/UNKNOWN → INDETERMINATE
+reported parent status          → nunca entitlement propio del child
+```
+
+### Reason codes V2 añadidos
+
+```text
+ACTIVE_ENTITLEMENT_EVIDENCED        (sustituye a SUPPORTED_BY_ACTIVE_
+                                     ASSERTIONS en modo V2)
+WITHDRAWAL_SEMANTICS_DEFERRED       (retirada observada; lectura
+                                     jurídica = G1-E)
+MALFORMED_STATUS_SEQUENCE           (secuencia temporal inválida)
+TERRITORIAL_ENTITLEMENT_UNRESOLVED  (FPS/pasaporte = G1-D)
+PARENT_STATUS_NOT_CHILD_ENTITLEMENT (estado heredado del parent)
+INSUFFICIENT_LEGAL_BASIS            (ENL/EXC y análogos)
+```
+
+Los reason codes V1 compartidos (`IDENTITY_NOT_FOUND`,
+`NO_ASSERTIONS_IN_SCOPE`, `ALL_EVIDENCE_STALE`, `CONFLICTING_
+ASSERTIONS`, `ENTITLEMENT_EXPIRED`, …) se conservan en V2.
+
+### Casos preregistrados — `fixtures/g1/assessment-cases.json`
+
+| caso | entidad | unidad | esperado V2 | razón |
+|------|---------|--------|-------------|-------|
+| G1A-001 | G05-016 PI activo | PAYMENT_SERVICES/ES | CONFIRMED_ENTITLED | ACTIVE_ENTITLEMENT_EVIDENCED |
+| G1A-002 | G05-004 PI activo | PAYMENT_SERVICES/ES | CONFIRMED_ENTITLED | ACTIVE_ENTITLEMENT_EVIDENCED |
+| G1A-003 | G05-018 EMI activa | E_MONEY_ISSUANCE/ES | CONFIRMED_ENTITLED | ACTIVE_ENTITLEMENT_EVIDENCED |
+| G1A-004 | G05-020 AISP | ACCOUNT_INFORMATION_SERVICES/ES | CONFIRMED_ENTITLED + REGISTRATION | ACTIVE_ENTITLEMENT_EVIDENCED |
+| G1A-005 | G05-021 AISP | ACCOUNT_INFORMATION_SERVICES/ES | CONFIRMED_ENTITLED + REGISTRATION | ACTIVE_ENTITLEMENT_EVIDENCED |
+| G1A-006 | G05-017 PI retirado | PAYMENT_SERVICES/ES | INDETERMINATE | WITHDRAWAL_SEMANTICS_DEFERRED |
+| G1A-007 | G05-016 PI activo | PAYMENT_SERVICES/DE | INDETERMINATE | TERRITORIAL_ENTITLEMENT_UNRESOLVED |
+| G1A-008 | G05-030 CI | PAYMENT_SERVICES/ES | NO_ENTITLEMENT_EVIDENCED | NO_ASSERTIONS_IN_SCOPE |
+| G1A-009 | G05-018 EMI | PAYMENT_SERVICES/ES | NO_ENTITLEMENT_EVIDENCED | NO_ASSERTIONS_IN_SCOPE |
+| G1A-010 | G05-999 inexistente | PAYMENT_SERVICES/ES | INDETERMINATE | IDENTITY_NOT_FOUND |
+
+Categorías no representables en el corpus congelado (documentadas en
+`cases_meta`, mismo patrón que G0): `MALFORMED_STATUS_SEQUENCE`,
+`PARENT_STATUS_NOT_CHILD_ENTITLEMENT`, `INSUFFICIENT_LEGAL_BASIS`
+(ENL/EXC), `CONFIRMED_NOT_ENTITLED` y multi-ruta — sin casos reales
+que las ejerciten; no se fabrican sintéticos.
+
+### Gate A8/A9
+
+```text
+G0 V1 replay        → byte-idéntico, 21/21 casos iguales
+G1 casos            → según preregistro
+0 reported_fact     → negativo automático
+0 REGISTRATION      → AUTHORISATION
+0 passport          → domestic entitlement
+0 parent status     → child entitlement
+```
+
 ### Invariante separado (confirmado en fuente primaria)
 
 ```text
