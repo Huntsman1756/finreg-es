@@ -19,6 +19,9 @@ ROOT = Path(__file__).parents[2]
 RUN_V1_PATH = ROOT / "fixtures" / "g0.5" / "runs" / "g0.5-a-2026-09-13-001.json"
 RUN_V2_PATH = ROOT / "fixtures" / "g0.5" / "runs" / "g0.5-a-2026-09-13-002.json"
 AUDIT_PATH = ROOT / "fixtures" / "g0.5" / "audit" / "g0.5-b-corpus-audit.json"
+RESOLUTION_PATH = (
+    ROOT / "fixtures" / "g0.5" / "audit" / "g0.5-b-preregistration-resolution.json"
+)
 CORPUS_PATH = ROOT / "fixtures" / "g0.5" / "corpus" / "entities.json"
 GROUND_TRUTH_PATH = ROOT / "fixtures" / "g0.5" / "corpus" / "ground-truth.json"
 MANIFEST_PATH = ROOT / "fixtures" / "g0.5" / "sources" / "manifest.json"
@@ -205,3 +208,87 @@ def test_g05c_frozen_inputs_keep_their_audited_hashes():
     assert hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest() == audit[
         "source_manifest_sha256"
     ]
+
+
+def test_g05c_resolution_adjudicates_every_strict_unexpected_divergence():
+    """G05-B-F04: las 9 divergencias estrictamente inesperadas quedan
+    adjudicadas sin tocar el ground truth congelado."""
+    resolution = _read(RESOLUTION_PATH)
+    run = _read(RUN_V1_PATH)
+    risks = _expected_risks()
+    header = resolution["resolution"]
+
+    assert header["status"] == "RESOLVED"
+    assert header["audit_finding_id"] == "G05-B-F04"
+    assert header["run_id"] == "g0.5-a-2026-09-13-001"
+    assert header["successor_run_id"] == "g0.5-a-2026-09-13-002"
+    assert header["strict_unexpected_total"] == 9
+    assert header["ground_truth_changes"] == []
+    assert header["ground_truth_sha256"] == hashlib.sha256(
+        GROUND_TRUTH_PATH.read_bytes()
+    ).hexdigest()
+
+    taxonomy = {row["code"] for row in resolution["classification_taxonomy"]}
+    assert {
+        "PREREGISTRATION_OMISSION",
+        "SOURCE_CHANGED_AFTER_FREEZE",
+        "GROUND_TRUTH_GAP",
+        "CONTRACT_INTERPRETATION_GAP",
+        "EXTRACTION_UNEXPECTED",
+    } <= taxonomy
+
+    entries = resolution["omissions"] + resolution["residual_unexpected"]
+    by_divergence = {entry["divergence_id"]: entry for entry in entries}
+    assert sorted(by_divergence) == _strict_unexpected(run, risks)
+    for divergence_id, entry in by_divergence.items():
+        divergence = run["divergences"][divergence_id - 1]
+        assert entry["entity_id"] == divergence["corpus_id"]
+        assert entry["missing_expected_risk"] == divergence["classification"]
+        assert entry["missing_expected_risk"] not in risks[entry["entity_id"]]
+        assert entry["divergence_reason"] == divergence["reason"]
+        assert entry["classification"] in taxonomy
+        assert entry["impact_on_assessment"] == "NONE_ASSESSMENT_NOT_RUN"
+
+
+def test_g05c_eight_omissions_prove_expected_list_incomplete_not_data():
+    """Las ocho omisiones son PREREGISTRATION_OMISSION: cada riesgo omitido
+    estaba preregistrado en otra entidad con la misma fuente, lo que
+    demuestra que existía en el momento del freeze."""
+    resolution = _read(RESOLUTION_PATH)
+    corpus = _read(CORPUS_PATH)
+    risks = _expected_risks()
+    sources_by_entity = {
+        row["corpus_id"]: {rec["source"] for rec in row["source_records"]}
+        for row in corpus["entities"]
+    }
+
+    omissions = resolution["omissions"]
+    assert len(omissions) == 8
+    assert {e["divergence_id"] for e in omissions} == set(OMISSION_DIVERGENCE_IDS)
+    for entry in omissions:
+        assert entry["classification"] == "PREREGISTRATION_OMISSION"
+        assert entry["would_have_been_expected_if_known"] is True
+        assert entry["impact_on_ground_truth"] == "NONE_EXPECTED_LIST_NONEXHAUSTIVE"
+        siblings = [
+            corpus_id
+            for corpus_id, sources in sources_by_entity.items()
+            if corpus_id != entry["entity_id"]
+            and entry["source"] in sources
+            and entry["missing_expected_risk"] in risks[corpus_id]
+        ]
+        assert siblings, entry
+
+
+def test_g05c_g05_015_residual_is_source_data_quality_preserved():
+    """El noveno inesperado estricto no es una omisión: es el defecto de
+    fuente G05-015, ya adjudicado por el audit como SOURCE_DATA_QUALITY."""
+    resolution = _read(RESOLUTION_PATH)
+    residual = resolution["residual_unexpected"]
+    assert len(residual) == 1
+    entry = residual[0]
+    assert entry["entity_id"] == "G05-015"
+    assert entry["classification"] == "EXTRACTION_UNEXPECTED"
+    assert entry["root_cause_category"] == "SOURCE_DATA_QUALITY"
+    assert entry["audit_finding_id"] == "G05-B-F02"
+    assert entry["disposition"] == "RETAIN_RAW_BLOCK_INVALID_LEI_JOIN"
+    assert entry["status"] == "RESOLVED_PRESERVED"
