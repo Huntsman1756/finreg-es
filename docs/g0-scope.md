@@ -160,5 +160,32 @@ conserva, la validez es `INVALID` y el join automatico esta prohibido. Tambien
 deja documentados el defecto de anotacion de expectativas del runner y ocho
 omisiones de `expected_contract_risks`, sin modificar el run ni el ground truth.
 
-G0.6 permanece bloqueado hasta resolver esos findings en commits sucesores con
-la evidencia y las decisiones explicitas exigidas por G0.
+## Estado despues de G0.5-C
+
+Los findings de G0.5-B quedan cerrados en commits sucesores:
+
+- El runner V2 corrige la anotacion de expectativas y el run sucesor
+  `g0.5-a-2026-09-13-002` reproduce el valor auditado `unexpected=9` sobre
+  los mismos inputs congelados; el run original conserva su metrica
+  defectuosa sin reescribirse.
+- Las ocho omisiones de `expected_contract_risks` se adjudican como
+  `PREREGISTRATION_OMISSION` en
+  `fixtures/g0.5/audit/g0.5-b-preregistration-resolution.json`; corpus y
+  ground truth mantienen sus hashes auditados.
+- `FINREG_LEI_DIAGNOSTIC_V2` separa `INVALID_LENGTH` de
+  `INVALID_CHECK_DIGITS`; el run `g0.5-a-2026-09-13-003` lo demuestra sin
+  alterar el conteo estricto ni los valores raw.
+
+Detalle y criterios de cierre en
+[`docs/g0.5-c-remediation-closeout.md`](g0.5-c-remediation-closeout.md).
+El corte suma 76 tests en verde.
+
+```text
+G0.1–G0.4    FROZEN
+G0.5 corpus   FROZEN
+G0.5-A        PASS_WITH_KNOWN_RUNNER_DEFECT
+G0.5-B        PASS_WITH_FINDINGS
+G0.5-C        PASS
+
+G0.6          NOT_STARTED
+```

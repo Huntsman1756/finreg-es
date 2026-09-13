@@ -51,3 +51,13 @@ reason de identidad; nunca produce `CONFIRMED_NOT_AUTHORISED` ni `CONFIRMED_AUTH
 
 Implementación: `finreg_es/identity.py` — `resolve_by_identifier`, `resolve_by_name`,
 `adopt_identifiers_from_source`, validadores `is_valid_nif` / `is_valid_lei`.
+
+## Diagnósticos LEI (FINREG_LEI_DIAGNOSTIC_V2)
+
+`lei_diagnostic` separa lo que la validez booleana mezclaba:
+`VALID | MISSING | INVALID_LENGTH | INVALID_CHARSET | INVALID_CHECK_DIGITS`.
+`is_valid_lei` se mantiene como capa agregada (`== "VALID"`). La regla de
+identidad no cambia: un LEI inválido conserva su valor raw, nunca se repara
+silenciosamente, prohíbe el join automático por LEI y sólo admite resolución
+exacta por otro identificador autoritativo; un checksum inválido no implica
+por sí mismo `AMBIGUOUS`.
