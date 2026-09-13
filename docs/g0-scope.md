@@ -100,24 +100,25 @@ G0.5 REAL-WORLD CORPUS
 
 ## Estado actual de G0.5
 
-El freeze anterior conserva el estado histórico de 55 tests. G0.5 ya está en curso:
-se ha comprometido la baseline `g0.5-p0-2026-09-13`, con 18 snapshots y hashes
-verificados, y el manifest contiene 30 entidades jurídicas distintas. H4 queda
-verificada para capacidad de snapshot; H1, H3, H6 y H8 permanecen parciales por
-mapping o completitud jurídica. H2, H5 y H7 siguen abiertas.
+El freeze anterior conserva el estado histórico de 55 tests. La baseline
+`g0.5-p0-2026-09-13` conserva 18 snapshots con hashes verificados y el manifest
+contiene 30 entidades jurídicas distintas. H4 queda verificada para capacidad de
+snapshot; H1, H3, H6 y H8 permanecen parciales por mapping o completitud jurídica.
+H2, H5 y H7 siguen abiertas.
 
 El detalle de la evidencia está en
-[`docs/g0.5-source-verification.md`](g0.5-source-verification.md) y la auditoría del
-corpus en [`docs/g0.5-corpus-audit.md`](g0.5-corpus-audit.md). El corte actual suma
-58 tests: 55 del freeze y 3 de integridad de G0.5.
+[`docs/g0.5-source-verification.md`](g0.5-source-verification.md), el preregistro del
+corpus en [`docs/g0.5-corpus-audit.md`](g0.5-corpus-audit.md) y el resultado del run en
+[`docs/g0.5-a-extraction-run.md`](g0.5-a-extraction-run.md). G0.5-A ya se ejecutó:
+30/30 entidades, 34/34 intentos de fuente y 30/30 ground truths coincidentes. El
+corte actual suma 60 tests: 55 del freeze, 3 de integridad del corpus y 2 del run.
 
-El contrato de ingeniería está congelado; algunos hechos regulatorios aún no. Los tests no
-demuestran que FinReg funcione con el mundo real: demuestran que existe una semántica
-explícita para que el mundo real **no pueda ser forzado silenciosamente** dentro de
-conclusiones falsas. El objetivo de G0.5 es intentar que las 30 entidades rompan estos
-contratos.
+El contrato de ingeniería sigue congelado; algunos hechos regulatorios aún no. El
+runner conserva `assessment = NOT_RUN` y deja una divergencia de identidad abierta
+para G0.5-B: un LEI publicado por ESMA no supera el checksum. No se ha modificado
+ground truth para absorber ese resultado.
 
-## Plan de G0.5 (orden obligatorio)
+## Protocolo de G0.5 (orden obligatorio)
 
 1. Resolver **P0** con evidencia primaria: H1, H3, H4, H6, H8.
 2. Guardar cada evidencia primaria como snapshot/hash **antes** de usarla para cambiar contratos.
@@ -126,7 +127,8 @@ contratos.
 5. Establecer manualmente el ground truth esperado **antes** de ejecutar los extractores.
 6. Ejecutar el corpus intentando deliberadamente encontrar casos que rompan G0.1–G0.4.
 7. Clasificar cada ruptura como `SOURCE_CONTRACT_GAP`, `IDENTITY_GAP`, `COVERAGE_GAP`,
-   `SEMANTICS_GAP` o `EXTRACTION_BUG`.
+   `SEMANTICS_GAP` o `EXTRACTION_BUG`. G0.5-A está completado; G0.5-B debe auditar
+   el resultado antes de iniciar G0.6.
 
 **Regla de G0.5**: no adaptar el expected result después de ver lo que devuelve el código sin
 dejar constancia de que el ground truth estaba equivocado y de la fuente primaria que lo
