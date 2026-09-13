@@ -56,6 +56,10 @@ def _reported_fact_reason(facts: list[dict]) -> AssessmentReason:
         return AssessmentReason.INSUFFICIENT_LEGAL_BASIS
     if any(f["reported_status"] == "WITHDRAWN" for f in facts):
         return AssessmentReason.WITHDRAWAL_SEMANTICS_DEFERRED
+    if any(
+        f["reported_status"] == "TERRITORIAL_ENTITLEMENT_DEFERRED" for f in facts
+    ):
+        return AssessmentReason.TERRITORIAL_ENTITLEMENT_UNRESOLVED
     return AssessmentReason.MALFORMED_STATUS_SEQUENCE
 
 

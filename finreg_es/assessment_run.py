@@ -43,8 +43,12 @@ CONTRACTS_DIR = Path("fixtures") / "contracts"
 
 G1_DIR = Path("fixtures") / "g1"
 G1_DERIVED_PATH = G1_DIR / "derived-assertions-g1-a-001.json"
-G1_RULESET_PATH = G1_DIR / "derivation-rules.json"
+G1_RULESET_PATH = G1_DIR / "derivation-rules-g1-a.json"
 G1_CASES_PATH = G1_DIR / "assessment-cases.json"
+
+G1C_DERIVED_PATH = G1_DIR / "derived-assertions-g1-c-001.json"
+G1C_CASES_PATH = G1_DIR / "assessment-cases-g1-c.json"
+G1C_LEDGER_PATH = G1_DIR / "claim-ledger-g1-c-001.json"
 
 
 def _sha256_file(path: Path) -> str:
@@ -85,13 +89,23 @@ def run_assessment(
     *,
     run_id: str,
     g1: bool = False,
+    g1c: bool = False,
     executed_at: str | None = None,
     code_commit: str | None = None,
 ) -> dict[str, Any]:
-    if g1:
+    if g1c:
+        artifact_path = repo_root / G1C_DERIVED_PATH
+        ruleset_path = repo_root / G1_DIR / "derivation-rules.json"
+        cases_path = repo_root / G1C_CASES_PATH
+        ledger_path = repo_root / G1C_LEDGER_PATH
+        run_version = G1_ASSESSMENT_RUN_VERSION
+        gate = "G1-C6"
+        semantics_version = "V2"
+    elif g1:
         artifact_path = repo_root / G1_DERIVED_PATH
         ruleset_path = repo_root / G1_RULESET_PATH
         cases_path = repo_root / G1_CASES_PATH
+        ledger_path = repo_root / LEDGER_PATH
         run_version = G1_ASSESSMENT_RUN_VERSION
         gate = "G1-A8"
         semantics_version = "V2"
@@ -99,10 +113,10 @@ def run_assessment(
         artifact_path = repo_root / DERIVED_PATH
         ruleset_path = repo_root / RULESET_PATH
         cases_path = repo_root / CASES_PATH
+        ledger_path = repo_root / LEDGER_PATH
         run_version = ASSESSMENT_RUN_VERSION
         gate = "G0.7-B"
         semantics_version = "V1"
-    ledger_path = repo_root / LEDGER_PATH
     corpus_path = repo_root / CORPUS_PATH
 
     artifact = strict_json_loads(artifact_path.read_text(encoding="utf-8"))
@@ -140,7 +154,7 @@ def run_assessment(
             assertions=assertions,
             contracts=contracts,
             semantics_version=semantics_version,
-            reported_facts=reported_facts if g1 else None,
+            reported_facts=reported_facts if (g1 or g1c) else None,
         )
         matching_ids = [
             e["assertion_id"] for e in result.assertion_evaluations
@@ -189,7 +203,7 @@ def run_assessment(
             "reason_match": case.get("expected_reason") is not None
             and str(result.reason) == case["expected_reason"],
         }
-        if g1:
+        if g1 or g1c:
             matched_facts = [
                 f["fact_id"]
                 for f in reported_facts
@@ -223,7 +237,7 @@ def run_assessment(
             **input_shas,
             "frozen_input_integrity": integrity,
             "executed_at": executed_at,
-            **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if g1 else {}),
+            **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if (g1 or g1c) else {}),
         },
         "summary": {
             "cases_total": len(case_results),
@@ -249,7 +263,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--g1", action="store_true",
-                        help="Artefactos y casos G1 + ASSESSMENT_SEMANTICS_V2")
+                        help="Artefactos y casos G1-A + ASSESSMENT_SEMANTICS_V2")
+    parser.add_argument("--g1c", action="store_true",
+                        help="Artefactos y casos G1-C + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
@@ -260,6 +276,7 @@ def main(argv: list[str] | None = None) -> int:
         args.repo_root.resolve(),
         run_id=args.run_id,
         g1=args.g1,
+        g1c=args.g1c,
         executed_at=args.executed_at,
         code_commit=args.code_commit,
     )

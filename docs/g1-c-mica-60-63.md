@@ -154,6 +154,104 @@ G1-D  proyección territorial (passport PSD2 + MiCA, dos familias)
 G1-E  negative/withdrawal/expiry semantics (incl. NCASP list)
 ```
 
+## C5 — derivation delta (ejecutado)
+
+Delta implementado:
+
+```text
+vocab.py
+  + 10 actividades MiCA a–j (CRYPTO_CUSTODY_ADMINISTRATION ..
+    CRYPTO_TRANSFER); el umbrella CRYPTO_ASSET_SERVICES se conserva.
+
+derivation.py
+  + join CNMV_PSC_REGISTER → ESMA_MICA_REGISTER por corpus_id:
+    cnmv_category, cnmv_services_from, mica_service_letters (a–j),
+    mica_foreign_countries, mica_dates_agree.
+  + $ITEM como clave de mapa en emit_per (letra → actividad canónica).
+  + proveniencia: las aserciones MiCA citan claims ESMA *y* CNMV
+    (corroborating source_assertions).
+  + dedup en reglas derivadas: N aserciones base de la misma clase
+    producen UNA aserción derivada por (entidad, actividad, ámbito).
+  + build_g1c_artifact() (ledger G1-C propio, manifest-g1-c-run).
+
+ruleset V2 (derivation-rules.json)
+  mica-art63-domestic-psc               PSC (ESPAÑA) → AUTHORISATION × servicio
+  mica-art60-domestic-credit-institution ENTIDAD DE CRÉDITO (ESPAÑA)
+                                        → NOTIFICATION × servicio
+                                        (base legal anota los 40 días
+                                        hábiles + qualification CRD)
+  mica-cnmv-date-conflict               DATE_CONFLICT si fechas difieren
+  mica-cnmv-category-unknown            UNKNOWN_CNMV_CATEGORY si sin ancla
+  mica-cnmv-category-unsupported        UNSUPPORTED_ART60_ENTITY_CLASS
+                                        (LP/sucursal/otras clases art.60)
+  mica-passport-territorial-deferred    ac_serviceCode_cou con países
+                                        ≠ home → reported_fact
+                                        TERRITORIAL_ENTITLEMENT_DEFERRED
+
+  El ruleset es deliberadamente más estrecho que la ley: sólo rutas
+  domésticas con casos reales probados. CSD/ESI/EDE/gestoras/ORM no
+  tienen regla positiva aún.
+```
+
+Resultado del artefacto `derived-assertions-g1-c-001.json`:
+
+```text
+157 aserciones · 0 findings · 8 reported_facts
+  29 MiCA art.63  AUTHORISATION  (9 PSC domésticos, por servicio)
+  18 MiCA art.60  NOTIFICATION   (6 entidades de crédito, por servicio)
+   7 TERRITORIAL_ENTITLEMENT_DEFERRED (entidades ES con países foreign)
+   1 EBA WITHDRAWN (hecho reportado, lectura jurídica = G1-E)
+   6 derivadas credit-institution-implies-payment-services (deduplicadas)
+```
+
+## C6 — assessment + auditoría de divergencias
+
+`assessment-cases-g1-c.json` (9 casos, `--g1c`, ASSESSMENT_SEMANTICS_V2):
+
+```text
+G1C-01 BIT2ME    CRYPTO_CUSTODY_ADMINISTRATION ES
+       → CONFIRMED_ENTITLED / AUTHORISATION          (art.63)
+G1C-02 BBVA      CRYPTO_ORDER_EXECUTION ES
+       → CONFIRMED_ENTITLED / NOTIFICATION           (art.60)
+G1C-03 CAIXABANK CRYPTO_ORDER_RECEPTION_TRANSMISSION ES
+       → CONFIRMED_ENTITLED / NOTIFICATION           (art.60)
+G1C-04 BBVA      CRYPTO_PORTFOLIO_MANAGEMENT ES (no listado)
+       → NO_ENTITLEMENT_EVIDENCED                    (0 inventado)
+G1C-05 G05-999   identidad no resoluble
+       → INDETERMINATE / IDENTITY_NOT_FOUND
+G1C-06 BIT2ME    CRYPTO_CUSTODY_ADMINISTRATION DE
+       → INDETERMINATE / TERRITORIAL_ENTITLEMENT_UNRESOLVED
+         (reported_fact de pasaporte; G1-D)
+G1C-07 PROSEGUR  CRYPTO_CUSTODY_ADMINISTRATION ES
+       → CONFIRMED_ENTITLED / AUTHORISATION
+G1C-08 PROSEGUR  PAYMENT_SERVICES ES
+       → CONFIRMED_ENTITLED / AUTHORISATION (EBA PI)
+         → multi-role confirmado, 0 conflicto
+G1C-09 BBVA      PAYMENT_SERVICES ES
+       → NO_ENTITLEMENT_EVIDENCED / ASSERTION_OUT_OF_SOURCE_SCOPE
+         (guardia de scope: la derivación estatutaria dispara pero
+          ESMA_MICA_REGISTER no cubre PAYMENT_SERVICES — la clase
+          corroborada por CNMV no sustituye a la autorización
+          bancaria en un registro sectorial que cubra la actividad)
+
+9/9 matches — run: fixtures/g1/runs/assessment-run-g1-c-001.json
+```
+
+Auditoría de divergencias ESMA ↔ CNMV:
+
+```text
+fechas ac_authorisationNotificationDate ↔ CNMV "desde la que puede
+  prestar": 15/15 coinciden → 0 DATE_CONFLICT
+categorías: 6 ENTIDAD DE CRÉDITO / 9 PSC, todas reconocidas
+  → 0 UNKNOWN_CNMV_CATEGORY / 0 UNSUPPORTED
+mecanismo inferido desde ae_legalform/ae_competentAuthority: 0
+filas LP/sucursal: fuera del corpus (sin identidad) → defer G1-D
+```
+
+Convergencia demostrada: dos vías jurídicas distintas (AUTHORISATION
+art.63, NOTIFICATION art.60) producen el mismo CONFIRMED_ENTITLED bajo
+V2, con `entry_mechanism` y `legal_basis` diferenciando la vía.
+
 ## Estado
 
 ```text
@@ -162,5 +260,8 @@ C2  DONE — matriz art. 60 por entity_class × servicio (+qualification CRD)
 C3  DONE — mapping registro → mecanismo (refinado: por servicio, no por clase)
 C4  DONE — extract CNMV anclado; categorías reales verificadas;
     gate C4→C5 superado
-C5/C6 pendientes
+C5  DONE — ruleset V2 + build_g1c_artifact; 47 aserciones MiCA por
+    servicio, mecanismo anclado CNMV
+C6  DONE — 9/9 casos V2; convergencia AUTHORISATION/NOTIFICATION →
+    CONFIRMED_ENTITLED; multi-role PROSEGUR; scope-guard verificado
 ```
