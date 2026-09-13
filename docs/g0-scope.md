@@ -188,8 +188,21 @@ G0.5-B        PASS_WITH_FINDINGS
 G0.5-C        PASS
 G0.6          PASS
 
-G0.7          IN_PROGRESS   (A PASS, B PASS_WITH_FINDINGS → auditado / C PASS / D pendiente)
+G0.7          PASS   (A freeze / B run 21-21 / C audit 0 divergencias / D closeout)
 ```
+
+## Estado despues de G0.7-D
+
+G0.7 cierra: el pipeline evidencia → derivacion → assessment esta
+ejecutado, auditado y congelado. Artefactos inmutables:
+`derived-assertions-g0.5-a-003.json`, `runs/g0.7-001.json` (sha256
+`c9bc7d81…911d`), `audit/g0.7-c-run-audit.json`. Legado documentado para
+versiones futuras del runner: renombrar `code_commit` →
+`derivation_freeze_commit`/`execution_base_commit`/`artifact_commit`
+(F02). Resultado central: el sistema confirma 8 autorizaciones con
+soporte juridico suficiente y se abstiene correctamente en 13 —
+distingue presencia en un registro de evidencia juridicamente
+suficiente.
 
 ## Estado despues de G0.7-C
 
