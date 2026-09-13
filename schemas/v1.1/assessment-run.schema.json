@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinReg-ES assessment run artifact v1.1 (fixtures/g1/runs/*.json)",
+  "description": "v1.1: assessment enum is ASSESSMENT_SEMANTICS_V2; run carries semantics_version; cases add matched_reported_fact_ids, entry_mechanisms, expected_entry_mechanism, entry_mechanism_match.",
+  "type": "object",
+  "required": ["run", "summary", "cases", "result_sha"],
+  "properties": {
+    "run": {
+      "type": "object",
+      "required": ["run_id", "run_version", "gate", "code_sha",
+                   "code_files", "code_commit", "derivation_version",
+                   "ruleset_version", "corpus_sha256",
+                   "claims_ledger_sha256", "derivation_ruleset_sha256",
+                   "assessment_cases_sha256", "derived_assertions_sha256",
+                   "frozen_input_integrity", "executed_at",
+                   "semantics_version"],
+      "properties": {
+        "run_id": {"type": "string"},
+        "run_version": {"type": "string"},
+        "gate": {"type": "string"},
+        "semantics_version": {"type": "string"},
+        "code_sha": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "code_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {"type": "string"},
+              "sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "code_commit": {"type": ["string", "null"]},
+        "derivation_version": {"type": "string"},
+        "ruleset_version": {"type": "string"},
+        "corpus_sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "claims_ledger_sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "derivation_ruleset_sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "assessment_cases_sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "derived_assertions_sha256": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"},
+        "frozen_input_integrity": {
+          "type": "object",
+          "additionalProperties": {"type": "boolean"}
+        },
+        "executed_at": {"$ref": "v1/common/temporal.schema.json#/$defs/iso_datetime"}
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": ["cases_total", "matches", "mismatches",
+                   "reason_mismatches", "assessments"],
+      "properties": {
+        "cases_total": {"type": "integer", "minimum": 0},
+        "matches": {"type": "integer", "minimum": 0},
+        "mismatches": {"type": "array", "items": {"type": "string"}},
+        "reason_mismatches": {"type": "array", "items": {"type": "string"}},
+        "assessments": {"type": "object", "additionalProperties": {"type": "integer"}}
+      },
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["case_id", "query", "identity_resolution",
+                     "assessment", "reason", "diagnostics",
+                     "matching_assertion_ids", "used_assertion_ids",
+                     "derived_assertion_ids", "source_claim_ids",
+                     "assertion_evaluations", "expected_assessment",
+                     "expected_reason", "match", "reason_match",
+                     "matched_reported_fact_ids", "entry_mechanisms",
+                     "expected_entry_mechanism", "entry_mechanism_match"],
+        "properties": {
+          "case_id": {"type": "string"},
+          "query": {
+            "type": "object",
+            "required": ["entity_id", "activity", "jurisdiction", "as_of"],
+            "properties": {
+              "entity_id": {"type": "string"},
+              "activity": {"type": "string"},
+              "jurisdiction": {"type": "string"},
+              "as_of": {"$ref": "v1/common/temporal.schema.json#/$defs/iso_date"}
+            },
+            "additionalProperties": false
+          },
+          "identity_resolution": {
+            "type": "string",
+            "enum": ["EXACT", "AMBIGUOUS", "NOT_FOUND",
+                     "CONFLICTING_IDENTIFIERS"]
+          },
+          "assessment": {
+            "type": "string",
+            "enum": ["CONFIRMED_ENTITLED", "NO_ENTITLEMENT_EVIDENCED",
+                     "CONFIRMED_NOT_ENTITLED", "INDETERMINATE"]
+          },
+          "reason": {"type": "string"},
+          "diagnostics": {"type": "array", "items": {"type": "string"}},
+          "matching_assertion_ids": {"type": "array", "items": {"type": "string"}},
+          "used_assertion_ids": {"type": "array", "items": {"type": "string"}},
+          "derived_assertion_ids": {"type": "array", "items": {"type": "string"}},
+          "source_claim_ids": {"type": "array", "items": {"type": "string"}},
+          "assertion_evaluations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["assertion_id", "register_id",
+                           "source_legal_effect",
+                           "effective_legal_effect_at_as_of",
+                           "effective_from", "effective_to",
+                           "reason", "legal_basis", "evidence"],
+              "properties": {
+                "assertion_id": {"type": "string"},
+                "register_id": {"type": "string"},
+                "source_legal_effect": {
+                  "type": "string",
+                  "enum": ["ENTITLED_TO_PROVIDE", "NOT_ENTITLED", "UNKNOWN"]
+                },
+                "effective_legal_effect_at_as_of": {
+                  "type": "string",
+                  "enum": ["ENTITLED_TO_PROVIDE", "NOT_ENTITLED", "UNKNOWN"]
+                },
+                "effective_from": {"$ref": "v1/common/temporal.schema.json#/$defs/iso_date"},
+                "effective_to": {"$ref": "v1/common/temporal.schema.json#/$defs/iso_date_nullable"},
+                "reason": {"type": "string"},
+                "legal_basis": {"type": "string"},
+                "evidence": {
+                  "type": "array",
+                  "items": {"$ref": "v1/common/provenance.schema.json#/$defs/source_assertion"}
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "expected_assessment": {"type": ["string", "null"]},
+          "expected_reason": {"type": ["string", "null"]},
+          "match": {"type": "boolean"},
+          "reason_match": {"type": "boolean"},
+          "matched_reported_fact_ids": {"type": "array", "items": {"type": "string"}},
+          "entry_mechanisms": {"type": "array", "items": {"type": "string"}},
+          "expected_entry_mechanism": {"type": ["string", "null"]},
+          "entry_mechanism_match": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "result_sha": {"$ref": "v1/common/identifiers.schema.json#/$defs/sha256"}
+  },
+  "additionalProperties": false
+}

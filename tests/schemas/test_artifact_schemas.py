@@ -68,6 +68,7 @@ ARTIFACT_MAP = {
     "fixtures/g1/derivation-rules.json": "v1.1/derivation-ruleset",
     "fixtures/g1/derived-assertions-*.json": "v1.1/derived-assertions",
     "fixtures/g1/assessment-cases.json": "v1.1/assessment-cases",
+    "fixtures/g1/runs/*.json": "v1.1/assessment-run",
 }
 
 # Artefactos historicos de analisis / fixtures sinteticos fuera del

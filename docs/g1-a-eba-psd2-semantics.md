@@ -547,6 +547,69 @@ G1 casos            → según preregistro
 0 parent status     → child entitlement
 ```
 
+## A8 — Ejecución y divergencia auditada
+
+Implementación: `assess(semantics_version="V1|V2",
+reported_facts=…)`. V1 es el default y reproduce G0 byte-idéntico
+(la traducción V1→V2 ocurre en la frontera `emit`; la lógica interna
+sigue razonando en V1). `AssessmentV2` y los seis reason codes nuevos
+viven en `vocab.py`. Runner: `python -m finreg_es.assessment_run --g1`.
+
+Ejecución `fixtures/g1/runs/assessment-g1-a-001.json`:
+
+```text
+cases 10 · matches 10 · reason_mismatches 0 · entry_mechanism 10/10
+CONFIRMED_ENTITLED 5 · INDETERMINATE 3 · NO_ENTITLEMENT_EVIDENCED 2
+```
+
+**Divergencia auditada (primera ejecución, 8/10):** G1A-004/005
+devolvieron `NO_ENTITLEMENT_EVIDENCED /
+ASSERTION_OUT_OF_SOURCE_SCOPE` — el contrato de fuente EBA v1.0.0 no
+declaraba `ACCOUNT_INFORMATION_SERVICES` en `activities_covered`, así
+que las nuevas aserciones AISP eran inadmisibles. Corrección:
+`eba-psd2-register.json` → `contract_version 1.1.0` (clases
+AISP/EPI/EEMI + actividad AIS añadidas; nota H4 parcialmente
+cerrada). La preregistro NO se editó: el fix fue en el contrato de
+fuente, que es donde vive la semántica de cobertura. G0 replay no
+afectado (ninguna aserción G0 referencia las clases nuevas).
+
+**Gate verificado:**
+
+```text
+G0 V1 replay          → test_run_replays_offline_byte_identical PASS
+                        (cases + summary byte-idénticos; code_sha
+                        difiere por diseño — detecta cambio de código)
+G1 casos              → 10/10 match, 0 reason/entry mismatches
+reported_fact→neg     → 0 (G1A-006: fact WITHDRAWN → INDETERMINATE)
+REGISTRATION→auth     → 0 (G1A-004/005: CONFIRMED_ENTITLED+REGISTRATION)
+passport→domestic     → 0 (G1A-007: INDETERMINATE/TERRITORIAL_…)
+parent→child          → 0 (sin casos AG/BR en corpus; política activa)
+tests                 → suite completa PASS; artefactos G1 validan
+                        contra schemas v1.1; v1 intacto
+```
+
+## A9 — Closeout G1-A
+
+```text
+H9-A  CLOSED — PROVEN (scoped): ENT_AUT es secuencia alternante
+      documentada (spec oficial EBA); PI/EMI=authorisation,
+      EPI/AISP/EEMI=registration, AG/BR=parent-inherited,
+      ENL/EXC=insufficient legal basis.
+H9-B  CLOSED — PROVEN WITH QUALIFICATION: EBA PSD2 es capa oficial
+      de reporte NCA (T2), no constitutiva; suficiente para
+      CONFIRMED_ENTITLED home+domestic cuando servicio y ámbito
+      encajan; insuficiente por sí sola para entitlement territorial
+      (G1-D) ni para negativos (G1-E).
+```
+
+El invariante CI se mantiene: `entity_class=CREDIT_INSTITUTION` +
+ausencia en EBA PSD2 → sin inferencia negativa (G1A-008).
+
+Para G1 quedan abiertos, en orden: G1-B (enumeración BdE), G1-C
+(MiCA 60/63), G1-D (territorial/FPS y multi-ruta), G1-E (retirada/
+expiración/negativos — ya existe el corpus de 2 552 retiradas reales
+y los intervalos preservados).
+
 ### Invariante separado (confirmado en fuente primaria)
 
 ```text

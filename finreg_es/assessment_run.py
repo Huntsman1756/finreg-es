@@ -30,6 +30,7 @@ from .semantics import assess
 
 
 ASSESSMENT_RUN_VERSION = "FINREG_G07B_ASSESSMENT_V1"
+G1_ASSESSMENT_RUN_VERSION = "FINREG_G1_ASSESSMENT_V1"
 
 G07_DIR = Path("fixtures") / "g0.7"
 DERIVED_PATH = G07_DIR / "derived-assertions-g0.5-a-003.json"
@@ -39,6 +40,11 @@ LEDGER_PATH = Path("fixtures") / "g0.6" / "claim-provenance-g0.5-a-003.json"
 CORPUS_PATH = Path("fixtures") / "g0.5" / "corpus" / "entities.json"
 MANIFEST_PATH = Path("fixtures") / "g0.5" / "sources" / "manifest.json"
 CONTRACTS_DIR = Path("fixtures") / "contracts"
+
+G1_DIR = Path("fixtures") / "g1"
+G1_DERIVED_PATH = G1_DIR / "derived-assertions-g1-a-001.json"
+G1_RULESET_PATH = G1_DIR / "derivation-rules.json"
+G1_CASES_PATH = G1_DIR / "assessment-cases.json"
 
 
 def _sha256_file(path: Path) -> str:
@@ -78,12 +84,24 @@ def run_assessment(
     repo_root: Path,
     *,
     run_id: str,
+    g1: bool = False,
     executed_at: str | None = None,
     code_commit: str | None = None,
 ) -> dict[str, Any]:
-    artifact_path = repo_root / DERIVED_PATH
-    ruleset_path = repo_root / RULESET_PATH
-    cases_path = repo_root / CASES_PATH
+    if g1:
+        artifact_path = repo_root / G1_DERIVED_PATH
+        ruleset_path = repo_root / G1_RULESET_PATH
+        cases_path = repo_root / G1_CASES_PATH
+        run_version = G1_ASSESSMENT_RUN_VERSION
+        gate = "G1-A8"
+        semantics_version = "V2"
+    else:
+        artifact_path = repo_root / DERIVED_PATH
+        ruleset_path = repo_root / RULESET_PATH
+        cases_path = repo_root / CASES_PATH
+        run_version = ASSESSMENT_RUN_VERSION
+        gate = "G0.7-B"
+        semantics_version = "V1"
     ledger_path = repo_root / LEDGER_PATH
     corpus_path = repo_root / CORPUS_PATH
 
@@ -107,6 +125,7 @@ def run_assessment(
 
     index = to_identity_index(artifact)
     assertions = to_entitlement_assertions(artifact)
+    reported_facts = artifact.get("reported_facts", [])
     by_id = {a["assertion_id"]: a for a in artifact["assertions"]}
     contracts = _load_contracts(repo_root)
 
@@ -120,6 +139,8 @@ def run_assessment(
             as_of=case["as_of"],
             assertions=assertions,
             contracts=contracts,
+            semantics_version=semantics_version,
+            reported_facts=reported_facts if g1 else None,
         )
         matching_ids = [
             e["assertion_id"] for e in result.assertion_evaluations
@@ -132,41 +153,57 @@ def run_assessment(
                 for claim_id in by_id[assertion_id]["source_claim_ids"]
             }
         )
-        case_results.append(
-            {
-                "case_id": case["case_id"],
-                "query": {
-                    "entity_id": case["entity_id"],
-                    "activity": case["activity"],
-                    "jurisdiction": case["jurisdiction"],
-                    "as_of": case["as_of"],
-                },
-                "identity_resolution": str(result.identity_resolution),
-                "assessment": str(result.assessment),
-                "reason": str(result.reason),
-                "diagnostics": list(result.diagnostics),
-                "matching_assertion_ids": matching_ids,
-                "used_assertion_ids": used_ids,
-                "derived_assertion_ids": [
-                    assertion_id
-                    for assertion_id in matching_ids
-                    if by_id[assertion_id].get("derived_by")
-                ],
-                "source_claim_ids": source_claim_ids,
-                "assertion_evaluations": [
-                    dict(evaluation) for evaluation in result.assertion_evaluations
-                ],
-                # expected_* es salida-comparacion, nunca entrada del
-                # motor: ausente no rompe la evaluacion, mutado solo
-                # cambia los flags de match.
-                "expected_assessment": case.get("expected_assessment"),
-                "expected_reason": case.get("expected_reason"),
-                "match": case.get("expected_assessment") is not None
-                and str(result.assessment) == case["expected_assessment"],
-                "reason_match": case.get("expected_reason") is not None
-                and str(result.reason) == case["expected_reason"],
-            }
+        entry_mechanisms = sorted(
+            {a["entry_mechanism"] for a in result.assertions}
         )
+        case_result = {
+            "case_id": case["case_id"],
+            "query": {
+                "entity_id": case["entity_id"],
+                "activity": case["activity"],
+                "jurisdiction": case["jurisdiction"],
+                "as_of": case["as_of"],
+            },
+            "identity_resolution": str(result.identity_resolution),
+            "assessment": str(result.assessment),
+            "reason": str(result.reason),
+            "diagnostics": list(result.diagnostics),
+            "matching_assertion_ids": matching_ids,
+            "used_assertion_ids": used_ids,
+            "derived_assertion_ids": [
+                assertion_id
+                for assertion_id in matching_ids
+                if by_id[assertion_id].get("derived_by")
+            ],
+            "source_claim_ids": source_claim_ids,
+            "assertion_evaluations": [
+                dict(evaluation) for evaluation in result.assertion_evaluations
+            ],
+            # expected_* es salida-comparacion, nunca entrada del
+            # motor: ausente no rompe la evaluacion, mutado solo
+            # cambia los flags de match.
+            "expected_assessment": case.get("expected_assessment"),
+            "expected_reason": case.get("expected_reason"),
+            "match": case.get("expected_assessment") is not None
+            and str(result.assessment) == case["expected_assessment"],
+            "reason_match": case.get("expected_reason") is not None
+            and str(result.reason) == case["expected_reason"],
+        }
+        if g1:
+            matched_facts = [
+                f["fact_id"]
+                for f in reported_facts
+                if f.get("corpus_id") == case["entity_id"]
+            ]
+            expected_mechanism = case.get("expected_entry_mechanism")
+            case_result["matched_reported_fact_ids"] = matched_facts
+            case_result["entry_mechanisms"] = entry_mechanisms
+            case_result["expected_entry_mechanism"] = expected_mechanism
+            case_result["entry_mechanism_match"] = (
+                expected_mechanism is None
+                or expected_mechanism in entry_mechanisms
+            )
+        case_results.append(case_result)
 
     mismatches = [c["case_id"] for c in case_results if not c["match"]]
     executed_at = executed_at or datetime.now(timezone.utc).isoformat().replace(
@@ -176,8 +213,8 @@ def run_assessment(
     result: dict[str, Any] = {
         "run": {
             "run_id": run_id,
-            "run_version": ASSESSMENT_RUN_VERSION,
-            "gate": "G0.7-B",
+            "run_version": run_version,
+            "gate": gate,
             "code_sha": code_sha,
             "code_files": code_files,
             "code_commit": code_commit,
@@ -186,6 +223,7 @@ def run_assessment(
             **input_shas,
             "frozen_input_integrity": integrity,
             "executed_at": executed_at,
+            **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if g1 else {}),
         },
         "summary": {
             "cases_total": len(case_results),
@@ -210,6 +248,8 @@ def run_assessment(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--g1", action="store_true",
+                        help="Artefactos y casos G1 + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
@@ -219,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     result = run_assessment(
         args.repo_root.resolve(),
         run_id=args.run_id,
+        g1=args.g1,
         executed_at=args.executed_at,
         code_commit=args.code_commit,
     )

@@ -1,72 +1,142 @@
 {
-  "register_id": "EBA_PSD2_REGISTER",
-  "contract_version": "1.0.0",
-  "g0_freeze": "G0.1",
-  "authority": "European Banking Authority (EBA)",
-  "register_name": "EBA Register of Payment and Electronic Money Institutions (PSD2)",
-  "official_url": "https://webgate.ec.europa.eu/psd2register/",
-  "legal_basis": "Reglamento (UE) 2019/518, articulos 16-18 (modifica la PSD2, Directiva (UE) 2015/2365)",
-  "entity_classes_covered": ["PAYMENT_INSTITUTION", "E_MONEY_INSTITUTION", "PSP_AGENT"],
-  "excluded_entity_classes": ["CREDIT_INSTITUTION", "INVESTMENT_FIRM_ESI", "FINANCIAL_ADVISER_EAF", "FUND_MANAGER_SGIIC", "CASP"],
-  "activities_covered": ["PAYMENT_SERVICES", "E_MONEY_ISSUANCE"],
-  "jurisdictions": ["EEA"],
-  "territorial_regimes": ["DOMESTIC", "BRANCH", "FREEDOM_TO_PROVIDE_SERVICES"],
-  "update_cadence": "UNKNOWN (H4: verificar cadencia de feeds NCA)",
-  "max_positive_staleness_days": 45,
-  "max_negative_staleness_days": 30,
-  "supports_source_as_of": null,
-  "negative_evidence_capability": "EXPLICIT_NEGATIVE_ONLY",
-  "identity_fields": ["legal_name", "LEI", "HOME_STATE_ID"],
-  "raw_format": "HTML + (H4: verificar descarga masiva CSV/XML)",
-  "supports_bulk_snapshot": null,
-  "coverage_rules": [
-    {
-      "rule_id": "eba-psd2-in-eea",
-      "scope": "IN",
-      "entity_class": null,
-      "activities": null,
-      "jurisdictions": null,
-      "territorial_bases": ["DOMESTIC", "BRANCH", "FREEDOM_TO_PROVIDE_SERVICES"],
-      "valid_from": null,
-      "valid_to": null,
-      "note": "PI/EMI (y agentes) del EEE, con pasaporte por Estado miembro y modalidad (sucursal/FPS)"
-    },
-    {
-      "rule_id": "eba-psd2-out-credit-institutions",
-      "scope": "OUT",
-      "entity_class": "CREDIT_INSTITUTION",
-      "activities": null,
-      "jurisdictions": null,
-      "territorial_bases": null,
-      "valid_from": null,
-      "valid_to": null,
-      "note": "W2: el registro EXCLUYE entidades de credito (marco unico CRD). Que un banco no aparezca JAMAS puede demostrar ausencia de servicios de pago"
-    },
-    {
-      "rule_id": "eba-psd2-out-crypto",
-      "scope": "OUT",
-      "entity_class": null,
-      "activities": ["CRYPTO_ASSET_SERVICES"],
-      "jurisdictions": null,
-      "territorial_bases": null,
-      "valid_from": null,
-      "valid_to": null,
-      "note": "El registro PSD2 no cubre servicios sobre criptoactivos"
-    }
-  ],
-  "notes": [
-    "H4: verificar si incluye AISP registrados sin autorizacion plena y si publica LEI por entidad.",
-    "La exclusión de las entidades de crédito es el ejemplo canónico de negative_evidence_capability acotado por coverage(): la ausencia de un banco en este registro NO es evidencia de nada."
-  ],
-  "verification": {
-    "legal_basis": {"status": "VERIFIED", "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32019R0518", "note": "Reg. (UE) 2019/518 arts. 16-18: mandato del registro EBA"},
-    "excluded_entity_classes": {"status": "VERIFIED", "source_url": "https://webgate.ec.europa.eu/psd2register/", "note": "El registro declara que las entidades de credito no se incluyen; re-verificar pagina de documentacion en G0.5"},
-    "entity_classes_covered": {"status": "PENDING", "source_url": null, "note": "H4: verificar inclusion de AISP registrados"},
-    "identity_fields": {"status": "PENDING", "source_url": null, "note": "H4: verificar campo LEI"},
-    "update_cadence": {"status": "PENDING", "source_url": null, "note": "H4"},
-    "supports_bulk_snapshot": {"status": "PENDING", "source_url": null, "note": "H4/C3"},
-    "max_positive_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
-    "max_negative_staleness_days": {"status": "PROPOSED", "source_url": null, "note": "Politica propia"},
-    "negative_evidence_capability": {"status": "PROPOSED", "source_url": null, "note": "EXPLICIT_NEGATIVE_ONLY: la completitud de los feeds NCA no esta verificada"}
+ "register_id": "EBA_PSD2_REGISTER",
+ "contract_version": "1.1.0",
+ "g0_freeze": "G0.1",
+ "authority": "European Banking Authority (EBA)",
+ "register_name": "EBA Register of Payment and Electronic Money Institutions (PSD2)",
+ "official_url": "https://webgate.ec.europa.eu/psd2register/",
+ "legal_basis": "Reglamento (UE) 2019/518, articulos 16-18 (modifica la PSD2, Directiva (UE) 2015/2365)",
+ "entity_classes_covered": [
+  "PAYMENT_INSTITUTION",
+  "E_MONEY_INSTITUTION",
+  "PSP_AGENT",
+  "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+  "EXEMPTED_PAYMENT_INSTITUTION",
+  "EXEMPTED_E_MONEY_INSTITUTION"
+ ],
+ "excluded_entity_classes": [
+  "CREDIT_INSTITUTION",
+  "INVESTMENT_FIRM_ESI",
+  "FINANCIAL_ADVISER_EAF",
+  "FUND_MANAGER_SGIIC",
+  "CASP"
+ ],
+ "activities_covered": [
+  "PAYMENT_SERVICES",
+  "E_MONEY_ISSUANCE",
+  "ACCOUNT_INFORMATION_SERVICES"
+ ],
+ "jurisdictions": [
+  "EEA"
+ ],
+ "territorial_regimes": [
+  "DOMESTIC",
+  "BRANCH",
+  "FREEDOM_TO_PROVIDE_SERVICES"
+ ],
+ "update_cadence": "UNKNOWN (H4: verificar cadencia de feeds NCA)",
+ "max_positive_staleness_days": 45,
+ "max_negative_staleness_days": 30,
+ "supports_source_as_of": null,
+ "negative_evidence_capability": "EXPLICIT_NEGATIVE_ONLY",
+ "identity_fields": [
+  "legal_name",
+  "LEI",
+  "HOME_STATE_ID"
+ ],
+ "raw_format": "HTML + (H4: verificar descarga masiva CSV/XML)",
+ "supports_bulk_snapshot": null,
+ "coverage_rules": [
+  {
+   "rule_id": "eba-psd2-in-eea",
+   "scope": "IN",
+   "entity_class": null,
+   "activities": null,
+   "jurisdictions": null,
+   "territorial_bases": [
+    "DOMESTIC",
+    "BRANCH",
+    "FREEDOM_TO_PROVIDE_SERVICES"
+   ],
+   "valid_from": null,
+   "valid_to": null,
+   "note": "PI/EMI (y agentes) del EEE, con pasaporte por Estado miembro y modalidad (sucursal/FPS)"
+  },
+  {
+   "rule_id": "eba-psd2-out-credit-institutions",
+   "scope": "OUT",
+   "entity_class": "CREDIT_INSTITUTION",
+   "activities": null,
+   "jurisdictions": null,
+   "territorial_bases": null,
+   "valid_from": null,
+   "valid_to": null,
+   "note": "W2: el registro EXCLUYE entidades de credito (marco unico CRD). Que un banco no aparezca JAMAS puede demostrar ausencia de servicios de pago"
+  },
+  {
+   "rule_id": "eba-psd2-out-crypto",
+   "scope": "OUT",
+   "entity_class": null,
+   "activities": [
+    "CRYPTO_ASSET_SERVICES"
+   ],
+   "jurisdictions": null,
+   "territorial_bases": null,
+   "valid_from": null,
+   "valid_to": null,
+   "note": "El registro PSD2 no cubre servicios sobre criptoactivos"
   }
+ ],
+ "notes": [
+  "H4: verificar si incluye AISP registrados sin autorizacion plena y si publica LEI por entidad.",
+  "La exclusión de las entidades de crédito es el ejemplo canónico de negative_evidence_capability acotado por coverage(): la ausencia de un banco en este registro NO es evidencia de nada.",
+  "G1-A (contract 1.1.0): resolucion H9 — el registro incluye AISP/EPI/EEMI via REGISTRATION (Annex 2019/410 Tables 2/3/5) y ENL/EXC; H4 parcialmente cerrado. ENT_AUT es secuencia alternante auth/withdrawal (spec oficial EBA)."
+ ],
+ "verification": {
+  "legal_basis": {
+   "status": "VERIFIED",
+   "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32019R0518",
+   "note": "Reg. (UE) 2019/518 arts. 16-18: mandato del registro EBA"
+  },
+  "excluded_entity_classes": {
+   "status": "VERIFIED",
+   "source_url": "https://webgate.ec.europa.eu/psd2register/",
+   "note": "El registro declara que las entidades de credito no se incluyen; re-verificar pagina de documentacion en G0.5"
+  },
+  "entity_classes_covered": {
+   "status": "PENDING",
+   "source_url": null,
+   "note": "H4: verificar inclusion de AISP registrados"
+  },
+  "identity_fields": {
+   "status": "PENDING",
+   "source_url": null,
+   "note": "H4: verificar campo LEI"
+  },
+  "update_cadence": {
+   "status": "PENDING",
+   "source_url": null,
+   "note": "H4"
+  },
+  "supports_bulk_snapshot": {
+   "status": "PENDING",
+   "source_url": null,
+   "note": "H4/C3"
+  },
+  "max_positive_staleness_days": {
+   "status": "PROPOSED",
+   "source_url": null,
+   "note": "Politica propia"
+  },
+  "max_negative_staleness_days": {
+   "status": "PROPOSED",
+   "source_url": null,
+   "note": "Politica propia"
+  },
+  "negative_evidence_capability": {
+   "status": "PROPOSED",
+   "source_url": null,
+   "note": "EXPLICIT_NEGATIVE_ONLY: la completitud de los feeds NCA no esta verificada"
+  }
+ }
 }

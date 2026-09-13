@@ -29,8 +29,34 @@ from .temporal import Freshness, is_stale
 from .vocab import (
     Assessment,
     AssessmentReason,
+    AssessmentV2,
     LegalEffect,
+    TerritorialBasis,
 )
+
+
+# ASSESSMENT_SEMANTICS_V2 (G1-A7): el resultado publico describe el
+# entitlement, no el mecanismo. La traduccion ocurre en la frontera de
+# emision: la logica interna sigue razonando en terminos V1.
+_V1_TO_V2_ASSESSMENT = {
+    Assessment.CONFIRMED_AUTHORISED: AssessmentV2.CONFIRMED_ENTITLED,
+    Assessment.NO_ENTITLEMENT_EVIDENCED: AssessmentV2.NO_ENTITLEMENT_EVIDENCED,
+    Assessment.CONFIRMED_NOT_AUTHORISED: AssessmentV2.CONFIRMED_NOT_ENTITLED,
+    Assessment.INDETERMINATE: AssessmentV2.INDETERMINATE,
+}
+
+
+def _reported_fact_reason(facts: list[dict]) -> AssessmentReason:
+    """Razon V2 para una entidad sin aserciones admisibles que tiene
+    reported_facts (politica A7: el hecho reportado bloquea o explica,
+    nunca eleva ni crea un negativo)."""
+    if any("parent-status" in f["rule_id"] for f in facts):
+        return AssessmentReason.PARENT_STATUS_NOT_CHILD_ENTITLEMENT
+    if any("insufficient-basis" in f["rule_id"] for f in facts):
+        return AssessmentReason.INSUFFICIENT_LEGAL_BASIS
+    if any(f["reported_status"] == "WITHDRAWN" for f in facts):
+        return AssessmentReason.WITHDRAWAL_SEMANTICS_DEFERRED
+    return AssessmentReason.MALFORMED_STATUS_SEQUENCE
 
 
 @dataclass(frozen=True)
@@ -116,7 +142,7 @@ class AssessmentResult:
     jurisdiction: str
     as_of: str
     identity_resolution: IdentityResolutionState
-    assessment: Assessment
+    assessment: Assessment | AssessmentV2
     reason: AssessmentReason
     assertions: tuple[dict, ...] = field(default_factory=tuple)
     assertion_evaluations: tuple[dict, ...] = field(default_factory=tuple)
@@ -133,8 +159,18 @@ def assess(
     assertions: list[EntitlementAssertion],
     contracts: dict[str, SourceContract],
     territorial_basis: str | None = None,
+    semantics_version: str = "V1",
+    reported_facts: list[dict] | None = None,
 ) -> AssessmentResult:
-    """Motor de assessment (G0.7 dentro de G0.4: semantica congelada)."""
+    """Motor de assessment.
+
+    ``semantics_version="V1"`` (default) reproduce la semantica G0
+    congelada — replay byte-identico. ``"V2"`` (G1+) emite la taxonomia
+    CONFIRMED_ENTITLED/CONFIRMED_NOT_ENTITLED y consume
+    ``reported_facts`` como evidencia contextual que bloquea o explica
+    (politica A7: nunca elevan el resultado ni crean un negativo).
+    """
+    v2 = semantics_version == "V2"
     as_of_date = date.fromisoformat(as_of)
 
     # Gate de identidad (C1): separado de la conclusion regulatoria.
@@ -198,7 +234,16 @@ def assess(
     ]
     evaluations = tuple(_evaluation(a, as_of_date) for a in matching)
 
+    entity_facts = [
+        f for f in (reported_facts or [])
+        if f.get("corpus_id") == entity.entity_id
+    ]
+
     def emit(assessment, reason, used=None):
+        if v2:
+            assessment = _V1_TO_V2_ASSESSMENT[assessment]
+            if reason is AssessmentReason.SUPPORTED_BY_ACTIVE_ASSERTIONS:
+                reason = AssessmentReason.ACTIVE_ENTITLEMENT_EVIDENCED
         return _result(
             resolution, entity, activity, jurisdiction, as_of,
             assessment, reason, diagnostics,
@@ -247,6 +292,17 @@ def assess(
         admissible.append(a)
 
     if not admissible:
+        # V2/A7: un reported_fact sobre la entidad bloquea o explica —
+        # WITHDRAWN no es NO_ENTITLEMENT_EVIDENCED (hay evidencia
+        # material) ni CONFIRMED_NOT_ENTITLED (lectura juridica = G1-E).
+        if v2 and entity_facts:
+            diagnostics.append(
+                "reported_facts:" + ",".join(f["fact_id"] for f in entity_facts)
+            )
+            return emit(
+                Assessment.INDETERMINATE,
+                _reported_fact_reason(entity_facts),
+            )
         if not matching:
             return emit(
                 Assessment.NO_ENTITLEMENT_EVIDENCED,
@@ -298,12 +354,32 @@ def assess(
             used=not_entitled,
         )
     if entitled:
+        # V2: un hecho reportado WITHDRAWN contradice una asercion
+        # positiva admisible -> conflicto, nunca positivo silencioso.
+        if v2 and any(f["reported_status"] == "WITHDRAWN" for f in entity_facts):
+            diagnostics.append("conflicting_reported_fact:withdrawn")
+            return emit(
+                Assessment.INDETERMINATE,
+                AssessmentReason.CONFLICTING_ASSERTIONS,
+                used=admissible,
+            )
         return emit(
             Assessment.CONFIRMED_AUTHORISED,
             AssessmentReason.SUPPORTED_BY_ACTIVE_ASSERTIONS,
             used=entitled,
         )
     # Solo UNKNOWN interpretable pero fresco: indeterminado.
+    # V2: si toda la evidencia UNKNOWN es territorial (pasaporte/FPS),
+    # la razon explicita que el entitlement territorial esta en G1-D.
+    if v2 and all(
+        a.territorial_basis == TerritorialBasis.FREEDOM_TO_PROVIDE_SERVICES
+        for a in unknown
+    ):
+        return emit(
+            Assessment.INDETERMINATE,
+            AssessmentReason.TERRITORIAL_ENTITLEMENT_UNRESOLVED,
+            used=unknown,
+        )
     return emit(
         Assessment.INDETERMINATE,
         AssessmentReason.UNINTERPRETABLE_EVIDENCE,
