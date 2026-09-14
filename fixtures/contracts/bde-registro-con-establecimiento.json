@@ -1,0 +1,159 @@
+{
+ "register_id": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+ "contract_version": "1.0.0",
+ "g0_freeze": "G1-E",
+ "authority": "Banco de Espana",
+ "register_name": "Registro del Banco de Espana de entidades comunitarias con establecimiento en Espana (sucursales)",
+ "official_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ConEstablecimiento.xlsx",
+ "legal_basis": "PSD2 (UE) 2015/2366 art. 28: registro de sucursales de EP/EDE y otras entidades comunitarias que operan con establecimiento en Espana; la hoja ACTIVIDADES enumera los servicios declarados por sucursal",
+ "entity_classes_covered": [
+  "PAYMENT_INSTITUTION",
+  "E_MONEY_INSTITUTION",
+  "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+  "PSP_AGENT"
+ ],
+ "excluded_entity_classes": [
+  "CASP",
+  "CREDIT_INSTITUTION"
+ ],
+ "activities_covered": [
+  "PAYMENT_SERVICES",
+  "E_MONEY_ISSUANCE",
+  "ACCOUNT_INFORMATION_SERVICES",
+  "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+  "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+  "PAYMENT_DIRECT_DEBIT_EXECUTION",
+  "PAYMENT_CARD_TRANSACTION_EXECUTION",
+  "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+  "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+  "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+  "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+  "PAYMENT_INSTRUMENT_ISSUING",
+  "PAYMENT_TRANSACTION_ACQUIRING",
+  "MONEY_REMITTANCE",
+  "PAYMENT_INITIATION_SERVICES"
+ ],
+ "jurisdictions": [
+  "ES"
+ ],
+ "territorial_regimes": [
+  "BRANCH"
+ ],
+ "update_cadence": "UNKNOWN (xlsx publicado con fecha de datos declarada)",
+ "max_positive_staleness_days": 90,
+ "max_negative_staleness_days": 45,
+ "supports_source_as_of": true,
+ "supports_bulk_snapshot": true,
+ "negative_evidence_capability": "NO_NEGATIVE_INFERENCE",
+ "identity_fields": [
+  "legal_name",
+  "codigo_be",
+  "nombre_matriz"
+ ],
+ "raw_format": "XLSX (descarga oficial; hoja 1: entidades con establecimiento — CODIGO BE / TIPO ENTIDAD / FECHA ALTA / FECHA BAJA / MOTIVO BAJA / PAIS DE ORIGEN; hoja 2: ACTIVIDADES por sucursal; hoja 3: actividad transfronteriza LPS)",
+ "coverage_rules": [
+  {
+   "rule_id": "bde-ce-in-branch",
+   "scope": "IN",
+   "entity_class": null,
+   "activities": null,
+   "jurisdictions": [
+    "ES"
+   ],
+   "territorial_bases": [
+    "BRANCH"
+   ],
+   "valid_from": null,
+   "valid_to": null,
+   "note": "Sucursales ES de entidades comunitarias inscritas: ruta BRANCH + vector de actividades por capacidad (hoja ACTIVIDADES)"
+  },
+  {
+   "rule_id": "bde-ce-out-fps",
+   "scope": "OUT",
+   "entity_class": null,
+   "activities": null,
+   "jurisdictions": null,
+   "territorial_bases": [
+    "FREEDOM_TO_PROVIDE_SERVICES"
+   ],
+   "valid_from": null,
+   "valid_to": null,
+   "note": "La LPS no se inscribe en este registro: su ausencia nunca es evidencia negativa de la ruta FPS"
+  },
+  {
+   "rule_id": "bde-ce-out-agents",
+   "scope": "OUT",
+   "entity_class": "PSP_AGENT",
+   "activities": null,
+   "jurisdictions": null,
+   "territorial_bases": null,
+   "valid_from": null,
+   "valid_to": null,
+   "note": "Agentes: via delegada del principal — fuera de inferencia negativa independiente"
+  }
+ ],
+ "capability_vector_completeness": {
+  "property": "CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT",
+  "note": "G1-E (E4): la hoja ACTIVIDADES enumera, por CODIGO BE de sucursal en alta, sus servicios Annex I. Completitud scoped del slice BRANCH — no poblacional: la ausencia de una entidad del registro sigue sin ser negativa.",
+  "applies_when": {
+   "record_present": true,
+   "identity": "EXACT",
+   "route": "KNOWN",
+   "activity": "ATOMIC",
+   "current_snapshot": true,
+   "conflicting_evidence": false
+  },
+  "slices": [
+   {
+    "slice_id": "bde-branch-pi-activities",
+    "entity_classes": [
+     "PAYMENT_INSTITUTION"
+    ],
+    "territorial_bases": [
+     "BRANCH"
+    ],
+    "field": "ACTIVIDADES",
+    "universe": "BDE_PSD2_SERVICE_CODES",
+    "note": "Sucursales de EP extranjeras: enumeracion completa de servicios de la sucursal mientras la fila esta en alta"
+   },
+   {
+    "slice_id": "bde-branch-emi-activities",
+    "entity_classes": [
+     "E_MONEY_INSTITUTION"
+    ],
+    "territorial_bases": [
+     "BRANCH"
+    ],
+    "field": "ACTIVIDADES",
+    "universe": "BDE_PSD2_SERVICE_CODES",
+    "note": "Sucursales de EDE extranjeras: mismo slice"
+   }
+  ]
+ },
+ "notes": [
+  "NO_NEGATIVE_INFERENCE: ausencia en el registro no permite negativo; la rama sin inscripcion demostrada produce abstencion, nunca NOT_ENTITLED.",
+  "G1-E: workbook congelado con sheet ENTIDADES + sheet ACTIVIDADES + sheet LPS; los codigos BdE legacy (Ley 16/2009: 3.1/3.2/3.3, 4.1/4.2/4.3, 5) son de otro regimen y no equivalen a los atomicos RDL 19/2018 (3.A..4.C, 5.A/5.B)."
+ ],
+ "verification": {
+  "authority": {
+   "note": "descarga oficial BdE congelada en G1 (sha256 en manifest)",
+   "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ConEstablecimiento.xlsx",
+   "status": "VERIFIED"
+  },
+  "legal_basis": {
+   "note": "PSD2 art. 28 verificado contra DOUE L 337 congelado",
+   "source_url": "https://eur-lex.europa.eu/eli/dir/2015/2366/oj",
+   "status": "VERIFIED"
+  },
+  "supports_source_as_of": {
+   "note": "el xlsx declara fecha de datos (source_as_of 2026-09-10 en el snapshot congelado)",
+   "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ConEstablecimiento.xlsx",
+   "status": "VERIFIED"
+  },
+  "negative_evidence_capability": {
+   "note": "Conservador: sin completitud poblacional verificada no hay inferencia negativa global",
+   "source_url": null,
+   "status": "PROPOSED"
+  }
+ }
+}

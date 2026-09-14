@@ -39,6 +39,10 @@ G1_ARTIFACT_VERSION = "FINREG_G1_DERIVED_ASSERTIONS_V1"
 # los campos derivados territoriales (join parent EBA, join BdE sucursal,
 # ruta territorial CNMV) y la interpolacion de legal_basis/scope.
 G1D_DERIVATION_VERSION = "FINREG_G1_DERIVATION_V2"
+# G1-E (E4): sube por el contrato negativo (ABSENT_IN, ABSENT_FROM_SET,
+# LIST, campos negative_*/source_granularity/interval_end/admissibility,
+# hechos de raiz y de baja) y la propagacion de la baja BdE a EBA.
+G1E_DERIVATION_VERSION = "FINREG_G1_DERIVATION_V3"
 
 _EBA_ENT_AUT_DATE = r"\d{4}-\d{2}-\d{2}"
 
@@ -52,7 +56,12 @@ def _eba_ent_aut_derived(ent_aut: Any) -> dict[str, Any]:
     Devuelve status (ACTIVE/WITHDRAWN/UNKNOWN), intervalos
     [aut, retirada) preservados y la ultima fecha de autorizacion.
     """
-    out = {"status": "UNKNOWN", "intervals": [], "last_auth": None}
+    out = {
+        "status": "UNKNOWN",
+        "intervals": [],
+        "last_auth": None,
+        "last_withdrawal": None,
+    }
     if not isinstance(ent_aut, list) or not ent_aut:
         return out
     if not all(
@@ -63,6 +72,9 @@ def _eba_ent_aut_derived(ent_aut: Any) -> dict[str, Any]:
     out["intervals"] = [{"from": a, "to": w} for a, w in pairs]
     out["status"] = "ACTIVE" if len(ent_aut) % 2 == 1 else "WITHDRAWN"
     out["last_auth"] = ent_aut[-2] if len(ent_aut) % 2 == 0 else ent_aut[-1]
+    # G1-E (E4): ultima fecha de retirada explicita — effective_from del
+    # hecho negativo de familia/raiz (interval_end=EXCLUSIVE).
+    out["last_withdrawal"] = ent_aut[-1] if len(ent_aut) % 2 == 0 else None
     return out
 
 # Identificadores admitidos como clave de join en el indice de identidad
@@ -216,6 +228,7 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             fields["eba_ent_aut_status"] = derived["status"]
             fields["eba_ent_aut_intervals"] = derived["intervals"]
             fields["eba_ent_aut_last_auth"] = derived["last_auth"]
+            fields["eba_ent_aut_last_withdrawal"] = derived["last_withdrawal"]
             status_by_code[
                 (fields.get("entity_type"), fields.get("entity_code"))
             ] = derived["status"]
@@ -284,14 +297,50 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
     # corpus_id. La inscripcion BdE (sucursal activa, fecha de alta) es
     # el trigger territorial del regimen de establecimiento PSD2; la
     # fecha de baja cerrada marca la sucursal como no activa.
+    # G1-E: el join incorpora tambien el registro de entidades con
+    # establecimiento (sucursales + actividades por capacidad).
     bde_by_entity: dict[str, list[dict[str, Any]]] = {}
     for group in groups_list:
-        if group["source"] == "BDE_REGISTRO_SERVICIOS_PAGO":
+        if group["source"] in (
+            "BDE_REGISTRO_SERVICIOS_PAGO",
+            "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+        ):
             bde_by_entity.setdefault(group["corpus_id"], []).append(group)
+            # G1-E: clase de la baja declarada. Renuncia/revocacion cierran
+            # la autorizacion (EXPLICIT_WITHDRAWAL de raiz); transformacion,
+            # escision o fusion son eventos societarios (ENTITY_BAJA), no
+            # retirada de la autorizacion.
+            f = group["fields"]
+            motivo = (f.get("motivo_baja") or "").lower()
+            if not f.get("fecha_baja"):
+                f["bde_baja_kind"] = None
+            elif any(k in motivo for k in ("transformaci", "escisi", "fusi")):
+                f["bde_baja_kind"] = "TRANSFORMATION"
+            elif any(k in motivo for k in ("renuncia", "revocac", "ce ")):
+                f["bde_baja_kind"] = "WITHDRAWAL"
+            else:
+                f["bde_baja_kind"] = "UNRESOLVED_MOTIVO"
+            # G1-E: fechas BdE normalizadas ISO para derivaciones
+            # efectivas (hechos de baja, intervalos cerrados).
+            f["fecha_alta_iso"] = _parse_ddmmyyyy(f.get("fecha_alta"))
+            f["fecha_baja_iso"] = _parse_ddmmyyyy(f.get("fecha_baja"))
     for group in groups_list:
         fields = group["fields"]
         if group["source"] != "EBA_PSD2_REGISTER":
             continue
+        # G1-E: la baja del registro BdE de servicios de pago es hecho de
+        # la persona juridica (misma corpus_id); se propaga al grupo EBA
+        # para que las reglas puedan bloquear negativos cuya continuidad
+        # de sucesor no esta demostrada (p. ej. transformacion).
+        entity_bde = [
+            g
+            for g in bde_by_entity.get(group["corpus_id"], [])
+            if g["source"] == "BDE_REGISTRO_SERVICIOS_PAGO"
+        ]
+        if entity_bde:
+            primary_entity = entity_bde[0]["fields"]
+            fields["bde_entity_fecha_baja"] = primary_entity.get("fecha_baja")
+            fields["bde_entity_baja_kind"] = primary_entity.get("bde_baja_kind")
         if fields.get("entity_type") != "PSD_BR":
             continue
         bde_groups = bde_by_entity.get(group["corpus_id"], [])
@@ -464,10 +513,19 @@ def _condition(fields: dict[str, Any], condition: dict[str, Any]) -> bool:
         return value == condition["value"]
     if op == "NOT_NULL":
         return value is not None and value != ""
+    if op == "NULL":
+        return value is None or value == ""
     if op == "IN":
         return value in condition["value"]
     if op == "NOT_IN":
         return value not in condition["value"]
+    if op == "ABSENT_IN":
+        # G1-E: el literal condition["value"] NO es miembro del campo
+        # lista (ausencia enumerada dentro de un vector de capacidades).
+        field_value = fields.get(condition["field"])
+        if not isinstance(field_value, list):
+            return False
+        return condition["value"] not in field_value
     raise ValueError(f"operador de condicion desconocido: {op}")
 
 
@@ -483,6 +541,19 @@ def _iterate_items(
         if not isinstance(raw, list):
             return None
         items = [key for entry in raw if isinstance(entry, dict) for key in entry]
+    elif spec["mode"] == "LIST":
+        # G1-E: itera los elementos de un campo lista (p. ej.
+        # actividades_codes del vector BdE).
+        if not isinstance(raw, list):
+            return None
+        items = list(raw)
+    elif spec["mode"] == "ABSENT_FROM_SET":
+        # G1-E: itera los miembros del universo declarado ausentes del
+        # vector (ENUMERATED_ABSENCE por capacidad atomica). El universo
+        # es propiedad del slice contractual, no del campo observado.
+        if not isinstance(raw, list):
+            return None
+        items = [u for u in spec["universe"] if u not in raw]
     else:
         raise ValueError(f"modo de iteracion desconocido: {spec['mode']}")
     excluded = set(spec.get("exclude_values", []))
@@ -530,6 +601,13 @@ def _resolve_effective(
     kind = spec["derivation"]
     if kind == "EVIDENCE_AS_OF":
         return evidence_as_of, True
+    if kind == "FIELD_COPY":
+        # G1-E: el campo ya viene normalizado ISO (p. ej.
+        # eba_ent_aut_last_withdrawal, fecha_baja_iso).
+        value = fields.get(spec["field"])
+        return value, value is not None
+    if kind == "FIELD_COPY_OR_NULL":
+        return fields.get(spec["field"]), True
     if kind == "FIELD_DDMMYYYY":
         parsed = _parse_ddmmyyyy(fields.get(spec["field"]))
         return parsed, parsed is not None
@@ -679,6 +757,25 @@ def _emit_assertion(
     # contrato + scope + freshness bajo su propio contrato en assess().
     if "evidence_composition" in emit:
         assertion["evidence_composition"] = emit["evidence_composition"]
+    # G1-E (E4): contrato negativo versionado. Cada campo se emite solo
+    # cuando la regla lo declara — las aserciones historicas no llevan
+    # ninguno de estos campos.
+    for optional in (
+        "negative_scope",
+        "negative_evidence_class",
+        "source_granularity",
+        "interval_end",
+        "admissibility",
+        "blocker",
+        "coverage_policy_id",
+    ):
+        if optional in emit:
+            assertion[optional] = emit[optional]
+    if "raw_capability_code" in emit:
+        assertion["raw_capability_code"] = (
+            item if emit["raw_capability_code"] == "$ITEM"
+            else emit["raw_capability_code"]
+        )
     return assertion
 
 
@@ -821,17 +918,41 @@ def derive_entitlements(
                 if status is None:
                     # sin estado resoluble no se emite medio hecho
                     continue
-                reported_facts.append(
-                    {
-                        "fact_id": f"{id_prefix}-fact-{len(reported_facts) + 1:03d}",
-                        "corpus_id": group["corpus_id"],
-                        "source": group["source"],
-                        "rule_id": rule["rule_id"],
-                        "reported_status": status,
-                        "status_intervals": fields.get("eba_ent_aut_intervals"),
-                        "detail": fact_spec.get("detail"),
-                    }
-                )
+                fact = {
+                    "fact_id": f"{id_prefix}-fact-{len(reported_facts) + 1:03d}",
+                    "corpus_id": group["corpus_id"],
+                    "source": group["source"],
+                    "rule_id": rule["rule_id"],
+                    "reported_status": status,
+                    "status_intervals": fields.get("eba_ent_aut_intervals"),
+                    "detail": fact_spec.get("detail"),
+                }
+                # G1-E (E4): hechos negativos con clase/ambito. La fecha
+                # efectiva del cierre se resuelve desde un campo derivado
+                # (p. ej. eba_ent_aut_last_withdrawal, fecha_baja) o un
+                # literal; nunca se inventa una base territorial.
+                for optional in (
+                    "negative_scope",
+                    "negative_evidence_class",
+                    "interval_end",
+                    "canonical_activity",
+                    "entry_mechanism",
+                    "coverage_policy_id",
+                ):
+                    mapped = fact_spec.get(f"{optional}_from")
+                    if mapped is not None:
+                        fact[optional] = mapped["map"].get(
+                            fields.get(mapped["field"])
+                        )
+                    elif optional in fact_spec:
+                        fact[optional] = fact_spec[optional]
+                if "effective_from_field" in fact_spec:
+                    fact["effective_from"] = fields.get(
+                        fact_spec["effective_from_field"]
+                    )
+                elif "effective_from" in fact_spec:
+                    fact["effective_from"] = fact_spec["effective_from"]
+                reported_facts.append(fact)
                 continue
             if "emit_per" in rule:
                 items = _iterate_items(fields, rule["emit_per"]["iterate"])
@@ -1134,6 +1255,22 @@ def build_g1d_v2_artifact(repo_root: Path) -> dict[str, Any]:
     )
 
 
+def build_g1e_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-E (E4): ledger/corpus de las 10 anclas del corpus
+    adversarial E3-003 y ruleset V5. Solo materializacion — la
+    agregacion global pertenece a E5."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g1/claim-ledger-g1-e-001.json",
+        ruleset_rel="fixtures/g1/derivation-rules-g1-e-001.json",
+        corpus_rel="fixtures/g1/corpus-g1-e-001.json",
+        manifest_rel="fixtures/g1/sources/manifest-g1-e-run.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1E_DERIVATION_VERSION,
+        id_prefix="g1e",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -1144,6 +1281,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--g1d2", action="store_true", help="artefacto G1-D-F01 (sucesor -002)"
     )
+    parser.add_argument("--g1e", action="store_true", help="artefacto G1-E (E4)")
     args = parser.parse_args(argv)
 
     builder = build_artifact
@@ -1155,6 +1293,8 @@ def main(argv: list[str] | None = None) -> int:
         builder = build_g1d_artifact
     if args.g1d2:
         builder = build_g1d_v2_artifact
+    if args.g1e:
+        builder = build_g1e_artifact
     artifact = builder(args.repo_root.resolve())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:

@@ -427,6 +427,158 @@ Queda NON_REPRESENTABLE_IN_CURRENT_CORPUS: retirada de raíz +
 positivo en dominio distinto de PSD2 (ej. MiCA) — E3-005 lo cubre
 intra-PSD2; el caso cross-domain podrá probarse por test metamórfico.
 
+## E4 — Derivación de evidencia negativa (materialización)
+
+E4 es un **delta derivacional**: materializa hechos y aserciones
+negativas granulares con su provenance; **no** toca `assess()` ni
+produce veredictos globales (`CONFIRMED_ENTITLED` /
+`CONFIRMED_NOT_ENTITLED` / resolución de conflicto entre rutas siguen
+siendo E5). Artefactos: `fixtures/g1/{claim-ledger,corpus,
+derivation-rules,derived-assertions}-g1-e-001.json` +
+`sources/manifest-g1-e-run.json`, regenerables byte-idénticos con
+`tools/build_g1e_ledger.py`, `tools/build_g1e_ruleset.py` y
+`python -m finreg_es.derivation --g1e`.
+
+### negative_scope — la distinción estructural de E4
+
+```text
+ROOT_FAMILY        retirada de raíz / baja de entidad.
+                   Cierra la familia de rutas que mecánicamente
+                   desciende de esa autorización; NUNCA inventa un
+                   territorial_basis para una ruta no observada.
+                   Clases: EXPLICIT_WITHDRAWAL | ENTITY_BAJA.
+                   Se materializa como reported_fact (status fact
+                   enriquecido), no como aserción legal.
+
+ROUTE_CAPABILITY   ausencia enumerada en un vector completo de
+                   capacidades de una ruta demostrada.
+                   Clase: ENUMERATED_ABSENCE.
+                   Se materializa como aserción NOT_ENTITLED scoped
+                   a (activity, route_key).
+```
+
+Consecuencia binding: la retirada de raíz de MMG en 2019 **no**
+retroproyecta un negativo FPS-ES sobre 2020 — esa ruta nunca fue
+observada para el intervalo `[2017-05-30, 2019-07-12)`. Y la
+retirada de THUNES no convierte los `Services{ES}` aún listados en
+positivos: la raíz cerrada bloquea toda derivación positiva de la
+familia.
+
+### Dos completitudes, nunca fusionadas
+
+```text
+population completeness     negative_evidence_capability global del
+                            contrato. EBA sigue EXPLICIT_NEGATIVE_ONLY;
+                            BdE sigue NO_NEGATIVE_INFERENCE.
+                            Sin cambios en coverage.py.
+
+capability-vector           propiedad scoped nueva del contrato
+completeness                (capability_vector_completeness):
+                            "dado un record presente con identidad
+                            exacta y vector completo, la ausencia de
+                            una actividad atómica en ese vector sí
+                            soporta ENUMERATED_ABSENCE para esa
+                            (actividad, ruta)". Slices declarados:
+                            EBA Services{país} por entidad-raíz y
+                            PSD_BR; BdE ACTIVIDADES domestic PI/EMI
+                            y sucursal con-establecimiento.
+```
+
+La completitud del vector es **current-only**: el `Services{ES}` del
+snapshot 2026-09-14 no prueba qué servicios tenía la entidad en 2018.
+Todo `ENUMERATED_ABSENCE` deriva con `effective_from = EVIDENCE_AS_OF`
+— nunca la fecha de autorización raíz ni la alta BdE.
+
+### Semántica temporal
+
+- `interval_end = EXCLUSIVE` en los hechos derivados de `ENT_AUT`:
+  `[a1, a2)` — la vía está cerrada **en** la fecha de retirada
+  (E3-F02). Propiedad versionada del artefacto; el default legacy
+  inclusive preserva el replay byte-idéntico de G0/G1-D.
+- Intervalo raíz ≠ intervalo territorial (E3-F04): `ENT_AUT` es
+  histórico reconstruible; `Services{ES}` es un vector vigente. Los
+  positivos territoriales nacen en `EVIDENCE_AS_OF` salvo fecha
+  territorial publicada (BdE `FECHA ALTA` sí la publica para BRANCH).
+
+### Clasificación de bajas BdE (motivo)
+
+```text
+transformación / fusión / escisión  → ENTITY_BAJA  (no es withdrawal:
+                                      la continuidad del sucesor es
+                                      una cuestión distinta)
+renuncia / revocación / retirada    → EXPLICIT_WITHDRAWAL
+otro / irreconocible                → UNRESOLVED_MOTIVO (finding,
+                                      nunca negativo silencioso)
+```
+
+`ENTITY_BAJA` por transformación produce además el finding
+`TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED` y marca los negativos
+que dependerían de esa continuidad como `admissibility = BLOCKED`
+(Fintonic: el código 7 histórico de la fila dada de baja no es un
+positivo vigente — regla G1-B — pero tampoco demuestra cierre; el
+candidato queda bloqueado, no NOT_ENTITLED admisible).
+
+### Contrato de salida por aserción negativa
+
+```text
+canonical_activity          vocabulario PAYMENT_* / MONEY_REMITTANCE
+raw_capability_code         código verbatim de fuente ("7", "PS_070")
+source_granularity          ATOMIC | COMPOSITE (COMPOSITE nunca se
+                            descompone: BdE "5" Ley 16/2009 queda fuera
+                            de los universos de ausencia)
+entry_mechanism             AUTHORISATION | REGISTRATION | ...
+territorial_basis           sólo si la ruta está demostrada
+negative_evidence_class     ENUMERATED_ABSENCE
+negative_scope              ROUTE_CAPABILITY
+effective_from              EVIDENCE_AS_OF (ausencias) o fecha
+                            publicada (retiradas)
+effective_to / interval_end EXCLUSIVE para intervalos ENT_AUT nuevos
+coverage_policy_id          slice contractual que legitimó la ausencia
+admissibility / blocker     ADMISSIBLE | BLOCKED + motivo
+provenance                  enumeration claim(s) del vector usado
+```
+
+### Versionado contractual (bumps, no mutaciones)
+
+```text
+eba-psd2-register.json              1.1.0 → 1.2.0
+  + actividades granulares en activities_covered
+  + capability_vector_completeness (scoped, record-present)
+
+bde-registro-servicios-pago.json    1.0.1 → 1.1.0
+  + slices B5: domestic PI/EMI ACTIVIDADES + sucursal
+  + LPS/agentes siguen fuera de negativos (OUT explícito)
+
+bde-registro-con-establecimiento.json   NUEVO 1.0.0
+  workbook BdE separado: sucursales comunitarias + actividades
+
+schemas/v1.3/                       NUEVO (v1/v1.2 intocados)
+  source-contract / derivation-ruleset / derived-assertions /
+  entity-corpus — campos E4 opcionales, mismas restricciones
+  estructurales (sin if/then/dependencies/format)
+```
+
+### Resultado sobre el corpus E3-003
+
+```text
+166 aserciones · 11 findings · reported_facts con negative_scope
+DENIZEN   retirada dual-source 23/07/2020 [2019-03-15,2020-07-23)
+MMG       raíz ACTIVA [2017,2019,2024) + FPS sólo desde EVIDENCE_AS_OF
+BANKINTER ENTITY_BAJA transformación 2019-02-22 ≠ retirada EBA 2026-07-01
+CERRO     +MONEY_REMITTANCE / −PAYMENT_ACCOUNT_CASH_PLACEMENT (DOMESTIC)
+MOLLIE    raíz PI cerrada + raíz EMI abierta (misma fecha)
+FINTONIC  PIS BLOCKED + TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED
+SIBS      0 negativos BdE (LPS fuera); ausencias FPS scoped del vector
+WISE      PIS cerrada en FPS y BRANCH (≥2 ROUTE_CAPABILITY)
+EUPAGO    PIS −FPS / +BRANCH (PSD_BR + BdE 6938 código 7)
+THUNES    raíz retirada; 0 positivos pese a Services{ES} listados
+```
+
+`tests/g1/test_g1e_negative_derivation.py` fija estas expectativas
+más el contrato de campos, la exclusividad `[from,to)`, la no-
+retroproyección territorial, la ausencia de descomposición de códigos
+COMPOSITE y la determinación byte-idéntica del artefacto.
+
 ## Secuencia restante
 
 ```text
@@ -436,7 +588,10 @@ E2  DONE — vocabulario PSD2 granular congelado (namespace PAYMENT_*,
     Ley 16/2009, explicado por la columna NORMATIVA del propio xlsx)
 E3  DONE — corpus preregistrado, 10 anclas reales, 0 sintéticas
     (sucesor -003 tras E3-F01/F02/F03/F04; -001/-002 históricos)
-E4  derivation delta (negativos granulares + route_key)
+E4  DONE — derivación de negativos granulares materializada
+    (negative_scope ROOT_FAMILY|ROUTE_CAPABILITY, interval_end
+    EXCLUSIVE, capability-vector completeness scoped; artefactos
+    g1-e-001 deterministas; assess() intacto)
 E5  agregación negativa en assess()
 E6  divergence audit / cierre G1
 ```

@@ -62,6 +62,33 @@ class NegativeEvidenceCapability(StrEnum):
     NO_NEGATIVE_INFERENCE = "NO_NEGATIVE_INFERENCE"
 
 
+class NegativeEvidenceClass(StrEnum):
+    """Clase de evidencia negativa por hecho/asercion (G1-E, E1).
+
+    Distinto de ``NegativeEvidenceCapability`` (propiedad poblacional
+    del contrato de fuente): esto clasifica cada hecho negativo
+    materializado. ``NONE`` no se emite — marca la ausencia de
+    evidencia negativa en expectativas/corpus.
+    """
+    NONE = "NONE"
+    EXPLICIT_WITHDRAWAL = "EXPLICIT_WITHDRAWAL"
+    EXPIRY = "EXPIRY"
+    ENUMERATED_ABSENCE = "ENUMERATED_ABSENCE"
+    ENTITY_BAJA = "ENTITY_BAJA"
+
+
+class NegativeScope(StrEnum):
+    """Ambito de un hecho negativo (G1-E, E4).
+
+    Una retirada de raiz cierra la familia de rutas que descienden
+    mecanicamente de esa autorizacion, sin inventar una base
+    territorial nunca observada. Una ausencia enumerada es
+    especifica de (actividad, route_key).
+    """
+    ROOT_FAMILY = "ROOT_FAMILY"
+    ROUTE_CAPABILITY = "ROUTE_CAPABILITY"
+
+
 class SourceDateReliability(StrEnum):
     TRUSTED = "TRUSTED"
     SUSPECT = "SUSPECT"
@@ -139,6 +166,21 @@ ACTIVITIES = (
     "CRYPTO_ADVICE",
     "CRYPTO_PORTFOLIO_MANAGEMENT",
     "CRYPTO_TRANSFER",
+    # G1-E (E2): servicios PSD2 Annex I granulares. Namespace canonico
+    # semantico, desacoplado del esquema de cada fuente; el codigo raw
+    # (PS_03C, "3.C", "7", …) queda en raw_capability_code/provenance.
+    "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+    "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+    "PAYMENT_DIRECT_DEBIT_EXECUTION",
+    "PAYMENT_CARD_TRANSACTION_EXECUTION",
+    "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+    "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+    "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+    "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+    "PAYMENT_INSTRUMENT_ISSUING",
+    "PAYMENT_TRANSACTION_ACQUIRING",
+    "MONEY_REMITTANCE",
+    "PAYMENT_INITIATION_SERVICES",
 )
 
 # Clases de entidad (conjunto mínimo congelado para G0).

@@ -1,0 +1,32 @@
+{
+ "capture_id": "g1-e-run-2026-09-14 (eba psd2 h4 + bde servicios-pago + bde con-establecimiento)",
+ "retrieved_at": "2026-09-14",
+ "hash_algorithm": "SHA-256",
+ "encoding": "binary-preserving for ZIP and XLSX snapshots",
+ "snapshots": [
+  {
+   "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+   "sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+   "bytes": 19902187,
+   "hypothesis": "H4",
+   "source_url": "https://webgate.ec.europa.eu/psd2register/",
+   "source_as_of": "2026-09-13T08:00:04Z"
+  },
+  {
+   "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+   "sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+   "bytes": 226710,
+   "hypothesis": "G1-B1",
+   "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ServicioPagos.xlsx",
+   "source_as_of": "2026-09-10"
+  },
+  {
+   "snapshot_file": "raw/bde-registro-con-establecimiento.xlsx",
+   "sha256": "72faee42deb53eef432ce63f957a71f9a3fe703733181b69c79f0803cc535283",
+   "bytes": 1144423,
+   "hypothesis": "G1-E",
+   "source_url": "https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ConEstablecimiento.xlsx",
+   "source_as_of": "2026-09-10"
+  }
+ ]
+}

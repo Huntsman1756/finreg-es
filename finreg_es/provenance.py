@@ -68,6 +68,12 @@ SOURCE_PROVENANCE = {
         "authority": "Banco de Espana",
         "register_id": "BDE_REGISTRO_SERVICIOS_PAGO",
     },
+    # G1-E: registro BdE de entidades comunitarias con establecimiento
+    # en Espana (sucursales + actividades por capacidad declaradas).
+    "BDE_REGISTRO_CON_ESTABLECIMIENTO": {
+        "authority": "Banco de Espana",
+        "register_id": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    },
     # G1-D-F01: fuentes primarias del mecanismo home MiCA (la fecha ESMA
     # ac_authorisationNotificationDate no distingue art.63 de art.60).
     "BAFIN_UNTERNEHMENSDATENBANK": {

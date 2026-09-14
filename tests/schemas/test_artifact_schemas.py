@@ -53,7 +53,7 @@ def _validator(schema_name: str):
 # Superficie contractual: glob -> schema. Todo JSON de fixtures debe
 # validar contra un esquema o aparecer explicitamente en UNSCOPED.
 ARTIFACT_MAP = {
-    "fixtures/contracts/*.json": "v1/source-contract",
+    "fixtures/contracts/*.json": "v1.3/source-contract",
     "fixtures/g0.5/corpus/entities.json": "v1/entity-corpus",
     "fixtures/g0.5/corpus/ground-truth.json": "v1/ground-truth",
     "fixtures/g0.5/sources/manifest.json": "v1/source-manifest",
@@ -86,6 +86,12 @@ ARTIFACT_MAP = {
     "fixtures/g1/assessment-cases-g1-c.json": "v1.1/assessment-cases",
     "fixtures/g1/assessment-cases-g1-d.json": "v1.2/assessment-cases",
     "fixtures/g1/assessment-cases-g1-d-*.json": "v1.2/assessment-cases",
+    # G1-E (E4): contrato negativo versionado v1.3.
+    "fixtures/g1/sources/manifest-g1-e-run.json": "v1/source-manifest",
+    "fixtures/g1/corpus-g1-e-*.json": "v1.3/entity-corpus",
+    "fixtures/g1/claim-ledger-g1-e-*.json": "v1/claim-ledger",
+    "fixtures/g1/derivation-rules-g1-e-*.json": "v1.3/derivation-ruleset",
+    "fixtures/g1/derived-assertions-g1-e-*.json": "v1.3/derived-assertions",
     "fixtures/g1/runs/*.json": "v1.1/assessment-run",
     "fixtures/g1/runs/assessment-run-g1-d-*.json": "v1.2/assessment-run",
 }

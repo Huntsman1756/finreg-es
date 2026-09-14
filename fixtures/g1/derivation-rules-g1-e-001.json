@@ -1,0 +1,2411 @@
+{
+ "ruleset": {
+  "ruleset_id": "finreg-g1-derivation",
+  "ruleset_version": "FINREG_G1_DERIVATION_V5",
+  "gate": "G1-E",
+  "purpose": "SourceAssertion[] -> EntitlementAssertion[] + reported_facts + findings. E4 materializa hechos negativos con clase/ambito (ROOT_FAMILY vs ROUTE_CAPABILITY), actividades PSD2 granulares y interval_end=EXCLUSIVE. La agregacion global (CONFIRMED_*) pertenece a E5 — ningun veredicto global se decide aqui.",
+  "frozen_inputs": {
+   "claims_ledger": "fixtures/g1/claim-ledger-g1-e-001.json",
+   "corpus": "fixtures/g1/corpus-g1-e-001.json",
+   "source_manifest": "fixtures/g1/sources/manifest-g1-e-run.json",
+   "contracts_dir": "fixtures/contracts",
+   "negative_corpus": "fixtures/g1/sources/extracted/g1-e-negative-corpus-003.json"
+  },
+  "policy": {
+   "no_negative_from_absence": "la ausencia poblacional (entidad no listada en el registro) nunca es evidencia negativa; solo los slices declarados CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT producen ENUMERATED_ABSENCE",
+   "root_vs_route_scope": "la retirada de raiz es un hecho ROOT_FAMILY sin territorial_basis inventada; solo la baja/ausencia de una ruta observada es ROUTE_CAPABILITY",
+   "temporal": "interval_end=EXCLUSIVE en los hechos nuevos derivados de ENT_AUT/fechas BdE; los vectores de capacidad solo atestiguan el snapshot actual (effective_from=EVIDENCE_AS_OF)",
+   "blocked_evidence": "la continuidad de sucesor tras transformacion no demostrada materializa admissibility=BLOCKED + finding — nunca un NOT_ENTITLED admisible que E5 tendria que deshacer",
+   "source_granularity": "un codigo compuesto (BdE '5' bare, familias legacy) nunca se descompone en hechos atomicos",
+   "no_global_aggregation": "E4 no decide CONFIRMED_ENTITLED/NOT_ENTITLED globales ni conflictos entre rutas — E5"
+  },
+  "failure_taxonomy": [
+   "REQUIRED_FIELD_MISSING",
+   "REQUIRED_FIELD_UNDERIVABLE",
+   "UNSUPPORTED_ENTITY_CLASS",
+   "UNSUPPORTED_ACTIVITY_MAPPING",
+   "INSUFFICIENT_LEGAL_BASIS",
+   "DERIVED_PRECONDITION_NOT_MET",
+   "TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED"
+  ],
+  "effective_derivations": {
+   "CONSTANT_NULL": "ventana abierta",
+   "EVIDENCE_AS_OF": "retrieved_at del snapshot: fecha mas temprana en que la evidencia atestigua el hecho",
+   "FIELD_COPY": "campo ya normalizado ISO (p. ej. eba_ent_aut_last_withdrawal, fecha_baja_iso)",
+   "FIELD_COPY_OR_NULL": "FIELD_COPY tolerante a ausencia",
+   "FIELD_DDMMYYYY": "parse dd/mm/yyyy -> ISO; fallo => REQUIRED_FIELD_UNDERIVABLE",
+   "FIELD_DDMMYYYY_OR_NULL": "parse dd/mm/yyyy -> ISO; vacio => null",
+   "EBA_ENT_AUT_LAST_AUTH": "ultima fecha de autorizacion de la secuencia ENT_AUT"
+  },
+  "rules": [
+   {
+    "rule_id": "eba-psd2-fps-es-service-entitled",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "IN",
+       "value": [
+        "PSD_PI",
+        "PSD_EMI"
+       ]
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services_str",
+     "eba_home_nca"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Servicio atomico Annex I declarado para ES en Services{ES} de una raiz PI/EMI activa: positivo granular de la ruta FPS. La fecha territorial es EVIDENCE_AS_OF (sin fecha historica publicada el vector nunca se retroproyecta).",
+    "known_limitations": [
+     "el vector solo atestigua el snapshot actual; el inicio historico de la ruta LPS no es reconstruible"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services_str",
+      "mode": "SPLIT",
+      "separator": "|"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 28 + art. 18: LPS passportada {eba_home_nca}->ES; servicio atomico declarado en Services{ES} (capa NCA-reportada T2)",
+      "scope": "un servicio atomico Annex I declarado para ES en el snapshot",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "entity_type",
+       "map": {
+        "PSD_PI": "PAYMENT_INSTITUTION",
+        "PSD_EMI": "E_MONEY_INSTITUTION",
+        "PSD_AISP": "ACCOUNT_INFORMATION_SERVICE_PROVIDER"
+       }
+      },
+      "entry_mechanism": "AUTHORISATION",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-fps-es-service-absent-pi",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_PI"
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice eba-fps-services-vector: el spec EBA congelado define Services{ES} como la lista completa Annex I del registro presente (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT). Un codigo atomico ausente del vector de una raiz activa es ENUMERATED_ABSENCE de esa ruta — propiedad scoped del vector, nunca poblacional.",
+    "known_limitations": [
+     "ausencia solo atestiguada en el snapshot actual (effective_from=EVIDENCE_AS_OF)"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "PS_010",
+       "PS_020",
+       "PS_03A",
+       "PS_03B",
+       "PS_03C",
+       "PS_04A",
+       "PS_04B",
+       "PS_04C",
+       "PS_05A",
+       "PS_05B",
+       "PS_060",
+       "PS_070",
+       "PS_080"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+      "legal_basis": "PSD2 (UE) 2015/2366: codigo Annex I ausente del vector Services{ES} completo de una raiz activa",
+      "scope": "un servicio atomico Annex I no declarado para ES",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class": "PAYMENT_INSTITUTION",
+      "entry_mechanism": "AUTHORISATION",
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "eba-fps-services-vector",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-fps-es-service-absent-emi",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_EMI"
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice eba-fps-services-vector: el spec EBA congelado define Services{ES} como la lista completa Annex I del registro presente (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT). Un codigo atomico ausente del vector de una raiz activa es ENUMERATED_ABSENCE de esa ruta — propiedad scoped del vector, nunca poblacional.",
+    "known_limitations": [
+     "ausencia solo atestiguada en el snapshot actual (effective_from=EVIDENCE_AS_OF)"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "PS_010",
+       "PS_020",
+       "PS_03A",
+       "PS_03B",
+       "PS_03C",
+       "PS_04A",
+       "PS_04B",
+       "PS_04C",
+       "PS_05A",
+       "PS_05B",
+       "PS_060",
+       "PS_070",
+       "PS_080",
+       "ES_010"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "FREEDOM_TO_PROVIDE_SERVICES",
+      "legal_basis": "PSD2 (UE) 2015/2366: codigo Annex I ausente del vector Services{ES} completo de una raiz activa",
+      "scope": "un servicio atomico Annex I no declarado para ES",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class": "E_MONEY_INSTITUTION",
+      "entry_mechanism": "AUTHORISATION",
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "eba-fps-services-vector",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-branch-es-service-entitled",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_BR"
+      },
+      {
+       "field": "eba_child_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_parent_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "bde_branch_registered",
+       "op": "EQ",
+       "value": "TRUE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services_str",
+     "bde_branch_fecha_alta"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea",
+     "bde-ce-in-branch"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Sucursal PSD2 ES conjuntiva: PSD_BR Active + parent ENT_AUT ACTIVE + inscripcion BdE vigente. La fecha territorial es el alta BdE (trigger juridico de la ruta de establecimiento, art. 28 PSD2).",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services_str",
+      "mode": "SPLIT",
+      "separator": "|"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 28: sucursal ES de {eba_parent_nca} inscrita en BdE {bde_branch_fecha_alta}; servicio atomico declarado en la fila PSD_BR",
+      "scope": "un servicio atomico Annex I de la sucursal ES",
+      "effective_from": {
+       "derivation": "FIELD_DDMMYYYY",
+       "field": "bde_branch_fecha_alta"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "eba_parent_entity_type",
+       "map": {
+        "PSD_PI": "PAYMENT_INSTITUTION",
+        "PSD_EMI": "E_MONEY_INSTITUTION",
+        "PSD_AISP": "ACCOUNT_INFORMATION_SERVICE_PROVIDER"
+       }
+      },
+      "entry_mechanism": "AUTHORISATION",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "evidence_composition": "ALL_REQUIRED"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-branch-es-service-absent",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_BR"
+      },
+      {
+       "field": "eba_child_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_parent_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "bde_branch_registered",
+       "op": "EQ",
+       "value": "TRUE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea",
+     "bde-ce-in-branch"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice eba-branch-services-vector: misma completitud scoped del vector Services{ES} aplicada a la fila PSD_BR corroborada por la inscripcion BdE vigente.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "PS_010",
+       "PS_020",
+       "PS_03A",
+       "PS_03B",
+       "PS_03C",
+       "PS_04A",
+       "PS_04B",
+       "PS_04C",
+       "PS_05A",
+       "PS_05B",
+       "PS_060",
+       "PS_070",
+       "PS_080"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "PSD2 (UE) 2015/2366: codigo Annex I ausente del vector Services{ES} completo de la sucursal EBA",
+      "scope": "un servicio atomico Annex I no declarado por la sucursal",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "eba_parent_entity_type",
+       "map": {
+        "PSD_PI": "PAYMENT_INSTITUTION",
+        "PSD_EMI": "E_MONEY_INSTITUTION",
+        "PSD_AISP": "ACCOUNT_INFORMATION_SERVICE_PROVIDER"
+       }
+      },
+      "entry_mechanism": "AUTHORISATION",
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "eba-branch-services-vector",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "evidence_composition": "ALL_REQUIRED",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-aisp-service-entitled",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_AISP"
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services_str"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Servicio atomico declarado por un AISP registrado y activo: positivo granular DOMESTIC/REGISTRATION.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services_str",
+      "mode": "SPLIT",
+      "separator": "|"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 33: registro AISP; servicio atomico declarado en el registro EBA",
+      "scope": "un servicio atomico declarado por el AISP",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+      "entry_mechanism": "REGISTRATION",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-aisp-service-absent",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_AISP"
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "bde_entity_baja_kind",
+       "op": "NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice eba-aisp-services-vector. Codigo ausente del vector completo del AISP.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "PS_010",
+       "PS_020",
+       "PS_03A",
+       "PS_03B",
+       "PS_03C",
+       "PS_04A",
+       "PS_04B",
+       "PS_04C",
+       "PS_05A",
+       "PS_05B",
+       "PS_060",
+       "PS_070",
+       "PS_080"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 33: codigo Annex I ausente del vector completo del registro AISP",
+      "scope": "un servicio atomico no declarado por el AISP",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+      "entry_mechanism": "REGISTRATION",
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "eba-aisp-services-vector",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-aisp-service-absent-blocked",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "EQ",
+       "value": "PSD_AISP"
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "ACTIVE"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "bde_entity_baja_kind",
+       "op": "EQ",
+       "value": "TRANSFORMATION"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice eba-aisp-services-vector. El registro BdE del sujeto cierra por transformacion: la continuidad de capacidades del sucesor no esta demostrada, asi que la ausencia se materializa BLOQUEADA (evidencia negativa candidata, jamas NOT_ENTITLED admisible).",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "PS_010",
+       "PS_020",
+       "PS_03A",
+       "PS_03B",
+       "PS_03C",
+       "PS_04A",
+       "PS_04B",
+       "PS_04C",
+       "PS_05A",
+       "PS_05B",
+       "PS_060",
+       "PS_070",
+       "PS_080"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 33: codigo Annex I ausente del vector completo del registro AISP",
+      "scope": "un servicio atomico no declarado por el AISP",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+      "entry_mechanism": "REGISTRATION",
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "eba-aisp-services-vector",
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "admissibility": "BLOCKED",
+      "blocker": "TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-domestic-closed-service-entitled",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "IN",
+       "value": [
+        "PSD_PI",
+        "PSD_EMI",
+        "PSD_AISP"
+       ]
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "WITHDRAWN"
+      },
+      {
+       "field": "country",
+       "op": "EQ",
+       "value": "ES"
+      },
+      {
+       "field": "eba_es_services",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "entity_code",
+     "eba_es_services_str",
+     "eba_ent_aut_last_withdrawal"
+    ],
+    "coverage_preconditions": [
+     "eba-psd2-in-eea"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Raiz ES retirada: el intervalo DOMESTIC [autorizacion, retirada) SI es reconstruible — la ruta domestica ES la autorizacion raiz, sin retroproyeccion territorial. interval_end=EXCLUSIVE: cerrada EN la fecha de retirada.",
+    "known_limitations": [
+     "solo raices ES: una raiz extranjera retirada no prueba el intervalo de la ruta LPS (NO_HISTORICALLY_OBSERVED)"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "eba_es_services_str",
+      "mode": "SPLIT",
+      "separator": "|"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "PS_010": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "PS_020": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "PS_03A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "PS_03B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "PS_03C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "PS_04A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "PS_04B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "PS_04C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "PS_05A": "PAYMENT_INSTRUMENT_ISSUING",
+        "PS_05B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "PS_060": "MONEY_REMITTANCE",
+        "PS_070": "PAYMENT_INITIATION_SERVICES",
+        "PS_080": "ACCOUNT_INFORMATION_SERVICES",
+        "ES_010": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 (UE) 2015/2366: autorizacion/registration nacional vigente en [ENT_AUT_auth, ENT_AUT_retirada); cierre exclusivo en la fecha de retirada",
+      "scope": "un servicio atomico Annex I declarado para ES",
+      "effective_from": {
+       "derivation": "EBA_ENT_AUT_LAST_AUTH"
+      },
+      "effective_to": {
+       "derivation": "FIELD_COPY",
+       "field": "eba_ent_aut_last_withdrawal"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "entity_type",
+       "map": {
+        "PSD_PI": "PAYMENT_INSTITUTION",
+        "PSD_EMI": "E_MONEY_INSTITUTION",
+        "PSD_AISP": "ACCOUNT_INFORMATION_SERVICE_PROVIDER"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "entity_type",
+       "map": {
+        "PSD_PI": "AUTHORISATION",
+        "PSD_EMI": "AUTHORISATION",
+        "PSD_AISP": "REGISTRATION"
+       }
+      },
+      "evidence_basis": "NCA_REPORTED_VIA_EBA",
+      "interval_end": "EXCLUSIVE"
+     }
+    }
+   },
+   {
+    "rule_id": "eba-psd2-root-status-fact",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "IN",
+       "value": [
+        "PSD_PI",
+        "PSD_EMI",
+        "PSD_AISP"
+       ]
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Hecho de estado de la raiz: la secuencia ENT_AUT completa se preserva bitemporalmente con interval_end=EXCLUSIVE.",
+    "known_limitations": [],
+    "emit_status_fact": {
+     "reported_status_from": {
+      "field": "eba_ent_aut_status"
+     },
+     "interval_end": "EXCLUSIVE",
+     "detail": "Secuencia ENT_AUT completa; intervalos [autorizacion, retirada) — la raiz esta cerrada EN la fecha de retirada."
+    }
+   },
+   {
+    "rule_id": "eba-psd2-root-withdrawal",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "IN",
+       "value": [
+        "PSD_PI",
+        "PSD_EMI"
+       ]
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "WITHDRAWN"
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Retirada explicita de la raiz: hecho negativo de familia (ROOT_FAMILY). Cierra mecanicamente las rutas descendientes pero NO inventa una base territorial nunca observada — effective_from = ultima retirada.",
+    "known_limitations": [],
+    "emit_status_fact": {
+     "reported_status": "WITHDRAWN",
+     "negative_scope": "ROOT_FAMILY",
+     "negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+     "effective_from_field": "eba_ent_aut_last_withdrawal",
+     "interval_end": "EXCLUSIVE",
+     "entry_mechanism": "AUTHORISATION",
+     "detail": "ENT_AUT par: retirada explicita de la autorizacion/registro raiz. No es un negativo territorial — la lectura por ruta pertenece a E5."
+    }
+   },
+   {
+    "rule_id": "eba-psd2-root-withdrawal-aisp",
+    "required_source_contract": "EBA_PSD2_REGISTER",
+    "match": {
+     "source": "EBA_PSD2_REGISTER",
+     "conditions": [
+      {
+       "field": "entity_type",
+       "op": "IN",
+       "value": [
+        "PSD_AISP"
+       ]
+      },
+      {
+       "field": "eba_ent_aut_status",
+       "op": "EQ",
+       "value": "WITHDRAWN"
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Retirada explicita de la raiz: hecho negativo de familia (ROOT_FAMILY). Cierra mecanicamente las rutas descendientes pero NO inventa una base territorial nunca observada — effective_from = ultima retirada.",
+    "known_limitations": [],
+    "emit_status_fact": {
+     "reported_status": "WITHDRAWN",
+     "negative_scope": "ROOT_FAMILY",
+     "negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+     "effective_from_field": "eba_ent_aut_last_withdrawal",
+     "interval_end": "EXCLUSIVE",
+     "entry_mechanism": "REGISTRATION",
+     "detail": "ENT_AUT par: retirada explicita de la autorizacion/registro raiz. No es un negativo territorial — la lectura por ruta pertenece a E5."
+    }
+   },
+   {
+    "rule_id": "bde-psp-domestic-service-entitled",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "fecha_alta",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-psp-in-domestic-entities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Entidad domestica BdE en alta: cada codigo de la hoja ACTIVIDADES es un positivo granular DOMESTIC con fecha de alta de la inscripcion.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "LIST"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "PSD2 (UE) 2015/2366 + legislacion nacional de EP/EDE: servicio autorizado declarado en el registro BdE (hoja ACTIVIDADES)",
+      "scope": "un servicio atomico Annex I autorizado a la entidad",
+      "effective_from": {
+       "derivation": "FIELD_DDMMYYYY",
+       "field": "fecha_alta"
+      },
+      "effective_to": {
+       "derivation": "FIELD_DDMMYYYY_OR_NULL",
+       "field": "fecha_baja"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "evidence_basis": "NCA_PRIMARY"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-domestic-service-absent-base",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-domestic-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-domestic-*-activities: la hoja ACTIVIDADES enumera completa la capacidad de una fila domestica en alta (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT).",
+    "known_limitations": [
+     "codigos legacy (Ley 16/2009) nunca generan negativos atomicos por descomposicion"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "1",
+       "2",
+       "6",
+       "7",
+       "8"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa ACTIVIDADES de una entidad domestica en alta",
+      "scope": "un servicio atomico Annex I no autorizado",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-domestic-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-domestic-service-absent-f3",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.1"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.2"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.3"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-domestic-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-domestic-*-activities: la hoja ACTIVIDADES enumera completa la capacidad de una fila domestica en alta (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT). Guarda: los codigos legacy ['3.1', '3.2', '3.3'] presentes bloquean el negativo de la familia — un codigo compuesto nunca se descompone.",
+    "known_limitations": [
+     "codigos legacy (Ley 16/2009) nunca generan negativos atomicos por descomposicion"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "3.A",
+       "3.B",
+       "3.C"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa ACTIVIDADES de una entidad domestica en alta",
+      "scope": "un servicio atomico Annex I no autorizado",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-domestic-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-domestic-service-absent-f4",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.1"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.2"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.3"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-domestic-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-domestic-*-activities: la hoja ACTIVIDADES enumera completa la capacidad de una fila domestica en alta (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT). Guarda: los codigos legacy ['4.1', '4.2', '4.3'] presentes bloquean el negativo de la familia — un codigo compuesto nunca se descompone.",
+    "known_limitations": [
+     "codigos legacy (Ley 16/2009) nunca generan negativos atomicos por descomposicion"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "4.A",
+       "4.B",
+       "4.C"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa ACTIVIDADES de una entidad domestica en alta",
+      "scope": "un servicio atomico Annex I no autorizado",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-domestic-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-domestic-service-absent-f5",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "5"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-domestic-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-domestic-*-activities: la hoja ACTIVIDADES enumera completa la capacidad de una fila domestica en alta (CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT). Guarda: los codigos legacy ['5'] presentes bloquean el negativo de la familia — un codigo compuesto nunca se descompone.",
+    "known_limitations": [
+     "codigos legacy (Ley 16/2009) nunca generan negativos atomicos por descomposicion"
+    ],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "5.A",
+       "5.B"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa ACTIVIDADES de una entidad domestica en alta",
+      "scope": "un servicio atomico Annex I no autorizado",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-domestic-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-closed-service-entitled",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TEEP",
+        "TEEFEP",
+        "TEEFPH",
+        "TEPSIC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "fecha_alta",
+     "fecha_baja",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-psp-in-domestic-entities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Fila domestica con baja: los servicios de la enumeracion son positivos historicos cerrados [alta, baja) — interval_end=EXCLUSIVE. Una baja por transformacion sigue produciendo el positivo historico (la capacidad existio), pero jamas un negativo de retirada.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "LIST"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "DOMESTIC",
+      "legal_basis": "Servicio autorizado vigente en [FECHA ALTA, FECHA BAJA) segun el registro BdE",
+      "scope": "un servicio atomico Annex I autorizado en el intervalo",
+      "effective_from": {
+       "derivation": "FIELD_DDMMYYYY",
+       "field": "fecha_alta"
+      },
+      "effective_to": {
+       "derivation": "FIELD_DDMMYYYY",
+       "field": "fecha_baja"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "evidence_basis": "NCA_PRIMARY",
+      "interval_end": "EXCLUSIVE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-psp-entity-baja",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "fecha_baja",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Baja de la entidad en el registro BdE: hecho negativo de familia. La clase depende del motivo — renuncia/revocacion cierra la autorizacion (EXPLICIT_WITHDRAWAL); transformacion/escision/fusion es evento societario (ENTITY_BAJA), nunca retirada de la autorizacion.",
+    "known_limitations": [],
+    "emit_status_fact": {
+     "reported_status": "WITHDRAWN",
+     "negative_scope": "ROOT_FAMILY",
+     "negative_evidence_class_from": {
+      "field": "bde_baja_kind",
+      "map": {
+       "WITHDRAWAL": "EXPLICIT_WITHDRAWAL",
+       "TRANSFORMATION": "ENTITY_BAJA",
+       "UNRESOLVED_MOTIVO": "ENTITY_BAJA"
+      }
+     },
+     "effective_from_field": "fecha_baja_iso",
+     "interval_end": "EXCLUSIVE",
+     "detail": "FECHA BAJA declarada en el registro BdE de servicios de pago. ENTITY_BAJA no es retirada de autorizacion."
+    }
+   },
+   {
+    "rule_id": "bde-psp-transformation-successor-finding",
+    "required_source_contract": "BDE_REGISTRO_SERVICIOS_PAGO",
+    "match": {
+     "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+     "conditions": [
+      {
+       "field": "bde_baja_kind",
+       "op": "EQ",
+       "value": "TRANSFORMATION"
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Baja por transformacion/escision/fusion: la continuidad de capacidades del sucesor no esta demostrada por las fuentes congeladas — finding bloqueante, no negativo.",
+    "known_limitations": [],
+    "emit": null,
+    "finding": {
+     "classification": "TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED",
+     "detail": "Baja por evento societario (transformacion/escision/fusion): las fuentes congeladas no demuestran a que entidad sucesora —si la hay— pasaron las capacidades. Evidencia negativa bloqueada, nunca NOT_ENTITLED admisible."
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-service-entitled",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TESEPC",
+        "TESEDC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "fecha_alta",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-ce-in-branch"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Sucursal ES en alta en el registro BdE de entidades con establecimiento: cada codigo de su enumeracion es positivo granular BRANCH con fecha de alta.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "LIST"
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "ENTITLED_TO_PROVIDE",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "PSD2 (UE) 2015/2366 art. 28: sucursal de EP/EDE comunitaria inscrita; servicio declarado en la hoja ACTIVIDADES del registro BdE",
+      "scope": "un servicio atomico Annex I de la sucursal",
+      "effective_from": {
+       "derivation": "FIELD_DDMMYYYY",
+       "field": "fecha_alta"
+      },
+      "effective_to": {
+       "derivation": "FIELD_DDMMYYYY_OR_NULL",
+       "field": "fecha_baja"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "evidence_basis": "NCA_PRIMARY"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-service-absent-base",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TESEPC",
+        "TESEDC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-branch-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-branch-*-activities: enumeracion completa de la sucursal en alta; ausencia atomica = ENUMERATED_ABSENCE de la ruta BRANCH.",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "1",
+       "2",
+       "6",
+       "7",
+       "8"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa de la sucursal en alta",
+      "scope": "un servicio atomico Annex I no declarado por la sucursal",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-branch-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-service-absent-f3",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TESEPC",
+        "TESEDC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.1"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.2"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "3.3"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-branch-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-branch-*-activities: enumeracion completa de la sucursal en alta; ausencia atomica = ENUMERATED_ABSENCE de la ruta BRANCH. Guarda legacy ['3.1', '3.2', '3.3'].",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "3.A",
+       "3.B",
+       "3.C"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa de la sucursal en alta",
+      "scope": "un servicio atomico Annex I no declarado por la sucursal",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-branch-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-service-absent-f4",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TESEPC",
+        "TESEDC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.1"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.2"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "4.3"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-branch-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-branch-*-activities: enumeracion completa de la sucursal en alta; ausencia atomica = ENUMERATED_ABSENCE de la ruta BRANCH. Guarda legacy ['4.1', '4.2', '4.3'].",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "4.A",
+       "4.B",
+       "4.C"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa de la sucursal en alta",
+      "scope": "un servicio atomico Annex I no declarado por la sucursal",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-branch-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-service-absent-f5",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "codigo_tipo_entidad",
+       "op": "IN",
+       "value": [
+        "TESEPC",
+        "TESEDC"
+       ]
+      },
+      {
+       "field": "fecha_baja",
+       "op": "NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "NOT_NULL"
+      },
+      {
+       "field": "actividades_codes",
+       "op": "ABSENT_IN",
+       "value": "5"
+      }
+     ]
+    },
+    "required_fields": [
+     "codigo_be",
+     "actividades_codes"
+    ],
+    "coverage_preconditions": [
+     "bde-branch-pi-activities"
+    ],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Slice bde-branch-*-activities: enumeracion completa de la sucursal en alta; ausencia atomica = ENUMERATED_ABSENCE de la ruta BRANCH. Guarda legacy ['5'].",
+    "known_limitations": [],
+    "emit_per": {
+     "iterate": {
+      "field": "actividades_codes",
+      "mode": "ABSENT_FROM_SET",
+      "universe": [
+       "5.A",
+       "5.B"
+      ]
+     },
+     "emit": {
+      "activity_from": {
+       "field": "$ITEM",
+       "map": {
+        "1": "PAYMENT_ACCOUNT_CASH_PLACEMENT",
+        "2": "PAYMENT_ACCOUNT_CASH_WITHDRAWAL",
+        "3.A": "PAYMENT_DIRECT_DEBIT_EXECUTION",
+        "3.B": "PAYMENT_CARD_TRANSACTION_EXECUTION",
+        "3.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION",
+        "4.A": "PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE",
+        "4.B": "PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE",
+        "4.C": "PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE",
+        "5.A": "PAYMENT_INSTRUMENT_ISSUING",
+        "5.B": "PAYMENT_TRANSACTION_ACQUIRING",
+        "6": "MONEY_REMITTANCE",
+        "7": "PAYMENT_INITIATION_SERVICES",
+        "8": "ACCOUNT_INFORMATION_SERVICES",
+        "A": "E_MONEY_ISSUANCE",
+        "B": "E_MONEY_ISSUANCE",
+        "C": "E_MONEY_ISSUANCE"
+       }
+      },
+      "jurisdiction": "ES",
+      "legal_effect": "NOT_ENTITLED",
+      "territorial_basis": "BRANCH",
+      "legal_basis": "Servicio Annex I ausente de la enumeracion completa de la sucursal en alta",
+      "scope": "un servicio atomico Annex I no declarado por la sucursal",
+      "effective_from": {
+       "derivation": "EVIDENCE_AS_OF"
+      },
+      "effective_to": {
+       "derivation": "CONSTANT_NULL"
+      },
+      "raw_capability_code": "$ITEM",
+      "source_granularity": "ATOMIC",
+      "entity_class_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "PAYMENT_INSTITUTION",
+        "TEEFEP": "PAYMENT_INSTITUTION",
+        "TEEFPH": "PAYMENT_INSTITUTION",
+        "TEEDE": "E_MONEY_INSTITUTION",
+        "TEPSIC": "ACCOUNT_INFORMATION_SERVICE_PROVIDER",
+        "TESEPC": "PAYMENT_INSTITUTION",
+        "TESEDC": "E_MONEY_INSTITUTION"
+       }
+      },
+      "entry_mechanism_from": {
+       "field": "codigo_tipo_entidad",
+       "map": {
+        "TEEP": "AUTHORISATION",
+        "TEEFEP": "AUTHORISATION",
+        "TEEFPH": "AUTHORISATION",
+        "TEEDE": "AUTHORISATION",
+        "TEPSIC": "REGISTRATION",
+        "TESEPC": "AUTHORISATION",
+        "TESEDC": "AUTHORISATION"
+       }
+      },
+      "negative_scope": "ROUTE_CAPABILITY",
+      "negative_evidence_class": "ENUMERATED_ABSENCE",
+      "coverage_policy_id": "bde-branch-pi-activities",
+      "evidence_basis": "NCA_PRIMARY",
+      "admissibility": "ADMISSIBLE"
+     }
+    }
+   },
+   {
+    "rule_id": "bde-ce-branch-baja",
+    "required_source_contract": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+    "match": {
+     "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+     "conditions": [
+      {
+       "field": "fecha_baja",
+       "op": "NOT_NULL"
+      }
+     ]
+    },
+    "required_fields": [],
+    "coverage_preconditions": [],
+    "failure_behavior": "FINDING_AND_NO_ASSERTION",
+    "rationale": "Baja expresa de la sucursal: negativo de ruta — solo la BRANCH observada queda cerrada, nunca otras vias.",
+    "known_limitations": [],
+    "emit_status_fact": {
+     "reported_status": "WITHDRAWN",
+     "negative_scope": "ROUTE_CAPABILITY",
+     "negative_evidence_class_from": {
+      "field": "bde_baja_kind",
+      "map": {
+       "WITHDRAWAL": "EXPLICIT_WITHDRAWAL",
+       "TRANSFORMATION": "ENTITY_BAJA",
+       "UNRESOLVED_MOTIVO": "ENTITY_BAJA"
+      }
+     },
+     "effective_from_field": "fecha_baja_iso",
+     "interval_end": "EXCLUSIVE",
+     "detail": "FECHA BAJA de la sucursal en el registro BdE de entidades con establecimiento: cierra solo la ruta BRANCH observada."
+    }
+   }
+  ],
+  "derived_rules": []
+ }
+}
