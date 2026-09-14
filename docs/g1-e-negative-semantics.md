@@ -139,42 +139,95 @@ PSD2: código oficial → actividad canónica granular → una
 `EntitlementAssertion` por servicio. Los negativos se emiten **sólo
 al nivel granular**.
 
+### Ontología canónica: una actividad, muchos códigos
+
+Regla congelada:
+
+```text
+SOURCE VOCABULARY            CANONICAL VOCABULARY
+EBA: PS_070                  →
+BdE: 7                       →  PAYMENT_INITIATION_SERVICES
+PSD2 Annex I: 7              →
+```
+
+El código regulatorio vive sólo en mapping/provenance; el namespace
+canónico describe el concepto jurídico y **nunca** translitera el
+esquema de una fuente (por eso `PAYMENT_*`, no `PS_*`). Nunca dos
+actividades canónicas sinónimas por fuente (`PS_080→X`, `BdE 8→Y`).
+
 ### Mapeo EBA `PS_*` → PSD2 Annex I → actividad canónica
 
 Etiquetas verbatim del spec oficial congelado
 (`eba-psd2-json-data-specification.xlsx`, sheet 6):
 
-| Código EBA | PSD2 Annex I | Etiqueta oficial (verbatim) | Actividad canónica propuesta |
-|------------|--------------|---------------------------|------------------------------|
-| `PS_010` | 1 | Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account | `PS_CASH_PLACEMENT_ACCOUNT_OPS` |
-| `PS_020` | 2 | Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account | `PS_CASH_WITHDRAWAL_ACCOUNT_OPS` |
-| `PS_03A` | 3(a) | Execution of direct debits, including one-off direct debits | `PS_DIRECT_DEBITS` |
-| `PS_03B` | 3(b) | Execution of payment transactions through a payment card or a similar device | `PS_CARD_PAYMENT_TRANSACTIONS` |
-| `PS_03C` | 3(c) | Execution credit transfers, including standing orders | `PS_CREDIT_TRANSFERS` |
-| `PS_04A` | 4(a) | Execution of direct debits where funds are covered by a credit line | `PS_DIRECT_DEBITS_CREDIT_LINE` |
-| `PS_04B` | 4(b) | Execution of payment transactions through a payment card where funds are covered by a credit line | `PS_CARD_TRANSACTIONS_CREDIT_LINE` |
-| `PS_04C` | 4(c) | Execution of credit transfers where the funds are covered by a credit line | `PS_CREDIT_TRANSFERS_CREDIT_LINE` |
-| `PS_05A` | 5 | Issuing of payment instruments | `PS_ISSUING_PAYMENT_INSTRUMENTS` |
-| `PS_05B` | 5 | Acquiring of payment transactions | `PS_ACQUIRING_PAYMENT_TRANSACTIONS` |
-| `PS_060` | 6 | Money remittance | `PS_MONEY_REMITTANCE` |
-| `PS_070` | 7 | Payment initiation services | `PS_PAYMENT_INITIATION` |
-| `PS_080` | 8 | Account information services | `ACCOUNT_INFORMATION_SERVICES` (existente) |
-| `ES_010` | EMD2 | Issuing, distribution and redemption of electronic money | `E_MONEY_ISSUANCE` (existente) |
+| Código EBA | PSD2 Annex I | Etiqueta oficial (verbatim) | Actividad canónica |
+|------------|--------------|---------------------------|--------------------|
+| `PS_010` | 1 | Services enabling cash to be placed on a payment account as well as all the operations required for operating a payment account | `PAYMENT_ACCOUNT_CASH_PLACEMENT` |
+| `PS_020` | 2 | Services enabling cash withdrawals from a payment account as well as all the operations required for operating a payment account | `PAYMENT_ACCOUNT_CASH_WITHDRAWAL` |
+| `PS_03A` | 3(a) | Execution of direct debits, including one-off direct debits | `PAYMENT_DIRECT_DEBIT_EXECUTION` |
+| `PS_03B` | 3(b) | Execution of payment transactions through a payment card or a similar device | `PAYMENT_CARD_TRANSACTION_EXECUTION` |
+| `PS_03C` | 3(c) | Execution credit transfers, including standing orders | `PAYMENT_CREDIT_TRANSFER_EXECUTION` |
+| `PS_04A` | 4(a) | Execution of direct debits where funds are covered by a credit line | `PAYMENT_DIRECT_DEBIT_EXECUTION_CREDIT_LINE` |
+| `PS_04B` | 4(b) | Execution of payment transactions through a payment card where funds are covered by a credit line | `PAYMENT_CARD_TRANSACTION_EXECUTION_CREDIT_LINE` |
+| `PS_04C` | 4(c) | Execution of credit transfers where the funds are covered by a credit line | `PAYMENT_CREDIT_TRANSFER_EXECUTION_CREDIT_LINE` |
+| `PS_05A` | 5 | Issuing of payment instruments | `PAYMENT_INSTRUMENT_ISSUING` |
+| `PS_05B` | 5 | Acquiring of payment transactions | `PAYMENT_TRANSACTION_ACQUIRING` |
+| `PS_060` | 6 | Money remittance | `MONEY_REMITTANCE` |
+| `PS_070` | 7 | Payment initiation services | `PAYMENT_INITIATION_SERVICES` |
+| `PS_080` | 8 | Account information services | `ACCOUNT_INFORMATION_SERVICES` (existente, reutilizada) |
+| `ES_010` | EMD2 | Issuing, distribution and redemption of electronic money | `E_MONEY_ISSUANCE` (existente, reutilizada) |
 
-Correspondencia BdE `ACTIVIDADES` (B3: códigos 1,2,3.A-C,4.A-C,
-5,6,7,8 + A/B/C dinero electrónico Ley 21/2011): `1→PS_010`,
-`2→PS_020`, `3.A→PS_03A`, `3.B→PS_03B`, `3.C→PS_03C`,
-`4.A→PS_04A`, `4.B→PS_04B`, `4.C→PS_04C`, `6→PS_060`,
-`7→PS_070` (PIS), `8→PS_080` (AIS), `A/B/C→ES_010`. **Pendiente de
-verificación en E3**: si el código `5` BdE se publica atómico o
-descompuesto en issuing/acquiring (B4-06 observó "5" atómico); si es
-atómico mapea al par `{PS_05A, PS_05B}`.
+`PS_080` y `ES_010` reutilizan las actividades ya congeladas — no se
+crean sinónimos `PS_ACCOUNT_INFORMATION`/`PS_E_MONEY_*`.
+
+### Correspondencia BdE `ACTIVIDADES` y granularidad de fuente
+
+Correspondencia por código (B3: 1,2,3.A-C,4.A-C,5,6,7,8 + A/B/C
+dinero electrónico Ley 21/2011): `1→PS_010`, `2→PS_020`,
+`3.A→PS_03A`, `3.B→PS_03B`, `3.C→PS_03C`, `4.A→PS_04A`,
+`4.B→PS_04B`, `4.C→PS_04C`, `6→PS_060`, `7→PS_070`, `8→PS_080`,
+`A/B/C→ES_010` según alcance.
+
+**Código BdE `5` — granularidad no resuelta.** B4-06 observó `5`
+atómico donde EBA descompone en `PS_05A`/`PS_05B`. El hecho
+observable es sólo "servicio Annex I(5)", y hasta E3 no está probado
+que BdE `5` signifique "ambos" y no "uno o ambos". Congelado:
+
+```text
+NO  BdE 5 → {PAYMENT_INSTRUMENT_ISSUING,
+             PAYMENT_TRANSACTION_ACQUIRING}   como equivalencia
+
+SÍ  representación intermedia conservadora
+    (p. ej. PAYMENT_SERVICE_5, scope compuesto):
+    - usable como positivo umbrella del servicio 5
+    - PROHIBIDO como base de negativos 05A/05B
+    - sin negativo separado A/B hasta que E3 demuestre
+      la descomposición jurídica de BdE 5
+```
+
+Distinción congelada para E4 (derivación/finding, no necesariamente
+expuesta públicamente):
+
+```text
+raw_capability_code   código tal como lo publica la fuente ("5",
+                      "PS_05A", "7")
+canonical_activity    actividad del vocabulario canónico
+source_granularity    ATOMIC | COMPOSITE
+
+ej: {raw="PS_05A", canonical=PAYMENT_INSTRUMENT_ISSUING,
+     granularity=ATOMIC}
+    {raw="5",      canonical=PAYMENT_SERVICE_5,
+     granularity=COMPOSITE}
+```
+
+Una fuente menos granular nunca se convierte en dos hechos más
+granulares.
 
 ### Semántica de la query
 
 ```text
-query (entity, PS_070, ES)
-  → evalúa aserciones cuya actividad canónica = PS_PAYMENT_INITIATION
+query (entity, PAYMENT_INITIATION_SERVICES, ES)
+  → evalúa aserciones cuya actividad canónica = PAYMENT_INITIATION_SERVICES
   → positivo sólo si PS_070 está explícitamente declarado
     para la vía (EBA Services{ES} / BdE ACTIVIDADES)
   → negativo granular sólo si la vía está en slice
@@ -233,8 +286,9 @@ congelado.
 
 ```text
 E1  DONE — semántica negativa + agregación route-aware congelada
-E2  DONE — vocabulario PSD2 granular congelado (mapeo verbatim EBA
-    + correspondencia BdE; "5" atómico pendiente de verificación E3)
+E2  DONE — vocabulario PSD2 granular congelado (namespace PAYMENT_*,
+    mapeo verbatim EBA + correspondencia BdE; BdE "5" fijado como
+    COMPOSITE sin descomposición A/B hasta verificación E3)
 E3  corpus real adversarial (anclas E3-01..08)
 E4  derivation delta (negativos granulares + route_key)
 E5  agregación negativa en assess()
