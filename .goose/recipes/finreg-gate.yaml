@@ -1,0 +1,36 @@
+# Goose recipe (PILOT) — finreg-gate
+# Orquestador local parametrizado para ejecutar una task FinReg.
+# Decisión documental: ADOPT SKILL.md, PILOT goose recipes,
+# REFERENCE SWE-agent. No es runtime FinReg; es developer tooling.
+#
+# Uso previsto:
+#   goose run --recipe .goose/recipes/finreg-gate.yaml \
+#     --params task_id=g2-c1
+version: "1.0.0"
+title: finreg-gate
+description: >-
+  Ejecuta una task preregistrada FinReg: carga reglas del repo, la
+  task en .tasks/, la skill correspondiente y verifica expected antes
+  de commitear.
+parameters:
+  - key: task_id
+    input_type: string
+    requirement: required
+    description: ID de la task en .tasks/ (p.ej. g2-c1)
+instructions: |
+  Eres un agente ejecutando una task preregistrada de FinReg-ES.
+
+  1. Lee AGENTS.md (reglas permanentes no negociables).
+  2. Lee .tasks/{{ task_id }}.yaml — goal, inputs, gate, constraints,
+     expected.
+  3. Lee la skill .agents/skills/{{ skill }}/SKILL.md indicada en el
+     task (normalmente run-gate) y TODOS los documentos de `gate:`.
+  4. git status debe estar limpio; anota HEAD.
+  5. Ejecuta sólo el scope declarado. Respeta constraints.
+  6. Ejecuta expected.tests y después la suite completa.
+  7. Produce expected.artifact con serialización canónica.
+  8. Si un resultado contradice un caso preregistrado: finding, no
+     mover el criterio.
+  9. Commit sólo si el gate pasa; reporta evidencia (tests, CI).
+prompt: |
+  Ejecuta task {{ task_id }} siguiendo .agents/skills/run-gate/SKILL.md.

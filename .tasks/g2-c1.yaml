@@ -1,0 +1,24 @@
+task_id: g2-c1
+kind: gate-execution
+skill: run-gate
+goal: >-
+  Clasificar cambios estructurales de una comparación G2-B en
+  candidatos a evento regulatorio, según el catálogo del contrato
+  G2-C0. Sin semántica nueva en el diff; candidato != aserción.
+inputs:
+  comparison: fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json
+gate:
+  preregistered_contract: docs/g2-c0-change-event-contract.md
+  snapshot_history_contract: docs/g2-snapshot-history-contract.md
+constraints:
+  production_changes_before_evidence: false
+  runtime_stdlib_only: true
+  no_legal_dates_fabricated: true
+expected:
+  tests: tests/g2/test_g2c_*.py
+  artifact: fixtures/g2/events/
+status: preregistered-blocked
+blocker: >-
+  Sin Type-B/C real todavía: el par EBA real produjo 0/0/0.
+  Ejecutar sobre cambios sintéticos del contrato o esperar una
+  captura real con cambios estructurales.
