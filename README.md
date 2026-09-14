@@ -118,9 +118,13 @@ ADRs y verificación por fase: `docs/`.
 ## Reproducir
 
 ```bash
-python -m pytest          # 178 tests, offline
+python -m pytest          # 213 tests, offline
 python -m finreg_es.openlineage_export   # regenera openlineage/ byte-idéntico
 ```
 
 Sin servicios, sin red, sin credenciales. Todo input es un fichero del
 repo; todo output es un artefacto hash-fijado.
+
+## Licencia
+
+MIT — ver `LICENSE`.
