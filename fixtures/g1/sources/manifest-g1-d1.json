@@ -1,0 +1,32 @@
+{
+  "capture_id": "g1-d1-2026-09-14",
+  "retrieved_at": "2026-09-14",
+  "hash_algorithm": "SHA-256",
+  "encoding": "UTF-8 for text snapshots; binary-preserving for PDF snapshots",
+  "snapshots": [
+    {
+      "hypothesis": "H12",
+      "snapshot_file": "raw/doue-psd2-2015-2366-es.pdf",
+      "source_url": "https://www.boe.es/doue/2015/337/L00035-00127.pdf",
+      "bytes": 1764429,
+      "sha256": "e4bf9f526ca9b5f26834d090e38df688016595ace955cda3c6a11de961fab4f8",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "H12",
+      "snapshot_file": "raw/doue-rd-2017-2055-es.pdf",
+      "source_url": "https://www.boe.es/doue/2017/294/L00001-00025.pdf",
+      "bytes": 555682,
+      "sha256": "3e5689ac731eb88648a7afffc4b60646f19bff062bfa53580aa5bf1853fa40bf",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "H12",
+      "snapshot_file": "raw/bde-actividad-transfronteriza-pago-ue.html",
+      "source_url": "https://sedeelectronica.bde.es/sede/es/menu/tramites/registros-oficia/actividad-transfronteriza-pago-ue-p252.html",
+      "bytes": 160791,
+      "sha256": "1b1c6d71832d3cd0956b59d2091f164ab3eabf6a807eac5058c74b56ae8f8c7f",
+      "source_as_of": "2026-09-14"
+    }
+  ]
+}
