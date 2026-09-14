@@ -122,6 +122,12 @@ un candidato con `observed_by > K` no existe para esa query.
 
 ```text
 G2-C0  PREREGISTERED  (este documento)
-G2-C   BLOCKED        espera primer Type-B/C real o slice sintético
-                      decidido expresamente
+G2-C1  DONE (synthetic)  clasificador implementado
+       (finreg_es/change_events.py, FINREG_G2C_EVENT_RULES_V1) y
+       ejecutado: par real EBA 0/0/0 → 0 candidatos
+       (fixtures/g2/events/eba-psd2-20260913-vs-20260914.json) +
+       slice sintético del catálogo decidido por el blocker del task
+       (fixtures/g2/events/g2-c1-synthetic-contract-slice.json).
+G2-C   OPEN           demostrado sobre slice sintético; pendiente el
+                      primer Type-B/C real del corpus longitudinal.
 ```
