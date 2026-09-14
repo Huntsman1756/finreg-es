@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).parents[2]
 G1 = ROOT / "fixtures" / "g1"
 CORPUS = json.loads(
-    (G1 / "sources" / "extracted" / "g1-e-negative-corpus-002.json").read_text(
+    (G1 / "sources" / "extracted" / "g1-e-negative-corpus-003.json").read_text(
         encoding="utf-8"
     )
 )
@@ -205,3 +205,26 @@ def test_no_synthetic_entities():
     assert CORPUS["counts"]["synthetic_entities"] == 0
     for ent in CORPUS["entities"]:
         assert not ent.get("synthetic"), ent["corpus_id"]
+
+
+def test_mmg_root_vs_territorial_interval():
+    """E3-F04: ENT_AUT es historico; Services{ES} es vigente. La ruta
+    territorial no se retroproyecta sobre el pasado ni hereda la fecha
+    raiz — effective_from territorial = EVIDENCE_AS_OF."""
+    mmg = next(e for e in CORPUS["entities"] if e["corpus_id"] == "E3-002")
+    by_asof = {p["as_of"]: p for p in mmg["probes"]}
+    p18 = by_asof["2018-06-01"]
+    assert "INDETERMINATE" in p18["expected_global_assessment"]
+    assert "TERRITORIAL_ENTITLEMENT_UNRESOLVED" in (
+        p18["expected_global_assessment"]
+    )
+    assert "NOT HISTORICALLY OBSERVED" in p18["expected_route_outcome"]
+    p20 = by_asof["2020-01-01"]
+    assert p20["expected_negative_evidence_class"] == "EXPLICIT_WITHDRAWAL"
+    assert "CONFIRMED_NOT_ENTITLED" in p20["expected_global_assessment"]
+    p26 = by_asof["2026-09-14"]
+    assert "CONFIRMED_ENTITLED" in p26["expected_global_assessment"]
+    assert "EVIDENCE_AS_OF" in p26["expected_route_outcome"]
+    assert "2024-07-12" not in p26["expected_route_outcome"].split(
+        "effective_from"
+    )[-1]

@@ -263,9 +263,9 @@ los servicios cerrados — ambas dimensiones.
 
 ## Corpus E3 preregistrado — RESUELTO (10 anclas reales)
 
-Cadena válida: `g1-e-negative-corpus-002.json` (sucesor E3.1);
-`g1-e-negative-corpus.json` (-001) preservado como histórico con
-defectos documentados. Cada caso lleva expectativas preregistradas:
+Cadena válida: `g1-e-negative-corpus-003.json` (sucesores E3.1 +
+E3-F04); `-001`/`-002` preservados como históricos con defectos
+documentados. Cada caso lleva expectativas preregistradas:
 `expected_negative_evidence_class` (enum cerrado),
 `expected_blocker`/`expected_evidence_note` (opcionales),
 `expected_route_outcome`, `expected_global_assessment` — así E4 puede
@@ -299,6 +299,68 @@ Adicionalmente el sucesor convierte `expected_negative_evidence_class`
 en enum cerrado `NONE | EXPLICIT_WITHDRAWAL | EXPIRY |
 ENUMERATED_ABSENCE | ENTITY_BAJA` y traslada la explicación a
 `expected_blocker`/`expected_evidence_note`.
+
+```text
+E3-F04  intervalo raíz mezclado con intervalo territorial (E3-002)
+        → ENT_AUT sí es histórico ([2017-05-30,2019-07-12) y
+        [2024-07-12,∞) reconstruibles), pero Services{ES} del
+        snapshot sólo es VIGENTE: no demuestra que la ruta ES
+        existiera en 2018 ni que comenzara en 2024-07-12.
+        Corrección (expectation-only, anclas intactas):
+          as_of 2018-06-01 → raíz OPEN, vía FPS ES
+            NOT_HISTORICALLY_OBSERVED → INDETERMINATE
+            (TERRITORIAL_ENTITLEMENT_UNRESOLVED)
+          as_of 2020-01-01 → raíz CLOSED → CONFIRMED_NOT_ENTITLED
+          as_of 2026-09-14 → raíz OPEN + FPS observada →
+            CONFIRMED_ENTITLED con territorial
+            effective_from=EVIDENCE_AS_OF (nunca 2024-07-12)
+```
+
+### Dos clases de completitud que E4 NO debe fusionar
+
+```text
+population completeness
+  ¿entidad ausente del registro → negativo?
+  → NO / no probado globalmente. El contrato EBA sigue
+    EXPLICIT_NEGATIVE_ONLY a nivel de población
+
+capability-vector completeness
+  dada una fila EXISTENTE, ¿Services{ES} enumera todos sus
+  servicios Annex I para ES?
+  → SÍ, probado para ese vector (spec: lista completa por país)
+  → E4 lo representa de forma SCOPED, p. ej.
+    CAPABILITY_VECTOR_COMPLETE_WHEN_RECORD_PRESENT,
+    nunca reutilizando el scalar global
+```
+
+Idéntica distinción en BdE: el contrato no se vuelve globalmente
+`COMPLETE_ENUMERATION`; E4 necesita un delta contractual que recoja
+sólo los slices B5 (domestic PI/EMI, AISP, branch + capacidades
+granulares) manteniendo LPS-PI/EMI OUT y agentes/distribuidores
+fuera de la inferencia negativa.
+
+### Alcance de E4 congelado
+
+```text
+E4 materializa (derivación, NO agregación):
+  - actividades PSD2 granulares positivas
+  - ENUMERATED_ABSENCE por (actividad, route_key)
+  - EXPLICIT_WITHDRAWAL como cierre de raíz/familia
+  - interval_end=EXCLUSIVE para ENT_AUT nuevos
+  - raw_capability_code / source_granularity
+  - negative_evidence_class
+  - provenance de enumeración/coverage
+  - evidencia negativa BLOQUEADA como finding
+    (ej. Fintonic: ENUMERATED_ABSENCE +
+     TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED),
+    nunca NOT_ENTITLED admisible que E5 tenga que deshacer
+
+E4 NO decide:
+  - CONFIRMED_ENTITLED global
+  - CONFIRMED_NOT_ENTITLED global
+  - conflicto entre rutas
+  → eso sigue siendo E5
+```
 
 ```text
 E3-001  DENIZEN GLOBAL FINANCIAL (ES_BE!6822)          E3-01
@@ -373,7 +435,7 @@ E2  DONE — vocabulario PSD2 granular congelado (namespace PAYMENT_*,
     mapeo verbatim EBA + correspondencia BdE; BdE "5" = COMPOSITE
     Ley 16/2009, explicado por la columna NORMATIVA del propio xlsx)
 E3  DONE — corpus preregistrado, 10 anclas reales, 0 sintéticas
-    (sucesor -002 tras E3-F01/F02/F03; -001 histórico)
+    (sucesor -003 tras E3-F01/F02/F03/F04; -001/-002 históricos)
 E4  derivation delta (negativos granulares + route_key)
 E5  agregación negativa en assess()
 E6  divergence audit / cierre G1
