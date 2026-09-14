@@ -8,13 +8,13 @@ completitud del contrato son propias y no se oraculizan.
 """
 from __future__ import annotations
 
-import dictdiffer
 import pytest
+
+dictdiffer = pytest.importorskip("dictdiffer")
+hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import given, settings, strategies as st
 
 from finreg_es.snapshot_diff import diff_records
-
-pytestmark = pytest.mark.hypothesis
 
 _keys = st.from_regex(r"[a-z]{1,4}", fullmatch=True)
 _scalars = st.none() | st.booleans() | st.integers(-10**4, 10**4) | st.text(
