@@ -1,0 +1,54 @@
+task_id: tooling-smoke-001
+kind: verification
+status: ready
+skill: run-gate
+goal: >-
+  Verificar replay determinista del comparador G2-B sobre el par EBA
+  real congelado, comparando contra el artefacto frozen. Sin cambios
+  de producción ni de artefactos congelados.
+inputs:
+  left_snapshot: fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip
+  right_snapshot: fixtures/g2/sources/raw/eba-psd2-202609141600.zip
+  frozen_artifact: fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json
+  left_observation:
+    register_id: eba-psd2-register
+    series_key: eba-psd2-register|full
+    snapshot_file: fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip
+    content_sha256: "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31"
+    retrieved_at: "2026-09-13"
+    source_as_of: "2026-09-13T08:00:04Z"
+    completeness: complete
+    normalization_version: FINREG_G2_EBA_NORMALIZATION_V1
+  right_observation:
+    register_id: eba-psd2-register
+    series_key: eba-psd2-register|full
+    snapshot_file: fixtures/g2/sources/raw/eba-psd2-202609141600.zip
+    content_sha256: "8e28bb2519277ce5887323e81918cdea571c3ae14f5a967b950fb6bf06808208"
+    retrieved_at: "2026-09-14T19:36:43Z"
+    source_as_of: "2026-09-14T16:00:14Z"
+    completeness: complete
+    normalization_version: FINREG_G2_EBA_NORMALIZATION_V1
+gate:
+  - docs/g2-snapshot-history-contract.md
+  - docs/g2-b-oss-scan-diff.md
+constraints:
+  production_changes: false
+  frozen_artifacts_immutable: true
+  commit_only_if_something_changed: true
+expected:
+  tests:
+    - tests/g2/test_g2b_snapshot_diff.py
+    - tests/g2/test_g2b_oracles.py
+  replay: >-
+    dos ejecuciones de compare_observations con estos inputs producen
+    salida idéntica
+  artifact_check: >-
+    el resultado regenerado coincide con el artefacto frozen en sus
+    secciones `comparison` y `changes` (el artefacto añade además
+    `record_counts` y `artifact` a nivel raíz)
+  full_suite: PASS
+  tree_clean_at_end: true
+evidence_required: >-
+  resumen con: succession_state, record counts, added/removed/changed,
+  resultado del check contra frozen, resultado de la suite, git status
+  final.
