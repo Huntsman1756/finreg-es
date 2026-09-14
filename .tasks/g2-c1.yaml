@@ -17,8 +17,10 @@ constraints:
 expected:
   tests: tests/g2/test_g2c_*.py
   artifact: fixtures/g2/events/
-status: preregistered-blocked
-blocker: >-
-  Sin Type-B/C real todavía: el par EBA real produjo 0/0/0.
-  Ejecutar sobre cambios sintéticos del contrato o esperar una
-  captura real con cambios estructurales.
+status: done
+result: >-
+  Ejecutado según la opción del blocker: slice sintético del contrato
+  (decisión expresa) + replay del par real (0/0/0 → 0 candidatos).
+  Implementación: finreg_es/change_events.py (FINREG_G2C_EVENT_RULES_V1),
+  tests/g2/test_g2c_change_events.py (19 tests), artefactos en
+  fixtures/g2/events/. Pendiente fuera de scope: primer Type-B/C real.

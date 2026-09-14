@@ -119,7 +119,11 @@ UNSCOPED = {
 # no por FinReg — jamas se les impone rigidez de contrato.
 UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json",
                   "fixtures/g1/sources/extracted/*.json",
-                  "fixtures/g2/sources/raw/*.json"]
+                  "fixtures/g2/sources/raw/*.json",
+                  # G2-C1: artefactos de candidatos a evento regulatorio —
+                  # pendientes de contrato schema en G2 como los demas
+                  # artefactos G2 (comparisons, manifest).
+                  "fixtures/g2/events/*.json"]
 
 
 def _covered_files() -> dict[Path, str]:
