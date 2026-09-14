@@ -163,13 +163,69 @@ passport services EBA). Nunca solo.
 replay G0 / G1-A / G1-C byte-idéntico
 ```
 
-## Secuencia restante (fuera de este commit)
+## D3 — Corpus real preregistrado
+
+`fixtures/g1/sources/extracted/g1-d-territorial-corpus.json` —
+selección de filas reales anclada a snapshots congelados (sha256 +
+record_key), construida **después** de publicar el preregistro H12 en
+`main` (`0cc6805`, CI 34804932428 verde) y **antes** de cualquier regla
+territorial. `fixtures/g1/assessment-cases-g1-d.json` preregistra los
+10 casos con tres expectativas separadas por caso:
+`expected_entry_mechanism` / `expected_territorial_basis` /
+`expected_legal_basis` (schema v1.2, extensión compatible de v1.1).
+
+Anclas reales:
 
 ```text
-D3  corpus real preregistrado
-    PSD2 FPS / MiCA LP / MiCA branch / art.60 cross-border /
-    LIMITED_LP unresolved / multi-route
-D4  derivation delta
+G1D-01 PSD2 FPS→ES      Fire Financial Services Ltd (IE_CBI!C58301,
+                        PI activa, Services{ES}: 7 códigos PS)
+G1D-02 PSD2 branch→ES   Eupago sucursal ES (EBA PSD_BR Active +
+                        BdE 6938, alta 26/06/2024, origen PT)
+G1D-03 PSD2 agent       FMG Destinos Servicios & Turismo S.L.
+                        (PSD_AG Active en ES, padre FR_ACPR!54167)
+G1D-04 MiCA LP          360 Treasury Systems AG (CNMV LP DE,
+                        services_from 03/05/2025; ESMA svc b, cou incl. ES)
+G1D-05 MiCA branch      IG Europe GmbH (CNMV SUCURSAL DE,
+                        services_from 10/12/2025; ESMA svcs a,c,d,e)
+G1D-06 LIMITED_LP       epígrafe CNMV sin filas → abstención
+                        (entidad sintética marcada; H12-E)
+G1D-07 multi-route      Wise Europe SA (BE): LPS ES + sucursal ES
+                        (EBA PSD_BR Active + BdE 6946, 10/04/2026)
+                        → COMPATIBLE_MULTI_ROUTE
+G1D-08 country-code     Bitpanda GmbH (AT): cou declara ES, sin
+                        categoría CNMV → 0 entitlement territorial
+G1D-09 missing date     mutación metamórfica de G1D-004
+                        (services_from=null) → REQUIRED_FIELD_MISSING
+G1D-10 date conflict    mutación metamórfica de G1D-002 → DATE_CONFLICT
+                        + abstención
+```
+
+Controles congelados en `cases_meta` + tests
+(`tests/g1/test_g1d_corpus_anchors.py`):
+
+```text
+- anclas verificadas contra snapshots: sha256 + record_key resuelve
+  a fila real (EBA zip, BdE xlsx, ESMA csv, extract CNMV)
+- no synthetic positive route: nada sintético/mutado puede esperar
+  CONFIRMED_ENTITLED
+- entry_mechanism survives territorialization: toda expectativa
+  territorial positiva declara AUTHORISATION; NOTIFICATION jamás
+  aparece como resultado de un passport
+- integridad referencial corpus ↔ casos (1:1)
+- art.60 cross-border: NON_REPRESENTABLE_IN_CURRENT_CORPUS
+  (0 filas territoriales art.60 reales; no se fabrica)
+```
+
+Nota de divergencia esperada (no conflicto): para filas territoriales
+MiCA, `ac_authorisationNotificationDate` (autorización de origen) y
+`cnmv_services_from` (inicio territorial ES) difieren por significado —
+p. ej. 360 Treasury 02/04/2025 vs 03/05/2025. El check
+`mica_dates_agree` de G1-C sólo aplica a la semántica doméstica.
+
+## Secuencia restante
+
+```text
+D4  derivation delta (joins territoriales + reglas por ruta)
 D5  assessment + divergence audit
 ```
 
@@ -182,6 +238,7 @@ D1  DONE — freeze jurídico: MiCA 59(7)/60/65 verificado en texto;
     categorías CNMV territoriales ancladas
 D2  DONE — matriz territorial congelada; semántica
     entry_mechanism / territorial_basis / legal_basis fijada
-D3+ PENDIENTE — ninguna regla de derivación territorial existe aún;
-    derivation.py intacto desde G1-C
+D3  DONE — corpus real preregistrado (8 entidades, 10 casos),
+    anclas verificadas por test; 0 reglas territoriales aún
+D4+ PENDIENTE — derivation.py intacto desde G1-C
 ```
