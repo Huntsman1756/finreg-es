@@ -57,6 +57,17 @@ SOURCE_PROVENANCE = {
         "authority": "Banco de Espana",
         "register_id": "BDE_REGISTRO_ENTIDADES",
     },
+    # G1-D: extract estructurado del listado CNMV de PSC (MiCA).
+    "CNMV_PSC_REGISTER": {
+        "authority": "Comisión Nacional del Mercado de Valores (CNMV)",
+        "register_id": "CNMV_PSC_REGISTER",
+    },
+    # G1-D: registro especial BdE de entidades de servicios de pago
+    # (sucursales/agentes de EP y EDE extranjeras comunitarias).
+    "BDE_REGISTRO_SERVICIOS_PAGO": {
+        "authority": "Banco de Espana",
+        "register_id": "BDE_REGISTRO_SERVICIOS_PAGO",
+    },
 }
 
 # Traza raw -> normalized por campo observado. Cada entrada declara la

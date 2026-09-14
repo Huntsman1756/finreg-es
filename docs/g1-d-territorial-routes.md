@@ -225,9 +225,91 @@ p. ej. 360 Treasury 02/04/2025 vs 03/05/2025. El check
 ## Secuencia restante
 
 ```text
-D4  derivation delta (joins territoriales + reglas por ruta)
+D4  DONE — derivation delta (joins territoriales + reglas por ruta)
 D5  assessment + divergence audit
 ```
+
+## D4 — delta de derivación territorial
+
+Artefactos nuevos (sin tocar los congelados G0/G1-A/G1-C):
+
+```text
+fixtures/g1/claim-ledger-g1-d-001.json     532 claims (397 G1-C verbatim
+                                           + 135 territoriales de
+                                           snapshots reales)
+fixtures/g1/corpus-g1-d.json              corpus G0.5 + 8 entidades G1D
+fixtures/g1/sources/manifest-g1-d-run.json merge g1-c-run + g1-b1 +
+                                           g1-c1 + g1-d1
+fixtures/g1/derivation-rules-g1-d.json    33 reglas (delta sobre V2)
+fixtures/g1/derived-assertions-g1-d-001.json
+fixtures/g1/runs/assessment-run-g1-d-001.json  8/8 casos reales
+tools/build_g1d_ledger.py                 builder determinista
+                                          (ledger+corpus+manifest)
+tools/build_g1d_ruleset.py                generador del delta
+```
+
+Delta de código (`derivation.py`):
+
+- `_group_claims` discrimina por `record_key`: varios registros EBA por
+  entidad (parent + sucursal ES) sin colisionar.
+- Campos derivados EBA: `eba_es_services` (códigos exactos declarados
+  para ES), `eba_child_status` (DER_CHI_ENT_AUT), `eba_parent_*`
+  (join exacto `(entity_type, entity_code)` → el grupo del parent pasa
+  a `corroborating_groups` y sus claims/SourceAssertion entran en la
+  conclusión de sucursal).
+- Join BdE sucursal por `corpus_id`: `bde_branch_registered` (alta sin
+  baja), `bde_branch_fecha_alta`, `bde_branch_date_conflict` (>1 fecha
+  de alta de la misma semántica → conflicto, nunca precedencia).
+- Ruta territorial CNMV: `cnmv_territorial_route` ∈
+  DOMESTIC/LP/BRANCH/LIMITED_LP/OTHER (`LIMITED` se evalúa antes que
+  `LP`: el epígrafe nunca se promociona).
+- Interpolación `{campo}` en `legal_basis`/`scope`: un placeholder sin
+  valor = REQUIRED_FIELD_MISSING, nunca aserción con referencia vacía.
+
+Reglas positivas nuevas: `eba-psd2-fps-es-entitled` (FPS, effective_from
+= EVIDENCE_AS_OF — el registro EBA no publica fecha de pasaporte),
+`eba-psd2-branch-es-entitled` (BRANCH: branch row + parent join ACTIVE +
+child Active + inscripción BdE vigente + servicio exacto ES;
+effective_from = fecha de alta BdE), `mica-lp-es-entitled` y
+`mica-branch-es-entitled` (CASP art.63 + trigger CNMV; effective_from =
+`cnmv_services_from`; una aserción por letra de servicio).
+
+Residuales fail-closed: parent-no-activo / child-no-activo /
+inscripción-BdE-ausente / conflicto-de-fechas-BdE para sucursales;
+`mica-territorial-date-missing` (services_from ausente con ruta
+LP/BRANCH) y `mica-territorial-es-not-declared` (trigger CNMV sin ES en
+`ac_serviceCode_cou`); `cnmv-limited-lp-route-unresolved` y
+`cnmv-territorial-route-other-unresolved` (abstención, hecho
+`TERRITORIAL_ROUTE_UNRESOLVED`).
+
+Ajustes sobre reglas heredadas (sólo en la copia G1-D):
+
+- `eba-psd2-passport-services`: `entry_mechanism` UNKNOWN→la
+  comunicación territorial nunca muta el mecanismo; itera países ≠ ES
+  y ≠ home (ES lo decide la regla positiva).
+- `eba-psd2-agent-branch-parent-status` → `eba-psd2-agent-parent-status`
+  (sólo PSD_AG: la sucursal se resuelve con regla positiva propia).
+- `mica-passport-territorial-deferred`: no dispara cuando la ruta CNMV
+  ya está resuelta (LP/BRANCH) — el hecho "deferred" no puede coexistir
+  con el positivo.
+
+Contratos: `esma-mica-register` 1.1.0 (cou ≠ trigger; composición con
+CNMV), `cnmv-mica-casp-list` 1.1.0 (categorías territoriales +
+services_from como fecha jurídica), `bde-registro-servicios-pago` 1.0.0
+nuevo (inscripción de sucursal = trigger PSD2 art. 28).
+
+Semántica de match del run (D3 `match_definition`): `match` exige
+assessment + reason + entry_mechanism + territorial_basis +
+legal_basis. `expected_territorial_basis` es subconjunto — el corpus
+admite multi-route real (Eupago emite FPS+BRANCH; el caso G1D-02
+verifica la rama BRANCH). Los casos metamorficos G1D-09/10 quedan
+excluidos del run (`metamorphic_cases_excluded`) y se ejercen como
+mutaciones del ledger en `tests/g1/test_g1d_territorial.py`.
+
+Nota de corpus: `corpus-g1-d.json` declara además el registro EBA del
+parent de Eupago (`PSD_PI!PT_BP!8709`): la regla de sucursal exige el
+join exacto a parent ACTIVE y la propia fila `PSD_BR` lo referencia por
+`ENT_COD_PAR_ENT`. El documento preregistrado D3 no se reabre.
 
 ## Estado
 
@@ -240,5 +322,9 @@ D2  DONE — matriz territorial congelada; semántica
     entry_mechanism / territorial_basis / legal_basis fijada
 D3  DONE — corpus real preregistrado (8 entidades, 10 casos),
     anclas verificadas por test; 0 reglas territoriales aún
-D4+ PENDIENTE — derivation.py intacto desde G1-C
+D4  DONE — delta de derivación territorial: 4 positivas (FPS, branch
+    PSD2, LP MiCA, branch MiCA), abstenciones agente/country-code/
+    LIMITED_LP, findings de fecha; 8/8 casos reales en run; replay
+    byte-idéntico fijado por tests/g1/test_g1d_territorial.py
+D5  PENDIENTE — divergence audit final
 ```

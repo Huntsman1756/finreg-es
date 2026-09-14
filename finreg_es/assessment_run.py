@@ -50,6 +50,13 @@ G1C_DERIVED_PATH = G1_DIR / "derived-assertions-g1-c-001.json"
 G1C_CASES_PATH = G1_DIR / "assessment-cases-g1-c.json"
 G1C_LEDGER_PATH = G1_DIR / "claim-ledger-g1-c-001.json"
 
+G1D_DERIVED_PATH = G1_DIR / "derived-assertions-g1-d-001.json"
+G1D_RULESET_PATH = G1_DIR / "derivation-rules-g1-d.json"
+G1D_CASES_PATH = G1_DIR / "assessment-cases-g1-d.json"
+G1D_LEDGER_PATH = G1_DIR / "claim-ledger-g1-d-001.json"
+G1D_CORPUS_PATH = G1_DIR / "corpus-g1-d.json"
+G1_ASSESSMENT_RUN_V2 = "FINREG_G1_ASSESSMENT_V2"
+
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -90,10 +97,20 @@ def run_assessment(
     run_id: str,
     g1: bool = False,
     g1c: bool = False,
+    g1d: bool = False,
     executed_at: str | None = None,
     code_commit: str | None = None,
 ) -> dict[str, Any]:
-    if g1c:
+    if g1d:
+        artifact_path = repo_root / G1D_DERIVED_PATH
+        ruleset_path = repo_root / G1D_RULESET_PATH
+        cases_path = repo_root / G1D_CASES_PATH
+        ledger_path = repo_root / G1D_LEDGER_PATH
+        corpus_path = repo_root / G1D_CORPUS_PATH
+        run_version = G1_ASSESSMENT_RUN_V2
+        gate = "G1-D5"
+        semantics_version = "V2"
+    elif g1c:
         artifact_path = repo_root / G1C_DERIVED_PATH
         ruleset_path = repo_root / G1_DIR / "derivation-rules.json"
         cases_path = repo_root / G1C_CASES_PATH
@@ -101,6 +118,7 @@ def run_assessment(
         run_version = G1_ASSESSMENT_RUN_VERSION
         gate = "G1-C6"
         semantics_version = "V2"
+        corpus_path = repo_root / CORPUS_PATH
     elif g1:
         artifact_path = repo_root / G1_DERIVED_PATH
         ruleset_path = repo_root / G1_RULESET_PATH
@@ -109,6 +127,7 @@ def run_assessment(
         run_version = G1_ASSESSMENT_RUN_VERSION
         gate = "G1-A8"
         semantics_version = "V2"
+        corpus_path = repo_root / CORPUS_PATH
     else:
         artifact_path = repo_root / DERIVED_PATH
         ruleset_path = repo_root / RULESET_PATH
@@ -117,7 +136,7 @@ def run_assessment(
         run_version = ASSESSMENT_RUN_VERSION
         gate = "G0.7-B"
         semantics_version = "V1"
-    corpus_path = repo_root / CORPUS_PATH
+        corpus_path = repo_root / CORPUS_PATH
 
     artifact = strict_json_loads(artifact_path.read_text(encoding="utf-8"))
     cases_doc = strict_json_loads(cases_path.read_text(encoding="utf-8"))
@@ -143,8 +162,24 @@ def run_assessment(
     by_id = {a["assertion_id"]: a for a in artifact["assertions"]}
     contracts = _load_contracts(repo_root)
 
+    # G1-D: los casos metamorficos (mutaciones preregistradas D3-09/10)
+    # no forman parte del run congelado sobre datos reales; se ejercen
+    # como tests metamorficos sobre el ledger mutado en memoria.
+    metamorphic_excluded: list[str] = [
+        c["case_id"]
+        for c in cases_doc["cases"]
+        if g1d
+        and any(
+            "synthetic_mutation" in lim
+            for lim in c.get("known_limitations", [])
+        )
+    ]
+    excluded_ids = set(metamorphic_excluded)
+
     case_results: list[dict[str, Any]] = []
     for case in cases_doc["cases"]:
+        if case["case_id"] in excluded_ids:
+            continue
         result = assess(
             case["entity_id"],
             index,
@@ -154,7 +189,7 @@ def run_assessment(
             assertions=assertions,
             contracts=contracts,
             semantics_version=semantics_version,
-            reported_facts=reported_facts if (g1 or g1c) else None,
+            reported_facts=reported_facts if (g1 or g1c or g1d) else None,
         )
         matching_ids = [
             e["assertion_id"] for e in result.assertion_evaluations
@@ -203,7 +238,7 @@ def run_assessment(
             "reason_match": case.get("expected_reason") is not None
             and str(result.reason) == case["expected_reason"],
         }
-        if g1 or g1c:
+        if g1 or g1c or g1d:
             matched_facts = [
                 f["fact_id"]
                 for f in reported_facts
@@ -216,6 +251,43 @@ def run_assessment(
             case_result["entry_mechanism_match"] = (
                 expected_mechanism is None
                 or expected_mechanism in entry_mechanisms
+            )
+        if g1d:
+            # G1-D (match_definition D3): un positivo por la ruta
+            # territorial equivocada NO es match. expected_territorial_
+            # basis enumera las bases que deben quedar evidenciadas por
+            # aserciones admisibles ENTITLED (subconjunto: el corpus
+            # admite multi-route real, p. ej. Eupago LPS+sucursal);
+            # expected_legal_basis son fragmentos que deben aparecer en
+            # la legal_basis de alguna asercion admisible.
+            entitled = [
+                by_id[i]
+                for i in used_ids
+                if by_id[i]["legal_effect"] == "ENTITLED_TO_PROVIDE"
+            ]
+            territorial_bases = sorted(
+                {a["territorial_basis"] for a in entitled}
+            )
+            legal_bases = [a["legal_basis"] for a in entitled]
+            expected_tb = case.get("expected_territorial_basis")
+            expected_lb = case.get("expected_legal_basis")
+            tb_match = expected_tb is None or all(
+                b in territorial_bases for b in expected_tb
+            )
+            lb_match = expected_lb is None or all(
+                any(fragment in lb for lb in legal_bases)
+                for fragment in expected_lb
+            )
+            case_result["territorial_bases"] = territorial_bases
+            case_result["expected_territorial_basis"] = expected_tb
+            case_result["territorial_basis_match"] = tb_match
+            case_result["legal_basis_match"] = lb_match
+            case_result["match"] = (
+                case_result["match"]
+                and case_result["reason_match"]
+                and case_result["entry_mechanism_match"]
+                and tb_match
+                and lb_match
             )
         case_results.append(case_result)
 
@@ -237,7 +309,8 @@ def run_assessment(
             **input_shas,
             "frozen_input_integrity": integrity,
             "executed_at": executed_at,
-            **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if (g1 or g1c) else {}),
+            **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if (g1 or g1c or g1d) else {}),
+            **({"metamorphic_cases_excluded": metamorphic_excluded} if g1d else {}),
         },
         "summary": {
             "cases_total": len(case_results),
@@ -266,6 +339,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Artefactos y casos G1-A + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--g1c", action="store_true",
                         help="Artefactos y casos G1-C + ASSESSMENT_SEMANTICS_V2")
+    parser.add_argument("--g1d", action="store_true",
+                        help="Artefactos y casos G1-D + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
@@ -277,6 +352,7 @@ def main(argv: list[str] | None = None) -> int:
         run_id=args.run_id,
         g1=args.g1,
         g1c=args.g1c,
+        g1d=args.g1d,
         executed_at=args.executed_at,
         code_commit=args.code_commit,
     )

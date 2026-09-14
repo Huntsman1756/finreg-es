@@ -35,6 +35,10 @@ DERIVATION_VERSION = "FINREG_G07_DERIVATION_V1"
 ARTIFACT_VERSION = "FINREG_G07_DERIVED_ASSERTIONS_V1"
 G1_DERIVATION_VERSION = "FINREG_G1_DERIVATION_V1"
 G1_ARTIFACT_VERSION = "FINREG_G1_DERIVED_ASSERTIONS_V1"
+# G1-D: mismo formato de artefacto; la version de derivacion sube por
+# los campos derivados territoriales (join parent EBA, join BdE sucursal,
+# ruta territorial CNMV) y la interpolacion de legal_basis/scope.
+G1D_DERIVATION_VERSION = "FINREG_G1_DERIVATION_V2"
 
 _EBA_ENT_AUT_DATE = r"\d{4}-\d{2}-\d{2}"
 
@@ -90,6 +94,63 @@ def _mica_foreign_countries(raw: Any, home: Any) -> str | None:
     return "|".join(foreign) or None
 
 
+def _eba_country_services(services_raw: Any, country: str) -> list[str] | None:
+    """Codigos de servicio declarados para ``country`` en Services EBA."""
+    if not isinstance(services_raw, list):
+        return None
+    codes: list[str] = []
+    for entry in services_raw:
+        if isinstance(entry, dict):
+            value = entry.get(country)
+            if isinstance(value, str):
+                value = [value]
+            for code in value or []:
+                if code not in codes:
+                    codes.append(code)
+    return codes or None
+
+
+def _eba_nca_code(entity_code: Any) -> str | None:
+    """Emisor NCA del EntityCode EBA. Formatos observados:
+    ``IE_CBI!C58301`` (nca primero) y ``PSD_PI!PT_BP!8709`` (tipo antes
+    del nca, p. ej. en referencias parent)."""
+    if not isinstance(entity_code, str) or "!" not in entity_code:
+        return None
+    parts = entity_code.split("!")
+    if parts[0].startswith("PSD_") and len(parts) > 1:
+        return parts[1]
+    return parts[0]
+
+
+def _mica_territorial_route(cnmv_category: Any) -> tuple[str | None, str | None]:
+    """Clasifica la categoria territorial CNMV (G1-D, freeze D2).
+
+    Devuelve (route, label). LIMITED se evalua antes que LP: la categoria
+    'LIMITED PSC EN REGIMEN DE LP' contiene el patron LP pero no esta
+    definida por fuente primaria — jamas se promociona a LP (H12-E).
+    """
+    if not isinstance(cnmv_category, str) or not cnmv_category.strip():
+        return None, None
+    cat = cnmv_category.upper()
+    if "LIMITED" in cat:
+        return "LIMITED_LP", "LIMITED PSC EN REGIMEN DE LP"
+    if "SUCURSAL" in cat:
+        return "BRANCH", "PSC A TRAVES DE SUCURSAL"
+    if "REGIMEN DE LP" in cat.replace("É", "E"):
+        return "LP", "PSC EN REGIMEN DE LP"
+    if cat in {"PSC (ESPAÑA)", "ENTIDAD DE CRÉDITO (ESPAÑA)"}:
+        return "DOMESTIC", None
+    return "OTHER", None
+
+
+def _mica_es_declared(service_countries_raw: Any) -> str | None:
+    """ES declarado en ac_serviceCode_cou (hecho reportado, no trigger)."""
+    if not isinstance(service_countries_raw, str):
+        return None
+    countries = {c.strip() for c in service_countries_raw.split("|") if c.strip()}
+    return "TRUE" if "ES" in countries else "FALSE"
+
+
 def _parse_ddmmyyyy(value: Any) -> str | None:
     if not isinstance(value, str) or not value.strip():
         return None
@@ -100,10 +161,21 @@ def _parse_ddmmyyyy(value: Any) -> str | None:
 
 
 def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
-    """Agrupa claims por (corpus_id, source) conservando el orden del run."""
-    groups: dict[tuple[str, str], dict[str, Any]] = {}
+    """Agrupa claims por (corpus_id, source, record) conservando el orden.
+
+    El discriminador de registro (G1-D) permite que una misma entidad
+    del corpus tenga varios registros de la misma fuente — p. ej. una
+    PI y su sucursal ES son registros EBA distintos de la misma persona
+    juridica. En los ledgers G0/G1-A/G1-C cada (corpus_id, source) tiene
+    un unico record_key, por lo que el agrupamiento es identico.
+    """
+    groups: dict[tuple[str, str, str], dict[str, Any]] = {}
     for claim in ledger["claims"]:
-        key = (claim["corpus_id"], claim["source"])
+        key = (
+            claim["corpus_id"],
+            claim["source"],
+            canonical_json(claim["record_key"]),
+        )
         group = groups.setdefault(
             key,
             {
@@ -136,6 +208,7 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
     # motor para que las reglas puedan hacer match sobre ellos sin
     # hardcodear la semantica ENT_AUT en las condiciones.
     status_by_code: dict[tuple[str | None, str | None], str] = {}
+    group_by_code: dict[tuple[str | None, str | None], dict[str, Any]] = {}
     for group in groups_list:
         if group["source"] == "EBA_PSD2_REGISTER":
             fields = group["fields"]
@@ -146,10 +219,39 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             status_by_code[
                 (fields.get("entity_type"), fields.get("entity_code"))
             ] = derived["status"]
+            group_by_code[
+                (fields.get("entity_type"), fields.get("entity_code"))
+            ] = group
+            # G1-D: servicios exactos declarados para ES (Services{"ES":...})
+            # y etiqueta del emisor NCA para la base juridica.
+            fields["eba_es_services"] = _eba_country_services(
+                fields.get("services_raw"), "ES"
+            )
+            es_codes = fields["eba_es_services"]
+            fields["eba_es_services_str"] = (
+                "|".join(es_codes) if es_codes else None
+            )
+            fields["eba_home_nca"] = _eba_nca_code(fields.get("entity_code"))
+            fields["eba_ent_class_label"] = {
+                "PSD_PI": "PI",
+                "PSD_EMI": "EMI",
+            }.get(fields.get("entity_type"))
+            # DER_CHI_ENT_AUT (PSD_AG/PSD_BR): estado del hijo reportado
+            # por la NCA — evidencia del parent, no autorizacion propia.
+            child_status = fields.get("der_chi_ent_aut")
+            fields["eba_child_status"] = (
+                "ACTIVE" if child_status == "Active"
+                else "WITHDRAWN" if child_status in {"Removed", "Withdrawn"}
+                else "UNKNOWN" if child_status
+                else None
+            )
 
     # G1-A: resolucion parent->child para PSD_AG/PSD_BR. El estado del
     # hijo es evidencia DEL PARENT (spec EBA: DER_CHI_ENT_AUT hereda);
     # nunca autorizacion independiente.
+    # G1-D: el join exacto incorpora el grupo del parent como evidencia
+    # corroborante (SourceAssertion[] de la conclusion incluye el
+    # registro del parent, no solo su estado resuelto).
     for group in groups_list:
         fields = group["fields"]
         if group["source"] != "EBA_PSD2_REGISTER":
@@ -160,6 +262,61 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             fields["eba_parent_status"] = status_by_code.get(
                 (par_type, par_code), "UNKNOWN"
             )
+            parent_group = group_by_code.get((par_type, par_code))
+            if parent_group is not None:
+                group.setdefault("corroborating_groups", []).append(
+                    parent_group
+                )
+                parent_fields = parent_group["fields"]
+                fields["eba_parent_entity_type"] = parent_fields.get(
+                    "entity_type"
+                )
+                fields["eba_parent_class_label"] = {
+                    "PSD_PI": "PI",
+                    "PSD_EMI": "EMI",
+                }.get(parent_fields.get("entity_type"))
+                fields["eba_parent_nca"] = _eba_nca_code(par_code)
+                fields["eba_parent_last_auth"] = parent_fields.get(
+                    "eba_ent_aut_last_auth"
+                )
+
+    # G1-D: join BdE registro de servicios de pago -> sucursal EBA por
+    # corpus_id. La inscripcion BdE (sucursal activa, fecha de alta) es
+    # el trigger territorial del regimen de establecimiento PSD2; la
+    # fecha de baja cerrada marca la sucursal como no activa.
+    bde_by_entity: dict[str, list[dict[str, Any]]] = {}
+    for group in groups_list:
+        if group["source"] == "BDE_REGISTRO_SERVICIOS_PAGO":
+            bde_by_entity.setdefault(group["corpus_id"], []).append(group)
+    for group in groups_list:
+        fields = group["fields"]
+        if group["source"] != "EBA_PSD2_REGISTER":
+            continue
+        if fields.get("entity_type") != "PSD_BR":
+            continue
+        bde_groups = bde_by_entity.get(group["corpus_id"], [])
+        if not bde_groups:
+            continue
+        altas = {
+            g["fields"].get("fecha_alta")
+            for g in bde_groups
+            if g["fields"].get("fecha_alta")
+        }
+        bajas = [
+            g["fields"].get("fecha_baja") for g in bde_groups
+        ]
+        fields["bde_branch_date_conflict"] = (
+            "TRUE" if len(altas) > 1 else None
+        )
+        primary = bde_groups[0]["fields"]
+        fields["bde_branch_fecha_alta"] = (
+            primary.get("fecha_alta") if len(altas) <= 1 else None
+        )
+        fields["bde_branch_codigo"] = primary.get("codigo_be")
+        fields["bde_branch_registered"] = (
+            "TRUE" if altas and all(not b for b in bajas) else "FALSE"
+        )
+        group.setdefault("corroborating_groups", []).extend(bde_groups)
 
     # G1-C: join CNMV_PSC_REGISTER -> ESMA_MICA_REGISTER por corpus_id.
     # La categoria CNMV ancla el mecanismo juridico (art. 60/63); el CSV
@@ -169,6 +326,11 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
     for group in groups_list:
         if group["source"] == "CNMV_PSC_REGISTER":
             cnmv_by_entity[group["corpus_id"]] = group
+            route, route_label = _mica_territorial_route(
+                group["fields"].get("cnmv_category")
+            )
+            group["fields"]["cnmv_territorial_route"] = route
+            group["fields"]["cnmv_route_label"] = route_label
     for group in groups_list:
         if group["source"] != "ESMA_MICA_REGISTER":
             continue
@@ -182,6 +344,17 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             group["corroborating_groups"] = [cnmv_group]
         fields["cnmv_category"] = cnmv.get("cnmv_category")
         fields["cnmv_services_from"] = cnmv.get("services_from")
+        # G1-D: ruta territorial de la categoria CNMV (LP / BRANCH /
+        # LIMITED_LP / DOMESTIC) y si ES aparece en los paises
+        # declarados. La ruta territorial no cambia el mecanismo base.
+        route, route_label = _mica_territorial_route(
+            fields.get("cnmv_category")
+        )
+        fields["cnmv_territorial_route"] = route
+        fields["cnmv_route_label"] = route_label
+        fields["mica_es_declared"] = _mica_es_declared(
+            fields.get("service_countries_raw")
+        )
         fields["mica_service_letters"] = _mica_service_letters(
             fields.get("service_codes_raw")
         )
@@ -264,6 +437,30 @@ def _iterate_items(
         if item and item not in excluded and item not in seen:
             seen.append(item)
     return seen
+
+
+_FIELD_REF = re.compile(r"\{([a-z_][a-z0-9_]*)\}")
+
+
+def _interpolate(text: Any, fields: dict[str, Any]) -> tuple[str | None, list[str]]:
+    """Sustituye ``{campo}`` por el valor del claim group (G1-D).
+
+    Devuelve (texto, placeholders_sin_valor). Un placeholder sin valor
+    es un input juridico requerido ausente: la regla emite finding, no
+    una asercion con la referencia vacia.
+    """
+    if not isinstance(text, str):
+        return text, []
+    missing: list[str] = []
+
+    def _sub(match: re.Match[str]) -> str:
+        value = fields.get(match.group(1))
+        if value is None or value == "":
+            missing.append(match.group(1))
+            return match.group(0)
+        return str(value)
+
+    return _FIELD_REF.sub(_sub, text), missing
 
 
 def _resolve_effective(
@@ -358,6 +555,20 @@ def _emit_assertion(
         )
         return None
 
+    legal_basis, missing_lb = _interpolate(emit["legal_basis"], fields)
+    scope, missing_scope = _interpolate(emit["scope"], fields)
+    missing_refs = missing_lb + missing_scope
+    if missing_refs:
+        findings.append(
+            _finding(
+                group,
+                rule,
+                "REQUIRED_FIELD_MISSING",
+                f"campos: {missing_refs} (interpolacion legal_basis/scope)",
+            )
+        )
+        return None
+
     assertion = {
         "assertion_id": assertion_id,
         "register_id": group["context"]["register_id"],
@@ -368,10 +579,10 @@ def _emit_assertion(
         "legal_effect": emit["legal_effect"],
         "entry_mechanism": emit["entry_mechanism"],
         "territorial_basis": emit["territorial_basis"],
-        "legal_basis": emit["legal_basis"],
+        "legal_basis": legal_basis,
         "effective_from": effective_from,
         "effective_to": effective_to,
-        "scope": emit["scope"],
+        "scope": scope,
         "rule_id": rule["rule_id"],
         "ruleset_version": ruleset_version,
         "source_claim_ids": group["claim_ids"] + [
@@ -820,14 +1031,37 @@ def build_g1c_artifact(repo_root: Path) -> dict[str, Any]:
     )
 
 
+def build_g1d_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-D: ledger G1-D (G1-C + claims territoriales del
+    corpus D3), ruleset G1-D, corpus extendido y manifest fusionado."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g1/claim-ledger-g1-d-001.json",
+        ruleset_rel="fixtures/g1/derivation-rules-g1-d.json",
+        corpus_rel="fixtures/g1/corpus-g1-d.json",
+        manifest_rel="fixtures/g1/sources/manifest-g1-d-run.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1D_DERIVATION_VERSION,
+        id_prefix="g1d",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--g1", action="store_true", help="ruleset G1 (default: G0.7)")
+    parser.add_argument("--g1c", action="store_true", help="artefacto G1-C")
+    parser.add_argument("--g1d", action="store_true", help="artefacto G1-D")
     args = parser.parse_args(argv)
 
-    builder = build_g1_artifact if args.g1 else build_artifact
+    builder = build_artifact
+    if args.g1:
+        builder = build_g1_artifact
+    if args.g1c:
+        builder = build_g1c_artifact
+    if args.g1d:
+        builder = build_g1d_artifact
     artifact = builder(args.repo_root.resolve())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:

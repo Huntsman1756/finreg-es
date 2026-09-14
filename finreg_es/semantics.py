@@ -50,6 +50,12 @@ def _reported_fact_reason(facts: list[dict]) -> AssessmentReason:
     """Razon V2 para una entidad sin aserciones admisibles que tiene
     reported_facts (politica A7: el hecho reportado bloquea o explica,
     nunca eleva ni crea un negativo)."""
+    # G1-D: el agente opera por cuenta del principal — ruta delegada,
+    # nunca entitlement propio. Va antes que el generico parent-status.
+    if any("agent-parent-status" in f["rule_id"] for f in facts):
+        return AssessmentReason.AGENT_DELEGATED_ROUTE_NO_INDEPENDENT_ENTITLEMENT
+    if any("limited-lp" in f["rule_id"] for f in facts):
+        return AssessmentReason.TERRITORIAL_ROUTE_UNRESOLVED_LIMITED_LP
     if any("parent-status" in f["rule_id"] for f in facts):
         return AssessmentReason.PARENT_STATUS_NOT_CHILD_ENTITLEMENT
     if any("insufficient-basis" in f["rule_id"] for f in facts):

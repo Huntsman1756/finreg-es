@@ -103,6 +103,13 @@ class AssessmentReason(StrEnum):
     TERRITORIAL_ENTITLEMENT_UNRESOLVED = "TERRITORIAL_ENTITLEMENT_UNRESOLVED"
     PARENT_STATUS_NOT_CHILD_ENTITLEMENT = "PARENT_STATUS_NOT_CHILD_ENTITLEMENT"
     INSUFFICIENT_LEGAL_BASIS = "INSUFFICIENT_LEGAL_BASIS"
+    # G1-D: ruta delegada y categoria territorial sin fuente primaria
+    AGENT_DELEGATED_ROUTE_NO_INDEPENDENT_ENTITLEMENT = (
+        "AGENT_DELEGATED_ROUTE_NO_INDEPENDENT_ENTITLEMENT"
+    )
+    TERRITORIAL_ROUTE_UNRESOLVED_LIMITED_LP = (
+        "TERRITORIAL_ROUTE_UNRESOLVED_LIMITED_LP"
+    )
 
 
 # Actividades canónicas (conjunto mínimo congelado para G0; extender
@@ -159,6 +166,9 @@ REPORTED_STATUSES = (
     "WITHDRAWN",
     "UNKNOWN",
     "TERRITORIAL_ENTITLEMENT_DEFERRED",
+    # G1-D: categoria territorial observada sin definicion por fuente
+    # primaria (p. ej. LIMITED PSC EN REGIMEN DE LP) — abstencion.
+    "TERRITORIAL_ROUTE_UNRESOLVED",
 )
 
 # Procedencia probatoria de una aserción (G1-A, política A5):
