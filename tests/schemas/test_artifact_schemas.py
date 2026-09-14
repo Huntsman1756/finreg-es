@@ -109,12 +109,17 @@ UNSCOPED = {
     "fixtures/regulatory/assertions.json",
     "fixtures/regulatory/identity-index.json",
     "fixtures/regulatory/scenarios.json",
+    # G2: manifiesto con retrieved_at por item (formato nuevo G2-A) y
+    # artefactos de comparacion — pendientes de contrato schema en G2.
+    "fixtures/g2/sources/manifest-g2-d01.json",
+    "fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json",
 }
 
 # Capturas raw de autoridad: contenido controlado por BdE/CNMV/EBA/ESMA,
 # no por FinReg — jamas se les impone rigidez de contrato.
 UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json",
-                  "fixtures/g1/sources/extracted/*.json"]
+                  "fixtures/g1/sources/extracted/*.json",
+                  "fixtures/g2/sources/raw/*.json"]
 
 
 def _covered_files() -> dict[Path, str]:
