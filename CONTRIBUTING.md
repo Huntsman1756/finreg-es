@@ -31,6 +31,11 @@ repo; todo output es un artefacto hash-fijado.
   (ver G05-B-F01, G1-C-F01 en `docs/`).
 - **Clasificación ≠ autorización**: no promocionar listados
   estadísticos a evidencia de entitlement.
+- **OSS scan antes de construir**: ninguna infraestructura genérica
+  nueva sin un scan failure-driven previo
+  (`docs/adr-oss-scan-failure-driven.md`). La semántica regulatoria es
+  propia; la infraestructura genérica se reutiliza cuando existe una
+  solución madura.
 
 ## Pull requests
 
