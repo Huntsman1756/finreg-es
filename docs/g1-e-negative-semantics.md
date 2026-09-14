@@ -665,6 +665,60 @@ excluido (universo de constituyentes no establecido).
 `-001` intacto, `-002` byte-determinista, run `assessment-run-g1-e-001`
 replayable offline, y cada control anterior.
 
+## E6 — Auditoría de calidad (OSS probe)
+
+Regla adoptada: **ninguna infraestructura genérica nueva sin un OSS
+scan failure-driven previo**. La semántica regulatoria es propiedad del
+proyecto; el tooling genérico se adopta de OSS maduro.
+
+### Hypothesis (ADOPT_EVAL → ADOPT, dev-only)
+
+`tests/g1/test_g1e_v3_properties.py`: 7 propiedades sobre las
+invariantes V3 con oráculo metamórfico — el motor no crashea y emite
+veredicto válido (P1), CONFIRMED_ENTITLED implica positivo usado (P2),
+CONFIRMED_NOT_ENTITLED implica ausencia de positivos usados (P3),
+replay determinista (P4), bloquear negativos no crea NOT_ENTITLED (P5),
+negativo en otra ruta no derriba una ruta abierta (P6), y semántica
+temporal de `covers()`/`effective_effect_at()` (P7). Ejecución
+derandomizada (`derandomize=True`, sin database): ~1150 casos, 0
+violaciones. Determinista y offline — apto para CI.
+
+### mutmut (ADOPT_EVAL → ADOPT, dev-only, requiere Linux/WSL)
+
+Scope: `semantics.py`, `temporal.py`, `coverage.py` (config en
+`[tool.mutmut]` de `pyproject.toml`). mutmut no soporta Windows
+nativo; el run se ejecuta en WSL.
+
+```text
+run inicial    1086 mutantes · 830 killed (~76%) · 251 survived
++ batch 1      56 tests binding → 77 survived
++ batch 2      21 tests binding → 27 survived
+final          1059/1086 killed (~97.5%) · 0 no-tests
+```
+
+Los 27 supervivientes restantes son **equivalentes** (verificados caso
+a caso, no gaps de test): literales `"UNKNOWN"`/`"OPEN"` en defaults
+sólo comparados por desigualdad, `False`→`None` en acumuladores falsy,
+strings de `IdentityResolution` nunca observados en el path EXACT,
+`or`→`and` con operandos iguales, y `source_date_reliability` como
+metadato de provenance no consumido por `is_stale`.
+
+`tests/g1/test_g1e_v3_mutation_kills.py` (77 tests) fija la semántica
+que el corpus no ejercitaba: gates fail-closed (`no_contract`,
+`unknown_scope_no_evidence`, `out_of_source_scope`,
+`can_produce_enumeration_negative` fuera de scope), fronteras temporales
+(`age > max_staleness`, `[from,to)` exclusivo, `effective_to < as_of`
+legacy, `valid_from`/`valid_to` inclusivos), propagación de
+`CoverageQuery` (entity_class, territorial_basis, effective_date) en la
+query principal y en ALL_REQUIRED, preferencia `source_as_of` sobre
+`retrieved_at` en `freshness_at`, estados de raíz (OPEN/CLOSED/
+UNRESOLVED/ABSENT, retirada sin intervalos), y agregación V3
+(intersección legal de rutas, cierre por rutas vs retirada, orden de
+cierre entre raíces, positivo futuro/expirado, diag de route_conflict).
+
+Sin cambios de producción: cero mutantes se "mataron" modificando
+semántica.
+
 ## Secuencia restante
 
 ```text
@@ -685,5 +739,8 @@ E4.1/E5-A
 E5  DONE — ASSESSMENT_SEMANTICS_V3 route-aware (22/22 casos;
     Wise NOT_ENTITLED vs Eupago ENTITLED reproduce el contraste
     preregistrado; V1/V2 congeladas)
-E6  divergence audit / cierre G1
+E6  DONE — quality probe OSS: Hypothesis derandomizado (7
+    propiedades, 0 violaciones) + mutmut 1059/1086 killed
+    (~97.5%; 27 supervivientes equivalentes documentados).
+    Cierre G1 pendiente de decisión.
 ```

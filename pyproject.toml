@@ -10,9 +10,18 @@ dependencies = []
 [project.optional-dependencies]
 # Tooling/CI only: JSON Schema validation of artifact contracts.
 # finreg_es runtime must remain stdlib-only (zero-dep auditability).
-tooling = ["jsonschema>=4.21,<5"]
+tooling = ["jsonschema>=4.21,<5", "hypothesis>=6.100,<7", "mutmut>=3.2,<4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+
+# E6-A quality probe: mutation testing scoped a la semantica del
+# motor. Tooling-only; el runtime core sigue stdlib-only. Requiere
+# Linux/WSL (mutmut no soporta Windows nativo).
+[tool.mutmut]
+source_paths = ["finreg_es/semantics.py", "finreg_es/temporal.py", "finreg_es/coverage.py"]
+also_copy = ["finreg_es", "fixtures", "schemas", "tools"]
+pytest_add_cli_args_test_selection = ["tests/g1", "tests/semantics", "tests/coverage", "tests/g07", "tests/identity"]
+pytest_add_cli_args = ["-x", "-q"]
