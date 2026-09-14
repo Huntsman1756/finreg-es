@@ -68,6 +68,16 @@ SOURCE_PROVENANCE = {
         "authority": "Banco de Espana",
         "register_id": "BDE_REGISTRO_SERVICIOS_PAGO",
     },
+    # G1-D-F01: fuentes primarias del mecanismo home MiCA (la fecha ESMA
+    # ac_authorisationNotificationDate no distingue art.63 de art.60).
+    "BAFIN_UNTERNEHMENSDATENBANK": {
+        "authority": "Bundesanstalt fuer Finanzdienstleistungsaufsicht (BaFin)",
+        "register_id": "BAFIN_UNTERNEHMENSDATENBANK",
+    },
+    "FINANSTILSYNET_REGISTRY": {
+        "authority": "Finanstilsynet (Norwegian Financial Supervisory Authority)",
+        "register_id": "FINANSTILSYNET_REGISTRY",
+    },
 }
 
 # Traza raw -> normalized por campo observado. Cada entrada declara la

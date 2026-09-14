@@ -169,6 +169,17 @@ def validate_contract_dict(raw: dict) -> None:
             raise ValueError(f"verificacion VERIFIED de '{field}' sin source_url")
 
 
+# Alias fuente->contrato: algunos extractos congelados citan un
+# register_id de vista (provenance) distinto del register_id del
+# contrato que la gobierna. G1-D-F02: la composicion ALL_REQUIRED
+# consulta el contrato de cada fuente citada en source_assertions,
+# por lo que la vista CNMV_PSC_REGISTER (extract estructurado del
+# listado MiCA) debe resolver a su contrato CNMV_MICA_CASP_LIST.
+SOURCE_CONTRACT_ALIASES: dict[str, str] = {
+    "CNMV_PSC_REGISTER": "CNMV_MICA_CASP_LIST",
+}
+
+
 def staleness_policy(contract: SourceContract) -> tuple[int | None, int | None]:
     """Politica de staleness del perfil del registro (positivo, negativo).
 

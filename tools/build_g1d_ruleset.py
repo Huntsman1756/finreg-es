@@ -399,3 +399,203 @@ from finreg_es.canonical import canonical_json
 
 OUT.write_text(canonical_json({"ruleset": spec}) + "\n", encoding="utf-8", newline="\n")
 print(f"rules: {len(spec['rules'])} -> {OUT}")
+
+# ---------------------------------------------------------------------
+# Sucesor G1-D-F01/F02 (-002): mecanismo home MiCA dinamico probado por
+# fuente primaria del NCA de origen + composicion conjuntiva de fuentes.
+# El ruleset -001 permanece congelado como registro historico.
+# ---------------------------------------------------------------------
+import copy
+
+OUT_V2 = ROOT / "fixtures" / "g1" / "derivation-rules-g1-d-002.json"
+spec_v2 = copy.deepcopy(spec)
+spec_v2["ruleset_version"] = "FINREG_G1_DERIVATION_V4"
+spec_v2["purpose"] = (
+    "SourceAssertion[] -> EntitlementAssertion[] + reported_facts. G1-D-F01: "
+    "el mecanismo home MiCA se prueba por fuente primaria del NCA de origen "
+    "(BaFin Art. 59 Abs. 1a/1b; Finanstilsynet remarks) — la categoria CNMV "
+    "LP/sucursal decide solo la ruta territorial, nunca AUTHORISATION. "
+    "G1-D-F02: aserciones conjuntivas declaran evidence_composition "
+    "ALL_REQUIRED (cada fuente citada exige contrato + scope + freshness "
+    "bajo su propio contrato). Sin mecanismo home probado o con senales "
+    "conflictivas: finding + abstencion."
+)
+spec_v2["frozen_inputs"] = {
+    "claims_ledger": "fixtures/g1/claim-ledger-g1-d-002.json",
+    "corpus": "fixtures/g1/corpus-g1-d-002.json",
+    "source_manifest": "fixtures/g1/sources/manifest-g1-d-run-002.json",
+    "contracts_dir": "fixtures/contracts",
+    "territorial_corpus": "fixtures/g1/sources/extracted/g1-d-territorial-corpus.json",
+    "legal_freeze_manifest": "fixtures/g1/sources/manifest-g1-d1.json",
+    "home_mechanism_manifest": "fixtures/g1/sources/manifest-g1-d2.json",
+}
+spec_v2["policy"]["mica_home_mechanism"] = (
+    "entry_mechanism de la asercion territorial MiCA = mecanismo home "
+    "probado por NCA primario: BaFin Unternehmensdatenbank cita el permiso "
+    "como Art. 59 Abs. 1a (autorizacion art. 63) o Abs. 1b (entidad "
+    "financiera art. 60 -> NOTIFICATION); Finanstilsynet corrobora con "
+    "remarks expresos (art. 60(3)). La categoria CNMV y los campos ESMA "
+    "nunca fijan el mecanismo. Senales conflictivas o ausentes => finding "
+    "y abstencion."
+)
+spec_v2["policy"]["evidence_composition"] = (
+    "ALL_REQUIRED: cada fuente citada en source_assertions debe tener "
+    "contrato, estar en scope y ser fresh bajo su propia politica; la "
+    "frescura de una fuente nunca compensa otra."
+)
+spec_v2["failure_taxonomy"] = spec_v2["failure_taxonomy"] + [
+    "HOME_MECHANISM_UNPROVEN",
+    "HOME_MECHANISM_CONFLICT",
+]
+
+for r in spec_v2["rules"]:
+    if r["rule_id"] in ("mica-lp-es-entitled", "mica-branch-es-entitled"):
+        emit = r["emit_per"]["emit"]
+        del emit["entry_mechanism"]
+        emit["entry_mechanism_from"] = {
+            "field": "mica_home_mechanism",
+            "map": {
+                "NOTIFICATION": "NOTIFICATION",
+                "AUTHORISATION": "AUTHORISATION",
+            },
+        }
+        emit["evidence_composition"] = "ALL_REQUIRED"
+        if r["rule_id"] == "mica-lp-es-entitled":
+            emit["legal_basis"] = (
+                "MiCA {mica_home_legal_ref} (mecanismo home probado por NCA "
+                "de origen; clase {mica_home_entity_class}) + MiCA art. 65 "
+                "(comunicacion transfronteriza; inicio a recepcion o <=15 "
+                "dias) + CNMV {cnmv_route_label}, services_from "
+                "{cnmv_services_from}"
+            )
+        else:
+            emit["legal_basis"] = (
+                "MiCA {mica_home_legal_ref} (mecanismo home probado por NCA "
+                "de origen; clase {mica_home_entity_class}) + MiCA art. "
+                "59(7) establecimiento/sucursal + MiCA art. 65 "
+                "(comunicacion) + CNMV {cnmv_route_label}, services_from "
+                "{cnmv_services_from}"
+            )
+        r["match"]["conditions"] += [
+            {"field": "mica_home_mechanism", "op": "NOT_NULL"},
+            {"field": "mica_home_mechanism_conflict", "op": "EQ", "value": None},
+        ]
+        r["required_fields"] += ["mica_home_mechanism", "mica_home_legal_ref"]
+        r["rationale"] = (
+            "G1-D-F01: la ruta territorial (LP/sucursal) la decide CNMV; el "
+            "mecanismo home lo prueba el NCA de origen. BaFin cita Art. 59 "
+            "Abs. 1a (art. 63) o Abs. 1b (art. 60, entidad financiera -> "
+            "NOTIFICATION); Finanstilsynet corrobora. Sin prueba: 0 positivo."
+        )
+        r["known_limitations"] = r.get("known_limitations", []) + [
+            "el mecanismo home es observable solo si el NCA publica la cita "
+            "legal del permiso o un remark expreso; ausente => abstencion",
+        ]
+    if r["rule_id"] == "eba-psd2-branch-es-entitled":
+        # G1-D-F02: la asercion branch es conjuntiva EBA child + EBA
+        # parent + BdE — cada fuente requerida evalua su propia
+        # freshness/admisibilidad.
+        r["emit"]["evidence_composition"] = "ALL_REQUIRED"
+
+spec_v2["rules"] += [
+    {
+        "rule_id": "mica-home-mechanism-conflict",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {"source": "ESMA_MICA_REGISTER", "conditions": [
+            {"field": "cnmv_territorial_route", "op": "IN", "value": ["LP", "BRANCH"]},
+            {"field": "mica_es_declared", "op": "EQ", "value": "TRUE"},
+            {"field": "cnmv_services_from", "op": "NOT_NULL"},
+            {"field": "mica_home_mechanism_conflict", "op": "EQ", "value": "TRUE"},
+        ]},
+        "finding": {
+            "classification": "HOME_MECHANISM_CONFLICT",
+            "detail": "fuentes primarias del NCA de origen en conflicto sobre la via MiCA (art. 59 Abs. 1a vs 1b / remark art. 60(3)): sin resolucion silenciosa; 0 asercion",
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "G1-D-F01: conflicto entre evidencias primarias del mecanismo home = abstencion clasificada, nunca eleccion silenciosa.",
+        "required_fields": [], "coverage_preconditions": [],
+        "known_limitations": [],
+    },
+    {
+        "rule_id": "mica-home-mechanism-unproven",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {"source": "ESMA_MICA_REGISTER", "conditions": [
+            {"field": "cnmv_territorial_route", "op": "IN", "value": ["LP", "BRANCH"]},
+            {"field": "mica_es_declared", "op": "EQ", "value": "TRUE"},
+            {"field": "cnmv_services_from", "op": "NOT_NULL"},
+            {"field": "mica_home_mechanism", "op": "EQ", "value": None},
+            {"field": "mica_home_mechanism_conflict", "op": "EQ", "value": None},
+        ]},
+        "finding": {
+            "classification": "HOME_MECHANISM_UNPROVEN",
+            "detail": "ruta territorial CNMV observada pero el mecanismo home MiCA (art. 63 vs art. 60) no esta probado por fuente primaria del NCA de origen; la categoria CNMV y ac_authorisationNotificationDate ESMA nunca lo fijan; 0 asercion",
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "G1-D-F01: sin home_entry_mechanism anclado en fuente oficial la entidad queda fail-closed — LP/sucursal no implica AUTHORISATION.",
+        "required_fields": [], "coverage_preconditions": [],
+        "known_limitations": [],
+    },
+]
+
+OUT_V2.write_text(
+    canonical_json({"ruleset": spec_v2}) + "\n", encoding="utf-8", newline="\n"
+)
+print(f"rules: {len(spec_v2['rules'])} -> {OUT_V2}")
+
+# Casos sucesores -002 (G1-D-F01/F03): el preregistro D3 esperaba
+# AUTHORISATION para las rutas MiCA porque asumia la via art. 63. La
+# evidencia primaria BaFin (Art. 59 Abs. 1b) + Finanstilsynet (art.
+# 60(3)) falsan esa expectativa: ambos corpus MiCA son NOTIFICATION.
+# El archivo -001 permanece congelado como expectativa falsada.
+CASES_V1 = ROOT / "fixtures" / "g1" / "assessment-cases-g1-d.json"
+CASES_V2 = ROOT / "fixtures" / "g1" / "assessment-cases-g1-d-002.json"
+cases_v2 = copy.deepcopy(json.loads(CASES_V1.read_text(encoding="utf-8")))
+cases_v2["cases_meta"]["version"] = "ASSESSMENT_CASES_G1_D_V2"
+cases_v2["cases_meta"]["match_definition"] = (
+    "G1-D-F03 (match dual): probe_satisfaction = la semantica historica "
+    "(expected_territorial_basis como subconjunto evidenciado; "
+    "expected_entry_mechanism null = wildcard). strict_exact_set = "
+    "igualdad exacta del conjunto de bases territoriales ENTITLED "
+    "admisibles + entry_mechanism exacto cuando preregistrado "
+    "(null exige conjunto vacio). La divergencia G1D-02 (Eupago emite "
+    "BRANCH+FPS frente a BRANCH esperado) se publica como divergencia "
+    "de la metrica estricta, no se corrige retrospectivamente."
+)
+cases_v2["cases_meta"]["categories_not_representable_in_frozen_corpus"] = [
+    {
+        "category": "LIMITED PSC EN REGIMEN DE LP (fila real)",
+        "reason": "solo epigrafe observado, 0 filas en el extract CNMV; G1D-06 usa entidad sintetica marcada para preregistrar la abstencion",
+    },
+    {
+        "category": "art.60 cross-border — ESTADO SUCESOR",
+        "reason": "G1-D-F01: CONTRADICTED, ya no NON_REPRESENTABLE — IG Europe (art. 60(3) probado por Finanstilsynet 199254) y 360 Treasury (Art. 59 Abs. 1b probado por BaFin 118252) son casos reales de la via art. 60; la expectativa preregistrada AUTHORISATION quedo falsada, el sucesor espera NOTIFICATION",
+    },
+]
+for case in cases_v2["cases"]:
+    if case["case_id"] == "G1D-04":
+        case["expected_entry_mechanism"] = "NOTIFICATION"
+        case["expected_legal_basis"] = [
+            "MiCA art. 60(3) (art. 59(1)(b))",
+            "MiCA art. 65",
+        ]
+        case["known_limitations"] = case.get("known_limitations", []) + [
+            "G1-D-F01: expectativa corregida — BaFin 118252 cita el "
+            "permiso cripto como Art. 59 Abs. 1b MiCA-R (via art. 60, "
+            "entidad financiera) = NOTIFICATION, no art. 63"
+        ]
+    if case["case_id"] == "G1D-05":
+        case["expected_entry_mechanism"] = "NOTIFICATION"
+        case["expected_legal_basis"] = [
+            "MiCA art. 60(3) (art. 59(1)(b))",
+            "MiCA art. 59(7) establecimiento/sucursal",
+            "MiCA art. 65",
+        ]
+        case["known_limitations"] = case.get("known_limitations", []) + [
+            "G1-D-F01: expectativa corregida — Finanstilsynet 199254 "
+            "declara expresamente 'authorised ... pursuant to MiCA "
+            "Article 60(3)' = NOTIFICATION, no art. 63"
+        ]
+CASES_V2.write_text(
+    canonical_json(cases_v2) + "\n", encoding="utf-8", newline="\n"
+)
+print(f"cases: {len(cases_v2['cases'])} -> {CASES_V2}")

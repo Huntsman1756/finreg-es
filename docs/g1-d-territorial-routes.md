@@ -226,7 +226,7 @@ p. ej. 360 Treasury 02/04/2025 vs 03/05/2025. El check
 
 ```text
 D4  DONE — derivation delta (joins territoriales + reglas por ruta)
-D5  assessment + divergence audit
+D5  DONE — divergence audit: F01-F04 registrados + remediacion -002
 ```
 
 ## D4 — delta de derivación territorial
@@ -311,6 +311,118 @@ parent de Eupago (`PSD_PI!PT_BP!8709`): la regla de sucursal exige el
 join exacto a parent ACTIVE y la propia fila `PSD_BR` lo referencia por
 `ENT_COD_PAR_ENT`. El documento preregistrado D3 no se reabre.
 
+## D5 — Divergence audit y remediación (sucesor -002)
+
+La revisión del commit `9ab782e` encontró cuatro findings materiales.
+La cadena -001 (`claim-ledger-g1-d-001`, `derivation-rules-g1-d`,
+`derived-assertions-g1-d-001`, `assessment-run-g1-d-001`) permanece
+congelada como registro histórico: el 8/8 histórico pasó contra una
+expectativa preregistrada posteriormente falsada.
+
+```text
+G1-D-F01  HOME_MECHANISM_MISCLASSIFICATION
+          Las reglas -001 hard-coded entry_mechanism=AUTHORISATION +
+          art. 63 para las rutas MiCA territoriales sin probar la via
+          home. Evidencia primaria congelada (manifest-g1-d2):
+          - IG Europe GmbH: Finanstilsynet 199254 declara
+            expresamente "authorised to provide crypto asset services
+            pursuant to MiCA Article 60(3)"; BaFin 148759 cita el
+            permiso como Art. 59 Abs. 1b i.V.m. Art. 3 MiCA-R.
+          - 360 Treasury Systems AG: BaFin 118252 cita Art. 59 Abs.
+            1b (via art. 60, entidad financiera) — no es art. 63
+            tampoco.
+          Ambas son NOTIFICATION, no AUTHORISATION. La distincion
+          BaFin Abs. 1a/1b quedo verificada con controles art. 63
+          puros (p. ej. BSDC -> Abs. 1a). La afirmacion D3 "art.60
+          cross-border: NON_REPRESENTABLE_IN_CURRENT_CORPUS" queda
+          CONTRADICTED: IG Europe y 360T son casos reales de la via
+          art. 60.
+
+G1-D-F02  CONJUNCTIVE_EVIDENCE_FRESHNESS_NOT_PER_SOURCE
+          assess() consultaba solo el contrato de a.register_id y
+          latest_freshness() tomaba el maximo entre todas las fuentes:
+          evidencia fresca de EBA/ESMA podia enmascarar BdE/CNMV stale
+          — precisamente la condicion territorial imprescindible.
+
+G1-D-F03  MATCH_SEMANTICS_RELAXED_POST_PREREGISTRATION
+          El preregistro D3 decia que assessment/reason/
+          entry_mechanism/territorial_basis/legal_basis debian
+          "coincidir"; la implementacion interpreto
+          expected_territorial_basis como subconjunto y
+          expected_entry_mechanism=null como wildcard. El 8/8
+          historico es probe_satisfaction, no match exacto.
+
+G1-D-F04  BDE_CONTRACT_CONTRADICTS_FROZEN_SOURCE (documental)
+          El contrato bde-registro-servicios-pago 1.0.0 afirmaba que
+          el XLSX no expone fecha de baja; el propio xlsx congelado y
+          el builder usan FECHA BAJA + MOTIVO BAJA.
+```
+
+Remediación (patrón G1-C-F01: historia preservada + sucesor):
+
+```text
+fixtures/g1/claim-ledger-g1-d-002.json      556 claims (+24: fichas
+                                            BaFin/Finanstilsynet de
+                                            mecanismo home)
+fixtures/g1/corpus-g1-d-002.json            +4 source_records de
+                                            mecanismo home
+fixtures/g1/sources/manifest-g1-d2.json     4 snapshots oficiales
+fixtures/g1/sources/manifest-g1-d-run-002.json
+fixtures/g1/derivation-rules-g1-d-002.json  35 reglas (V4)
+fixtures/g1/assessment-cases-g1-d-002.json  expectativas corregidas
+fixtures/g1/derived-assertions-g1-d-002.json
+fixtures/g1/runs/assessment-run-g1-d-002.json
+tests/g1/test_g1d_f01_successor.py          13 tests
+```
+
+Cambios del sucesor:
+
+- **Mecanismo home dinámico** (F01): `_group_claims` incorpora los
+  grupos BaFin/Finanstilsynet como corroborantes del grupo ESMA y
+  deriva `mica_home_mechanism` de la cita legal del permiso
+  (`ART_59_1A` → AUTHORISATION/art. 63; `ART_59_1B` →
+  NOTIFICATION/art. 60) y del remark FT (`ART_60_3` → NOTIFICATION).
+  `entry_mechanism_from` resuelve el mecanismo desde el campo probado;
+  `legal_basis` interpola `{mica_home_legal_ref}`. Las reglas MiCA
+  exigen `mica_home_mechanism NOT_NULL` y ausencia de conflicto;
+  `mica-home-mechanism-unproven` / `-conflict` emiten finding +
+  abstención (fail-closed). Resultado corregido:
+
+  ```text
+  G1D-04  360 Treasury   CONFIRMED_ENTITLED NOTIFICATION
+                         FREEDOM_TO_PROVIDE_SERVICES
+                         MiCA 60(3) (59(1)(b)) + 65 | 2025-05-03
+  G1D-05  IG Europe      CONFIRMED_ENTITLED NOTIFICATION BRANCH
+                         MiCA 60(3) (59(1)(b)) + 59(7) + 65 | 2025-12-10
+  ```
+
+- **Composición conjuntiva** (F02): `evidence_composition =
+  ALL_REQUIRED` en las reglas MiCA territoriales y PSD2 branch. En
+  `assess()` cada registro citado en `source_assertions` exige
+  contrato + scope + freshness bajo SU política. La vista
+  `CNMV_PSC_REGISTER` resuelve a su contrato `CNMV_MICA_CASP_LIST`
+  vía `SOURCE_CONTRACT_ALIASES`. Diagnósticos nuevos:
+  `no_contract:<reg>`, `out_of_source_scope:<asr>:<reg>`,
+  `stale_required_source:<asr>:<reg>`. Tests metamórficos: CNMV
+  stale + ESMA fresh → 0 positivo MiCA; BdE stale + EBA fresh → 0
+  positivo BRANCH.
+
+- **Métrica dual** (F03): el run -002 publica
+  `summary.match_metrics.probe_satisfaction` (8/8, semántica
+  histórica) y `strict_exact_set` (7/8: divergencia `G1D-02` — Eupago
+  emite BRANCH+FPS frente a BRANCH preregistrado). La expectativa
+  histórica no se corrige retrospectivamente; la divergencia queda
+  publicada.
+
+- **Contrato BdE** (F04): 1.0.1 — `FECHA BAJA`/`MOTIVO BAJA`
+  documentados; vacía = inscripción vigente. Contrato CNMV 1.1.1:
+  `activities_covered` ampliado a los servicios MiCA granulares (la
+  admisibilidad por fuente filtra por actividad concreta).
+
+Estado del gate: la cadena **válida** es la sucesora -002
+(`FINREG_G1_DERIVATION_V4`); -001 es registro histórico con expectativa
+falsada.
+
 ## Estado
 
 ```text
@@ -322,9 +434,14 @@ D2  DONE — matriz territorial congelada; semántica
     entry_mechanism / territorial_basis / legal_basis fijada
 D3  DONE — corpus real preregistrado (8 entidades, 10 casos),
     anclas verificadas por test; 0 reglas territoriales aún
-D4  DONE — delta de derivación territorial: 4 positivas (FPS, branch
-    PSD2, LP MiCA, branch MiCA), abstenciones agente/country-code/
-    LIMITED_LP, findings de fecha; 8/8 casos reales en run; replay
-    byte-idéntico fijado por tests/g1/test_g1d_territorial.py
-D5  PENDIENTE — divergence audit final
+D4  DONE_WITH_BLOCKING_FINDINGS — delta de derivación territorial:
+    4 positivas (FPS, branch PSD2, LP MiCA, branch MiCA), abstenciones
+    agente/country-code/LIMITED_LP, findings de fecha; 8/8 casos reales
+    en run historico; replay byte-idéntico fijado por
+    tests/g1/test_g1d_territorial.py. La auditoria D5 encontro
+    F01-F04 (ver seccion D5).
+D5  DONE — findings G1-D-F01..F04 registrados; remediacion sucesora
+    -002 (mecanismo home probado por NCA primario, composicion
+    ALL_REQUIRED, metrica dual, contrato BdE corregido);
+    tests/g1/test_g1d_f01_successor.py fija la cadena corregida
 ```

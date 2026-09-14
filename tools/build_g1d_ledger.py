@@ -70,9 +70,30 @@ FIELD_TRACES_G1D: dict[str, dict[str, tuple[str, str | None]]] = {
         "tipo_entidad": ("COPY", "TIPO ENTIDAD"),
         "nombre_matriz": ("COPY", "NOMBRE ENTIDAD MATRIZ"),
         "fecha_alta": ("COPY", "FECHA ALTA"),
-        # La hoja publicada no expone columna de baja: ausente = vigente.
+        # La hoja expone FECHA BAJA (+ MOTIVO BAJA): vacia = vigente.
         "fecha_baja": ("EMPTY_TO_NULL", "FECHA BAJA"),
         "pais_origen": ("COPY", "PAÍS DE ORIGEN (ISO2)"),
+    },
+    # G1-D-F01: mecanismo home MiCA probado por el NCA home. El
+    # "registro" aqui es la ficha parseada del snapshot congelado —
+    # los valores normalizados (mica_home_route, home_licences,
+    # home_mechanism_remark) se derivan del HTML oficial en el parser
+    # de abajo, nunca a mano.
+    "BAFIN_UNTERNEHMENSDATENBANK": {
+        "legal_name": ("COPY", "legal_name"),
+        "bafin_id": ("COPY", "bafin_id"),
+        "home_entity_class_de": ("COPY", "gattung"),
+        "mica_home_route": ("COPY", "mica_home_route"),
+        "home_permission_date": ("COPY", "home_permission_date"),
+        "home_permission_services": ("COPY", "home_permission_services"),
+        "home_permission_raw": ("COPY", "home_permission_raw"),
+    },
+    "FINANSTILSYNET_REGISTRY": {
+        "legal_name": ("COPY", "legal_name"),
+        "finanstilsynet_id": ("COPY", "finanstilsynet_id"),
+        "home_licences": ("COPY", "home_licences"),
+        "home_mechanism_remark": ("COPY", "home_mechanism_remark"),
+        "home_mechanism_remark_raw": ("COPY", "home_mechanism_remark_raw"),
     },
 }
 
@@ -88,10 +109,19 @@ EBA_ZIP = ROOT / "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip"
 ESMA_CSV = ROOT / "fixtures/g1/sources/raw/esma-mica-casps.csv"
 CNMV_EXTRACT = ROOT / "fixtures/g1/sources/extracted/cnmv-psc-extract.json"
 BDE_XLSX = ROOT / "fixtures/g1/sources/raw/bde-registro-servicios-pago.xlsx"
+BAFIN_360T = ROOT / "fixtures/g1/sources/raw/bafin-unternehmensdatenbank-360t-118252.html"
+BAFIN_IG = ROOT / "fixtures/g1/sources/raw/bafin-unternehmensdatenbank-ig-europe-148759.html"
+FT_IG = ROOT / "fixtures/g1/sources/raw/finanstilsynet-vreg-ig-europe-199254.html"
+FT_360T = ROOT / "fixtures/g1/sources/raw/finanstilsynet-vreg-360t-114184.html"
 
 OUT_LEDGER = ROOT / "fixtures/g1/claim-ledger-g1-d-001.json"
 OUT_CORPUS = ROOT / "fixtures/g1/corpus-g1-d.json"
 OUT_MANIFEST = ROOT / "fixtures/g1/sources/manifest-g1-d-run.json"
+# Sucesor G1-D-F01 (-002): misma cadena + evidencia de mecanismo home.
+OUT_LEDGER_V2 = ROOT / "fixtures/g1/claim-ledger-g1-d-002.json"
+OUT_CORPUS_V2 = ROOT / "fixtures/g1/corpus-g1-d-002.json"
+OUT_MANIFEST_V2 = ROOT / "fixtures/g1/sources/manifest-g1-d-run-002.json"
+MANIFEST_G1_D2 = ROOT / "fixtures/g1/sources/manifest-g1-d2.json"
 
 EXTRACTOR_VERSION = "G1D_TERRITORIAL_EXTRACT_V1"
 EXTRACTED_AT = "2026-09-14T00:00:00Z"
@@ -100,6 +130,8 @@ PARSER_BY_SOURCE = {
     "ESMA_MICA_REGISTER": "EsmaCaspsAdapter",
     "CNMV_PSC_REGISTER": "CnmvPscExtract",
     "BDE_REGISTRO_SERVICIOS_PAGO": "BdeServiciosPagoAdapter",
+    "BAFIN_UNTERNEHMENSDATENBANK": "BafinUdbAdapter",
+    "FINANSTILSYNET_REGISTRY": "FinanstilsynetVregAdapter",
 }
 # Procedencia temporal por snapshot (retrieved_at / source_as_of del
 # manifest de origen; source_as_of ausente = UNAVAILABLE por diseno).
@@ -123,6 +155,26 @@ SNAPSHOT_META = {
         "retrieved_at": "2026-09-14",
         "source_as_of": "2026-09-10",
         "source_date_reliability": "TRUSTED",
+    },
+    "raw/bafin-unternehmensdatenbank-360t-118252.html": {
+        "retrieved_at": "2026-09-14",
+        "source_as_of": None,
+        "source_date_reliability": "UNAVAILABLE",
+    },
+    "raw/bafin-unternehmensdatenbank-ig-europe-148759.html": {
+        "retrieved_at": "2026-09-14",
+        "source_as_of": None,
+        "source_date_reliability": "UNAVAILABLE",
+    },
+    "raw/finanstilsynet-vreg-ig-europe-199254.html": {
+        "retrieved_at": "2026-09-14",
+        "source_as_of": None,
+        "source_date_reliability": "UNAVAILABLE",
+    },
+    "raw/finanstilsynet-vreg-360t-114184.html": {
+        "retrieved_at": "2026-09-14",
+        "source_as_of": None,
+        "source_date_reliability": "UNAVAILABLE",
     },
 }
 SEMANTIC_DERIVATION = {
@@ -397,6 +449,144 @@ SHA_EBA = _sha256_file(EBA_ZIP)
 SHA_ESMA = _sha256_file(ESMA_CSV)
 SHA_CNMV_EXTRACT = _sha256_file(CNMV_EXTRACT)
 SHA_BDE = _sha256_file(BDE_XLSX)
+SHA_BAFIN_360T = _sha256_file(BAFIN_360T)
+SHA_BAFIN_IG = _sha256_file(BAFIN_IG)
+SHA_FT_IG = _sha256_file(FT_IG)
+SHA_FT_360T = _sha256_file(FT_360T)
+
+
+def _parse_bafin_udb(path: Path) -> dict:
+    """Parsea la ficha BaFin Unternehmensdatenbank congelada.
+
+    Extrae la Gattung y los permisos cripto con su cita legal. La base
+    'Art. 59 Abs. 1a' corresponde a la autorizacion art. 63; 'Abs. 1b'
+    a la via de entidad financiera del art. 60 (notificacion). El raw
+    oficial muestra variantes tipograficas ('Abs. 1b', 'Abs .1b',
+    'Abs.1b') — el parser las normaliza todas.
+    """
+    import re
+
+    html = path.read_text(encoding="utf-8", errors="replace")
+    gattung_m = re.search(r"Gattung:</dt>\s*<dd>([^<]+)", html)
+    bafin_id_m = re.search(r"Bafin-ID:</dt>\s*<dd>([^&<]+)", html)
+    bak_m = re.search(r"Bak Nr\.:</dt>\s*<dd>([^&<]+)", html)
+    name_m = re.search(r"<h2>Unternehmen</h2>\s*<p>\s*<strong>([^<]+)", html)
+    perms: list[dict[str, str]] = []
+    for m in re.finditer(
+        r"<td>([^<]*Kryptowerte[^<]*\(Art\.\s*59\s*Abs\.?\s*\.?\s*1([ab])"
+        r"\s*i\.V\.m\.\s*Art\.\s*3\s*Abs\.\s*1\s*Nr\.\s*16\s*([a-j])"
+        r"\s*MiCA-R\)[^<]*)</td>\s*<td>(\d{2}\.\d{2}\.\d{4})</td>",
+        html,
+    ):
+        perms.append(
+            {
+                "text": m.group(1).strip(),
+                "art59": "ART_59_1" + m.group(2).upper(),
+                "service": m.group(3),
+                "date": m.group(4),
+            }
+        )
+    routes = {p["art59"] for p in perms}
+    if len(routes) == 1:
+        route = next(iter(routes))
+    elif not routes:
+        route = None
+    else:
+        route = "MIXED"
+    dates = {p["date"] for p in perms}
+    return {
+        "legal_name": name_m.group(1).strip() if name_m else None,
+        "bafin_id": bafin_id_m.group(1).strip() if bafin_id_m else None,
+        "bak_nr": bak_m.group(1).strip() if bak_m else None,
+        "gattung": (
+            gattung_m.group(1).replace("&nbsp;", "").replace("\xa0", " ").strip()
+            if gattung_m else None
+        ),
+        "mica_home_route": route,
+        "home_permission_date": (
+            next(iter(dates)) if len(dates) == 1 else None
+        ),
+        "home_permission_services": "|".join(sorted({p["service"] for p in perms}))
+        or None,
+        "home_permission_raw": " || ".join(p["text"] for p in perms) or None,
+    }
+
+
+def _parse_ft_vreg(path: Path) -> dict:
+    """Parsea la ficha Finanstilsynet (React VregDetails embebido).
+
+    El remark de la licencia CASP cita la base legal expresa cuando la
+    NCA home la publica (p. ej. 'MiCA Article 60(3)')."""
+    import re
+
+    html = path.read_text(encoding="utf-8", errors="replace")
+    name_m = re.search(r'"name":"([^"]+)"', html)
+    ft_id_m = re.search(r'"finanstilsynetId":"([^"]+)"', html)
+    entity_m = re.search(r'"entityId":(\d+)', html)
+    licences = sorted(set(re.findall(r'"licenceCode":"([^"]+)"', html)))
+    remark_m = re.search(r'"remarks":"([^"]*)"', html)
+    remark = remark_m.group(1) if remark_m else None
+    mechanism = None
+    if remark and re.search(r"MiCA\s+Article\s+60\(3\)", remark):
+        mechanism = "ART_60_3"
+    return {
+        "legal_name": name_m.group(1) if name_m else None,
+        "finanstilsynet_id": ft_id_m.group(1) if ft_id_m else None,
+        "entity_id": entity_m.group(1) if entity_m else None,
+        "home_licences": "|".join(licences) or None,
+        "home_mechanism_remark": mechanism,
+        "home_mechanism_remark_raw": remark,
+    }
+
+
+_BAFIN_FIELDS = (
+    "legal_name",
+    "bafin_id",
+    "home_entity_class_de",
+    "mica_home_route",
+    "home_permission_date",
+    "home_permission_services",
+    "home_permission_raw",
+)
+_FT_FIELDS = (
+    "legal_name",
+    "finanstilsynet_id",
+    "home_licences",
+    "home_mechanism_remark",
+    "home_mechanism_remark_raw",
+)
+
+
+def _bafin_claims(corpus_id: str, rec: dict, snapshot: str, sha: str) -> list[dict]:
+    return [
+        _claim(
+            corpus_id=corpus_id,
+            source="BAFIN_UNTERNEHMENSDATENBANK",
+            field=field,
+            record_key={"field": "Bak Nr.", "value": rec["bak_nr"]},
+            raw_record=rec,
+            snapshot_file=snapshot,
+            snapshot_sha256=sha,
+            discriminator=rec["bak_nr"],
+        )
+        for field in _BAFIN_FIELDS
+    ]
+
+
+def _ft_claims(corpus_id: str, rec: dict, snapshot: str, sha: str) -> list[dict]:
+    return [
+        _claim(
+            corpus_id=corpus_id,
+            source="FINANSTILSYNET_REGISTRY",
+            field=field,
+            record_key={"field": "entityId", "value": rec["entity_id"]},
+            raw_record=rec,
+            snapshot_file=snapshot,
+            snapshot_sha256=sha,
+            discriminator=rec["entity_id"],
+        )
+        for field in _FT_FIELDS
+    ]
 
 
 def build_new_claims() -> list[dict]:
@@ -539,6 +729,88 @@ def build_manifest() -> dict:
     }
 
 
+def build_new_claims_v2() -> list[dict]:
+    """Claims -002: los de -001 + mecanismo home MiCA (G1-D-F01).
+
+    360T e IG Europe tienen su permiso cripto citado por BaFin como
+    Art. 59 Abs. 1b MiCA-R — la via de entidad financiera del art. 60,
+    no la autorizacion art. 63. La expectativa preregistrada D3
+    (AUTHORISATION) quedo falsada por evidencia primaria.
+    """
+    claims = build_new_claims()
+    claims += _bafin_claims(
+        "G1D-004", _parse_bafin_udb(BAFIN_360T),
+        "raw/bafin-unternehmensdatenbank-360t-118252.html", SHA_BAFIN_360T,
+    )
+    claims += _ft_claims(
+        "G1D-004", _parse_ft_vreg(FT_360T),
+        "raw/finanstilsynet-vreg-360t-114184.html", SHA_FT_360T,
+    )
+    claims += _bafin_claims(
+        "G1D-005", _parse_bafin_udb(BAFIN_IG),
+        "raw/bafin-unternehmensdatenbank-ig-europe-148759.html", SHA_BAFIN_IG,
+    )
+    claims += _ft_claims(
+        "G1D-005", _parse_ft_vreg(FT_IG),
+        "raw/finanstilsynet-vreg-ig-europe-199254.html", SHA_FT_IG,
+    )
+    return claims
+
+
+# Registros de mecanismo home añadidos en la remediacion G1-D-F01.
+EXTRA_SOURCE_RECORDS_V2 = {
+    "G1D-004": [
+        {
+            "source": "BAFIN_UNTERNEHMENSDATENBANK",
+            "snapshot_file": "raw/bafin-unternehmensdatenbank-360t-118252.html",
+            "record_key": {"field": "Bak Nr.", "value": "118252"},
+        },
+        {
+            "source": "FINANSTILSYNET_REGISTRY",
+            "snapshot_file": "raw/finanstilsynet-vreg-360t-114184.html",
+            "record_key": {"field": "entityId", "value": "114184"},
+        },
+    ],
+    "G1D-005": [
+        {
+            "source": "BAFIN_UNTERNEHMENSDATENBANK",
+            "snapshot_file": "raw/bafin-unternehmensdatenbank-ig-europe-148759.html",
+            "record_key": {"field": "Bak Nr.", "value": "148759"},
+        },
+        {
+            "source": "FINANSTILSYNET_REGISTRY",
+            "snapshot_file": "raw/finanstilsynet-vreg-ig-europe-199254.html",
+            "record_key": {"field": "entityId", "value": "199254"},
+        },
+    ],
+}
+
+
+def build_corpus_v2() -> dict:
+    doc = build_corpus()
+    doc["corpus_id"] = "corpus-g1-d-002"
+    for entity in doc["entities"]:
+        entity["source_records"] += EXTRA_SOURCE_RECORDS_V2.get(
+            entity["corpus_id"], []
+        )
+    doc["selection_rule"] += (
+        "; G1-D-F01: source_records de mecanismo home (BaFin/Finanstilsynet)"
+        " para G1D-004/005"
+    )
+    return doc
+
+
+def build_manifest_v2() -> dict:
+    doc = build_manifest()
+    extra = json.loads(MANIFEST_G1_D2.read_text(encoding="utf-8"))
+    merged = {s["snapshot_file"]: s for s in doc["snapshots"]}
+    for snap in extra["snapshots"]:
+        merged[snap["snapshot_file"]] = snap
+    doc["capture_id"] += " + g1-d2 home-mechanism (G1-D-F01)"
+    doc["snapshots"] = [merged[k] for k in sorted(merged)]
+    return doc
+
+
 def build_ledger() -> dict:
     g1c = json.loads(G1C_LEDGER.read_text(encoding="utf-8"))
     claims = list(g1c["claims"])
@@ -558,17 +830,38 @@ def build_ledger() -> dict:
     }
 
 
+def build_ledger_v2() -> dict:
+    doc = build_ledger()
+    g1c = json.loads(G1C_LEDGER.read_text(encoding="utf-8"))
+    claims = list(g1c["claims"]) + build_new_claims_v2()
+    ids = [c["claim_id"] for c in claims]
+    assert len(ids) == len(set(ids)), "claim_id duplicado en ledger G1-D-002"
+    doc["claims"] = claims
+    doc["ledger"]["ledger_id"] = "claim-ledger-g1-d-002"
+    doc["ledger"]["run_id"] += "+g1-d-f01-home-mechanism"
+    doc["ledger"]["claims_total"] = len(claims)
+    return doc
+
+
 def main() -> int:
-    ledger = build_ledger()
-    corpus = build_corpus()
-    manifest = build_manifest()
-    for path, doc in (
-        (OUT_LEDGER, ledger),
-        (OUT_CORPUS, corpus),
-        (OUT_MANIFEST, manifest),
-    ):
+    v2 = "--v2" in sys.argv
+    if v2:
+        outputs = (
+            (OUT_LEDGER_V2, build_ledger_v2()),
+            (OUT_CORPUS_V2, build_corpus_v2()),
+            (OUT_MANIFEST_V2, build_manifest_v2()),
+        )
+    else:
+        ledger = build_ledger()
+        outputs = (
+            (OUT_LEDGER, ledger),
+            (OUT_CORPUS, build_corpus()),
+            (OUT_MANIFEST, build_manifest()),
+        )
+    for path, doc in outputs:
         path.write_text(canonical_json(doc) + "\n", encoding="utf-8")
         print(f"{len(json.dumps(doc))} bytes -> {path.relative_to(ROOT)}")
+    ledger = outputs[0][1]
     print(f"claims: {ledger['ledger']['claims_total']}")
     return 0
 

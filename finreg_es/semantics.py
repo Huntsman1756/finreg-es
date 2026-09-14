@@ -22,7 +22,11 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import date
 
-from .contracts import SourceContract, staleness_policy
+from .contracts import (
+    SOURCE_CONTRACT_ALIASES,
+    SourceContract,
+    staleness_policy,
+)
 from .coverage import CoverageQuery, ScopeStatus, coverage
 from .identity import IdentityIndexEntry, IdentityResolution, IdentityResolutionState
 from .temporal import Freshness, is_stale
@@ -106,6 +110,13 @@ class EntitlementAssertion:
     evidence_basis: str | None = None
     reported_status: str | None = None
     status_intervals: tuple | None = None
+    # G1-D-F02: composicion de evidencia. "ALL_REQUIRED" = la asercion
+    # es conjuntiva: cada registro citado en source_assertions debe
+    # tener contrato, estar en scope y ser fresh bajo su propia
+    # politica; la frescura de una fuente nunca compensa otra.
+    # None = semantica historica (contrato de register_id + freshness
+    # de la evidencia mas reciente).
+    evidence_composition: str | None = None
 
     def latest_freshness(self) -> Freshness:
         claims = [
@@ -299,6 +310,67 @@ def assess(
         if is_stale(fresh, max_stale, as_of_date):
             diagnostics.append(f"stale_evidence:{a.assertion_id}")
             continue
+        # G1-D-F02: asercion conjuntiva — cada fuente requerida debe
+        # tener contrato, estar en scope y ser fresh bajo SU contrato.
+        if a.evidence_composition == "ALL_REQUIRED":
+            blocked = False
+            for register in sorted(
+                {s.register_id for s in a.source_assertions}
+            ):
+                # Vistas de registro resuelven al contrato que las
+                # gobierna (p. ej. CNMV_PSC_REGISTER -> CNMV_MICA_CASP_LIST).
+                reg_contract = contracts.get(
+                    SOURCE_CONTRACT_ALIASES.get(register, register)
+                )
+                if reg_contract is None:
+                    diagnostics.append(f"no_contract:{register}")
+                    blocked = True
+                    continue
+                reg_decision = coverage(
+                    reg_contract,
+                    CoverageQuery(
+                        entity_class=a.entity_class,
+                        activity=a.activity,
+                        jurisdiction=a.jurisdiction,
+                        territorial_basis=a.territorial_basis,
+                        effective_date=as_of,
+                    ),
+                )
+                if reg_decision.status is ScopeStatus.OUT_OF_SCOPE:
+                    diagnostics.append(
+                        f"out_of_source_scope:{a.assertion_id}:{register}"
+                    )
+                    blocked = True
+                    continue
+                reg_fresh = max(
+                    (
+                        Freshness(
+                            retrieved_at=date.fromisoformat(s.retrieved_at),
+                            source_as_of=(
+                                date.fromisoformat(s.source_as_of)
+                                if s.source_as_of
+                                else None
+                            ),
+                            source_date_reliability=s.source_date_reliability,
+                        )
+                        for s in a.source_assertions
+                        if s.register_id == register
+                    ),
+                    key=lambda f: f.freshness_at,
+                )
+                reg_pos, reg_neg = staleness_policy(reg_contract)
+                reg_max_stale = (
+                    reg_neg
+                    if a.legal_effect is LegalEffect.NOT_ENTITLED
+                    else reg_pos
+                )
+                if is_stale(reg_fresh, reg_max_stale, as_of_date):
+                    diagnostics.append(
+                        f"stale_required_source:{a.assertion_id}:{register}"
+                    )
+                    blocked = True
+            if blocked:
+                continue
         admissible.append(a)
 
     if not admissible:

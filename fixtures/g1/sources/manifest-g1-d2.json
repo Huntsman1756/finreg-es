@@ -1,0 +1,40 @@
+{
+  "capture_id": "g1-d2-2026-09-14",
+  "retrieved_at": "2026-09-14",
+  "hash_algorithm": "SHA-256",
+  "encoding": "UTF-8 for text snapshots; binary-preserving for PDF snapshots",
+  "snapshots": [
+    {
+      "hypothesis": "G1-D-F01",
+      "snapshot_file": "raw/bafin-unternehmensdatenbank-360t-118252.html",
+      "source_url": "https://portal.mvp.bafin.de/database/InstInfo/institutDetails.do?cmd=loadInstitutAction&institutId=118252",
+      "bytes": 28026,
+      "sha256": "ad47b573e0dea4757e592a0bd33993497521154555518afb3091fa24675e6254",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "G1-D-F01",
+      "snapshot_file": "raw/bafin-unternehmensdatenbank-ig-europe-148759.html",
+      "source_url": "https://portal.mvp.bafin.de/database/InstInfo/institutDetails.do?cmd=loadInstitutAction&institutId=148759",
+      "bytes": 28172,
+      "sha256": "aa11545b345a182d04882eb53a003d69700638bafa1c551b86ad5a88bb38735f",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "G1-D-F01",
+      "snapshot_file": "raw/finanstilsynet-vreg-ig-europe-199254.html",
+      "source_url": "https://www.finanstilsynet.no/en/finanstilsynets-registry/details/?id=199254",
+      "bytes": 20070,
+      "sha256": "1e53538a92b7633c28f123758b08bd545f24a2a5e1ca10a0906a164f7280ad04",
+      "source_as_of": "2026-09-14"
+    },
+    {
+      "hypothesis": "G1-D-F01",
+      "snapshot_file": "raw/finanstilsynet-vreg-360t-114184.html",
+      "source_url": "https://www.finanstilsynet.no/en/finanstilsynets-registry/details/?id=114184",
+      "bytes": 16609,
+      "sha256": "c1edba9ac76848ce00b00349bead1d58433b9b358fa5cda2b09a5bfdb17ca55f",
+      "source_as_of": "2026-09-14"
+    }
+  ]
+}

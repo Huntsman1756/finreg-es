@@ -57,6 +57,15 @@ G1D_LEDGER_PATH = G1_DIR / "claim-ledger-g1-d-001.json"
 G1D_CORPUS_PATH = G1_DIR / "corpus-g1-d.json"
 G1_ASSESSMENT_RUN_V2 = "FINREG_G1_ASSESSMENT_V2"
 
+# Sucesor G1-D-F01/F02/F03 (-002): mecanismo home probado por fuente
+# primaria + composicion conjuntiva + metrica dual probe/strict.
+G1D2_DERIVED_PATH = G1_DIR / "derived-assertions-g1-d-002.json"
+G1D2_RULESET_PATH = G1_DIR / "derivation-rules-g1-d-002.json"
+G1D2_CASES_PATH = G1_DIR / "assessment-cases-g1-d-002.json"
+G1D2_LEDGER_PATH = G1_DIR / "claim-ledger-g1-d-002.json"
+G1D2_CORPUS_PATH = G1_DIR / "corpus-g1-d-002.json"
+G1_ASSESSMENT_RUN_V3 = "FINREG_G1_ASSESSMENT_V3"
+
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -98,10 +107,21 @@ def run_assessment(
     g1: bool = False,
     g1c: bool = False,
     g1d: bool = False,
+    g1d2: bool = False,
     executed_at: str | None = None,
     code_commit: str | None = None,
 ) -> dict[str, Any]:
-    if g1d:
+    if g1d2:
+        artifact_path = repo_root / G1D2_DERIVED_PATH
+        ruleset_path = repo_root / G1D2_RULESET_PATH
+        cases_path = repo_root / G1D2_CASES_PATH
+        ledger_path = repo_root / G1D2_LEDGER_PATH
+        corpus_path = repo_root / G1D2_CORPUS_PATH
+        run_version = G1_ASSESSMENT_RUN_V3
+        gate = "G1-D5-SUCCESSOR"
+        semantics_version = "V2"
+        g1d = True  # misma familia semantica y exclusion metamorfica
+    elif g1d:
         artifact_path = repo_root / G1D_DERIVED_PATH
         ruleset_path = repo_root / G1D_RULESET_PATH
         cases_path = repo_root / G1D_CASES_PATH
@@ -289,9 +309,49 @@ def run_assessment(
                 and tb_match
                 and lb_match
             )
+            # G1-D-F03: metrica estricta preregistrada. El match
+            # historico (probe) interpreta expected_territorial_basis
+            # como subconjunto y expected_entry_mechanism=null como
+            # wildcard — semantica relajada definida tras el
+            # preregistro. strict_exact_set exige igualdad exacta del
+            # conjunto de bases ENTITLED admisibles y del conjunto de
+            # mecanismos emitidos (null preregistrado = conjunto
+            # vacio esperado).
+            if g1d2:
+                strict_tb = (
+                    expected_tb is not None
+                    and sorted(expected_tb) == territorial_bases
+                )
+                strict_mech = (
+                    sorted({expected_mechanism}) == entry_mechanisms
+                    if expected_mechanism is not None
+                    else entry_mechanisms == []
+                )
+                case_result["strict_exact_set_match"] = (
+                    case_result["match"]
+                    and strict_tb
+                    and strict_mech
+                )
+                case_result["strict_divergences"] = [
+                    name
+                    for name, ok in (
+                        ("territorial_basis_set", strict_tb),
+                        ("entry_mechanism_set", strict_mech),
+                    )
+                    if not ok
+                ]
         case_results.append(case_result)
 
     mismatches = [c["case_id"] for c in case_results if not c["match"]]
+    strict_divergent = (
+        [
+            c["case_id"]
+            for c in case_results
+            if not c.get("strict_exact_set_match", True)
+        ]
+        if g1d2
+        else []
+    )
     executed_at = executed_at or datetime.now(timezone.utc).isoformat().replace(
         "+00:00", "Z"
     )
@@ -316,6 +376,29 @@ def run_assessment(
             "cases_total": len(case_results),
             "matches": sum(c["match"] for c in case_results),
             "mismatches": mismatches,
+            **(
+                {
+                    # G1-D-F03: ambas metricas publicadas — el 8/8
+                    # historico era probe_satisfaction bajo semantica
+                    # relajada post-preregistro; strict_exact_set es
+                    # la lectura estricta (igualdad de conjuntos).
+                    "match_metrics": {
+                        "probe_satisfaction": {
+                            "matches": sum(c["match"] for c in case_results),
+                            "mismatches": mismatches,
+                        },
+                        "strict_exact_set": {
+                            "matches": sum(
+                                c.get("strict_exact_set_match", False)
+                                for c in case_results
+                            ),
+                            "divergences": strict_divergent,
+                        },
+                    }
+                }
+                if g1d2
+                else {}
+            ),
             "reason_mismatches": [
                 c["case_id"] for c in case_results if not c["reason_match"]
             ],
@@ -341,6 +424,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Artefactos y casos G1-C + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--g1d", action="store_true",
                         help="Artefactos y casos G1-D + ASSESSMENT_SEMANTICS_V2")
+    parser.add_argument("--g1d2", action="store_true",
+                        help="Artefactos y casos G1-D-F01 (-002) + metrica dual")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
@@ -353,6 +438,7 @@ def main(argv: list[str] | None = None) -> int:
         g1=args.g1,
         g1c=args.g1c,
         g1d=args.g1d,
+        g1d2=args.g1d2,
         executed_at=args.executed_at,
         code_commit=args.code_commit,
     )

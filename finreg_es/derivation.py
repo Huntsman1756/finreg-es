@@ -373,6 +373,62 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
             else "ACTIVE"
         )
 
+    # G1-D-F01: mecanismo home MiCA desde fuentes NCA primarias. La
+    # Unternehmensdatenbank BaFin cita por permiso la base legal
+    # (Art. 59 Abs. 1a = autorizacion art.63; Abs. 1b = entidad
+    # financiera via art.60); Finanstilsynet lo corrobora con remarks
+    # (p. ej. "Article 60(3)"). La categoria CNMV decide la ruta
+    # territorial, NUNCA el mecanismo — sin prueba home no hay positivo.
+    mech_by_entity: dict[str, list[dict[str, Any]]] = {}
+    for group in groups_list:
+        if group["source"] in (
+            "BAFIN_UNTERNEHMENSDATENBANK",
+            "FINANSTILSYNET_REGISTRY",
+        ):
+            mech_by_entity.setdefault(group["corpus_id"], []).append(group)
+    for group in groups_list:
+        if group["source"] != "ESMA_MICA_REGISTER":
+            continue
+        fields = group["fields"]
+        mech_groups = mech_by_entity.get(group["corpus_id"], [])
+        if mech_groups:
+            group.setdefault("corroborating_groups", []).extend(mech_groups)
+        signals: set[str] = set()
+        art60_3 = False
+        entity_class: str | None = None
+        for g in mech_groups:
+            f = g["fields"]
+            route = f.get("mica_home_route")  # ART_59_1A | ART_59_1B
+            remark = f.get("home_mechanism_remark")  # ART_60_3
+            if route == "ART_59_1A":
+                signals.add("AUTHORISATION")
+            elif route == "ART_59_1B":
+                signals.add("NOTIFICATION")
+            if remark == "ART_60_3":
+                signals.add("NOTIFICATION")
+                art60_3 = True
+            gattung = f.get("home_entity_class_de") or ""
+            licences = f.get("home_licences") or ""
+            if "Wertpapierinstitut" in gattung or "Investment firm" in licences:
+                entity_class = "INVESTMENT_FIRM_ESI"
+            elif "Kreditinstitut" in gattung:
+                entity_class = "CREDIT_INSTITUTION"
+        if len(signals) > 1:
+            fields["mica_home_mechanism"] = None
+            fields["mica_home_mechanism_conflict"] = "TRUE"
+        elif signals:
+            mechanism = next(iter(signals))
+            fields["mica_home_mechanism"] = mechanism
+            if mechanism == "AUTHORISATION":
+                fields["mica_home_legal_ref"] = "art. 63 (art. 59(1)(a))"
+                fields["mica_home_entity_class"] = entity_class or "CASP"
+            elif art60_3 or entity_class == "INVESTMENT_FIRM_ESI":
+                fields["mica_home_legal_ref"] = "art. 60(3) (art. 59(1)(b))"
+                fields["mica_home_entity_class"] = entity_class or "CASP"
+            else:
+                fields["mica_home_legal_ref"] = "art. 60 (art. 59(1)(b))"
+                fields["mica_home_entity_class"] = entity_class or "CASP"
+
     return groups_list
 
 
@@ -525,7 +581,16 @@ def _emit_assertion(
     entity_class = _resolve("entity_class", "UNSUPPORTED_ENTITY_CLASS")
     activity = _resolve("activity", "UNSUPPORTED_ACTIVITY_MAPPING")
     jurisdiction = _resolve("jurisdiction", "UNSUPPORTED_ACTIVITY_MAPPING")
-    if entity_class is None or activity is None or jurisdiction is None:
+    # G1-D-F01: entry_mechanism puede provenir de un campo derivado
+    # (entry_mechanism_from): la ruta territorial nunca fija el
+    # mecanismo, solo la evidencia home probada lo hace.
+    entry_mechanism = _resolve("entry_mechanism", "REQUIRED_FIELD_MISSING")
+    if (
+        entity_class is None
+        or activity is None
+        or jurisdiction is None
+        or entry_mechanism is None
+    ):
         return None
 
     effective_from, ok = _resolve_effective(
@@ -577,7 +642,7 @@ def _emit_assertion(
         "activity": activity,
         "jurisdiction": jurisdiction,
         "legal_effect": emit["legal_effect"],
-        "entry_mechanism": emit["entry_mechanism"],
+        "entry_mechanism": entry_mechanism,
         "territorial_basis": emit["territorial_basis"],
         "legal_basis": legal_basis,
         "effective_from": effective_from,
@@ -609,6 +674,11 @@ def _emit_assertion(
         assertion["status_intervals"] = fields.get(
             emit["status_intervals_from"]["field"]
         )
+    # G1-D-F02: aserciones conjuntivas (EBA+BdE, ESMA+CNMV+home NCA)
+    # declaran composicion ALL_REQUIRED: cada fuente requerida exige
+    # contrato + scope + freshness bajo su propio contrato en assess().
+    if "evidence_composition" in emit:
+        assertion["evidence_composition"] = emit["evidence_composition"]
     return assertion
 
 
@@ -910,6 +980,7 @@ def to_entitlement_assertions(artifact: dict[str, Any]) -> list[EntitlementAsser
             status_intervals=(
                 tuple(a["status_intervals"]) if a.get("status_intervals") else None
             ),
+            evidence_composition=a.get("evidence_composition"),
         )
         for a in artifact["assertions"]
     ]
@@ -1046,6 +1117,23 @@ def build_g1d_artifact(repo_root: Path) -> dict[str, Any]:
     )
 
 
+def build_g1d_v2_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-D-F01 (sucesor -002): ledger con evidencia de
+    mecanismo home (BaFin/Finanstilsynet) y ruleset con
+    evidence_composition ALL_REQUIRED. La cadena -001 permanece
+    congelada como registro historico."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g1/claim-ledger-g1-d-002.json",
+        ruleset_rel="fixtures/g1/derivation-rules-g1-d-002.json",
+        corpus_rel="fixtures/g1/corpus-g1-d-002.json",
+        manifest_rel="fixtures/g1/sources/manifest-g1-d-run-002.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1D_DERIVATION_VERSION,
+        id_prefix="g1d2",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -1053,6 +1141,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--g1", action="store_true", help="ruleset G1 (default: G0.7)")
     parser.add_argument("--g1c", action="store_true", help="artefacto G1-C")
     parser.add_argument("--g1d", action="store_true", help="artefacto G1-D")
+    parser.add_argument(
+        "--g1d2", action="store_true", help="artefacto G1-D-F01 (sucesor -002)"
+    )
     args = parser.parse_args(argv)
 
     builder = build_artifact
@@ -1062,6 +1153,8 @@ def main(argv: list[str] | None = None) -> int:
         builder = build_g1c_artifact
     if args.g1d:
         builder = build_g1d_artifact
+    if args.g1d2:
+        builder = build_g1d_v2_artifact
     artifact = builder(args.repo_root.resolve())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:
