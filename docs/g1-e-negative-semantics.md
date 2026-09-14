@@ -188,10 +188,16 @@ dinero electrónico Ley 21/2011): `1→PS_010`, `2→PS_020`,
 `4.B→PS_04B`, `4.C→PS_04C`, `6→PS_060`, `7→PS_070`, `8→PS_080`,
 `A/B/C→ES_010` según alcance.
 
-**Código BdE `5` — granularidad no resuelta.** B4-06 observó `5`
-atómico donde EBA descompone en `PS_05A`/`PS_05B`. El hecho
-observable es sólo "servicio Annex I(5)", y hasta E3 no está probado
-que BdE `5` signifique "ambos" y no "uno o ambos". Congelado:
+**Código BdE `5` — granularidad explicada por fuente primaria
+(resolución E3).** El propio xlsx discrimina por `NORMATIVA`: el `5`
+atómico aparece **sólo bajo LEY 16/2009** (régimen LPSE anterior:
+servicio 5 = "emisión y/o adquisición" unitario), mientras `5.A`/`5.B`
+aparecen bajo RDL 19/2018 y Ley 21/2011. Idéntico patrón para
+`3.1/3.2/3.3` y `4.1/4.2/4.3` (Ley 16/2009) vs `3.A/3.B/3.C` y
+`4.A/4.B/4.C` (RDL 19/2018). Por tanto el `5` bare no es "la versión
+gruesa" del servicio PSD2: es un código de **otro régimen jurídico**.
+Sigue prohibido derivar negativos 05A/05B de un `5` bare, ahora con
+justificación primaria y no sólo conservadora. Congelado:
 
 ```text
 NO  BdE 5 → {PAYMENT_INSTRUMENT_ISSUING,
@@ -255,41 +261,87 @@ vía AUTHORISATION+BRANCH. El negativo granular cierra
 `(servicio, vía)`; el global exige todas las vías cerradas **y** todos
 los servicios cerrados — ambas dimensiones.
 
-## Corpus E3 preregistrado (anclas a buscar en snapshots congelados)
+## Corpus E3 preregistrado — RESUELTO (10 anclas reales)
+
+`fixtures/g1/sources/extracted/g1-e-negative-corpus.json`
+(`g1-e-negative-corpus-2026-09-14`). Cada caso lleva tres
+expectativas preregistradas: `expected_negative_evidence_class`,
+`expected_route_outcome`, `expected_global_assessment` — así E4 puede
+fallar la clase aunque E5 acierte el global. 0 entidades sintéticas.
 
 ```text
-E3-01  EBA withdrawn (ENT_AUT par) + sin vía abierta
-       expected: NOT_ENTITLED por vía(s) dependientes; global si única
-E3-02  withdrawal + re-autorización posterior (ENT_AUT len≥3 impar)
-       expected: ENTITLED con effective_from = última autorización
-E3-03  BdE FECHA_BAJA "transformación" + EBA ACTIVE
-       expected: NO negativo por la baja (hechos distintos)
-E3-04  capability ausente en slice COMPLETE_ENUMERATION
-       (domestic PI sin código X en BdE ACTIVIDADES)
-       expected: NOT_ENTITLED granular (servicio X)
-E3-05  misma entidad: negativo en vía A + positivo en vía B
-       expected: CONFIRMED_ENTITLED global, vía A cerrada
-E3-06  Fintonic T1/T2 (BdE TEEP{7,8,1} vs EBA PSD_AISP{PS_080})
-       expected: negativo bloqueado → INDETERMINATE
-E3-07  LPS-PI/EMI ausente de BdE
-       expected: ausencia NO interpretable → 0 negativo
-E3-08  servicio ausente de EBA Services{ES} en entidad FPS
-       expected: NOT_ENTITLED granular si enumeración de la vía
-       es completa para ES; si no, abstención
+E3-001  DENIZEN GLOBAL FINANCIAL (ES_BE!6822)          E3-01
+        retirada dual-source mismo día: BdE renuncia 23/07/2020
+        + EBA ENT_AUT [2019-03-15, 2020-07-23]. Raíz única.
+        probes 2020-07-22 open / 2020-07-23 closed / 2026 closed
+E3-002  MMG Corporation (CZ_CNB!29142024)              E3-02
+        ENT_AUT [2017-05-30, 2019-07-12, 2024-07-12]
+        probes 2018 open / 2020 closed / 2026 open eff 2024-07-12
+E3-003  BANKINTER CONSUMER FINANCE (BdE 8832, EBA ES_BE!8832) E3-03
+        baja BdE 22/02/2019 transformación + EBA [2019-03-15,
+        2026-07-01]. probe 2020-06-01: transformación + EBA ACTIVE
+        → 0 negativo por ENTITY_BAJA
+E3-004  CERRO CATEDRAL EP (BdE 6844)                   E3-04
+        PI doméstica activa, ACTIVIDADES={6} → negativo granular
+        PAYMENT_ACCOUNT_CASH_PLACEMENT + positivo MONEY_REMITTANCE
+E3-005  Mollie B.V. (NL_DNB!F0038)                     E3-05
+        PSD_PI retirada 2025-02-03 + PSD_EMI autorizada el mismo
+        día. ROOT_WITHDRAWAL_IS_NOT_ENTITY_GLOBAL: familia PI
+        cerrada, familia EMI abierta → CONFIRMED_ENTITLED vía EMI
+E3-006  FINTONIC 6892→6935                             E3-06
+        6892 PI retirada/escisión 29/01/2024 → 6935 BdE baja
+        transformación 26/11/2024 + EBA PSD_AISP ACTIVE 03/12/2024.
+        AIS → CONFIRMED_ENTITLED; PIS → INDETERMINATE (negativo
+        bloqueado: positivo histórico BdE código 7, transformación
+        no demostrable como cierre ni continuidad)
+E3-007  SIBS Pagamentos (PSD_PI!PT_BP!8703)            E3-07
+        PI portuguesa LPS ausente de ambos xlsx BdE → ausencia
+        NO interpretable → NO_NEGATIVE_INFERENCE
+E3-008  Wise Europe SA                                 E3-08
+        PIS ausente en los TRES vectores: Services{ES} padre,
+        PSD_BR ES, BdE sucursal 6946 (sin código 7)
+        → CONFIRMED_NOT_ENTITLED PIS (todas las vías cerradas
+        bajo enumeración completa)
+E3-009  Eupago                                         E3-05+E3-08
+        PIS: FPS ausente (Services{ES} padre) vs BRANCH positiva
+        (PSD_BR PS_070 + BdE 6938 código 7)
+        → CONFIRMED_ENTITLED PIS. Par control/experimento con
+        E3-008 (misma query, signo opuesto)
+E3-010  THUNES (FR_ACPR!384558)                        E3-01b
+        retirada 2026-08-27 con Services{ES} aún listados:
+        presencia de códigos tras retirada ≠ entitlement
 ```
 
-`No synthetic positive route` sigue vigente; los casos negativos
-tampoco se fabrican: cada ancla debe existir en un snapshot
-congelado.
+Guardarraíl preregistrado sin reabrir E1: **ROOT WITHDRAWAL IS NOT
+ENTITY-GLOBAL** — la retirada de una raíz cierra sólo la familia de
+rutas que mecánicamente desciende de ella; otras autorizaciones de la
+misma persona jurídica permanecen abiertas (E3-005 lo demuestra con
+PI→EMI el mismo día).
+
+Resoluciones E3 que levantan pendientes del freeze:
+
+- **BdE `5` COMPOSITE: explicado por fuente primaria** (ver sección
+  E2): bare `5` = Ley 16/2009 (régimen distinto), `5.A`/`5.B` =
+  RDL 19/2018. No es correlación EBA; es la columna `NORMATIVA` del
+  propio xlsx.
+- **Exhaustividad de `Services{ES}`**: el spec congelado define
+  `Services` como la lista completa de servicios Annex I por país
+  ("Services (as specified in Annex I to PSD2)") — exhaustiva por
+  construcción del vector. La advertencia T2 aplica a la *verdad*
+  de lo declarado (freshness), no a la *completitud* del vector.
+
+Queda NON_REPRESENTABLE_IN_CURRENT_CORPUS: retirada de raíz +
+positivo en dominio distinto de PSD2 (ej. MiCA) — E3-005 lo cubre
+intra-PSD2; el caso cross-domain podrá probarse por test metamórfico.
 
 ## Secuencia restante
 
 ```text
 E1  DONE — semántica negativa + agregación route-aware congelada
 E2  DONE — vocabulario PSD2 granular congelado (namespace PAYMENT_*,
-    mapeo verbatim EBA + correspondencia BdE; BdE "5" fijado como
-    COMPOSITE sin descomposición A/B hasta verificación E3)
-E3  corpus real adversarial (anclas E3-01..08)
+    mapeo verbatim EBA + correspondencia BdE; BdE "5" = COMPOSITE
+    Ley 16/2009, explicado por la columna NORMATIVA del propio xlsx)
+E3  DONE — corpus preregistrado, 10 anclas reales, 0 sintéticas
 E4  derivation delta (negativos granulares + route_key)
 E5  agregación negativa en assess()
 E6  divergence audit / cierre G1
