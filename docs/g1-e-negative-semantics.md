@@ -263,11 +263,42 @@ los servicios cerrados — ambas dimensiones.
 
 ## Corpus E3 preregistrado — RESUELTO (10 anclas reales)
 
-`fixtures/g1/sources/extracted/g1-e-negative-corpus.json`
-(`g1-e-negative-corpus-2026-09-14`). Cada caso lleva tres
-expectativas preregistradas: `expected_negative_evidence_class`,
+Cadena válida: `g1-e-negative-corpus-002.json` (sucesor E3.1);
+`g1-e-negative-corpus.json` (-001) preservado como histórico con
+defectos documentados. Cada caso lleva expectativas preregistradas:
+`expected_negative_evidence_class` (enum cerrado),
+`expected_blocker`/`expected_evidence_note` (opcionales),
 `expected_route_outcome`, `expected_global_assessment` — así E4 puede
 fallar la clase aunque E5 acierte el global. 0 entidades sintéticas.
+
+### Findings E3.1 (sucesor, historia intacta)
+
+```text
+E3-F01  snapshot_sha256 truncado a 16 chars en registros BdE
+        → -002 lleva el SHA-256 completo del manifest; test exige
+        64 hex + igualdad con manifest + recompute
+E3-F02  frontera de intervalo ENT_AUT
+        → los intervalos son [autorización, retirada): la vía está
+        cerrada EN la fecha de retirada (as_of 2020-07-23 → CLOSED).
+        El motor actual considera vigente as_of==effective_to
+        (legacy inclusive). Congelado: propiedad versionada
+        interval_end=EXCLUSIVE para intervalos derivados de
+        ENT_AUT; default legacy inclusive para artefactos G0/G1
+        anteriores. E4 la materializa, E5 la consume — no se muta
+        la semántica histórica
+E3-F03  Fintonic PIS clasificado como CONFLICTING_SOURCE_ASSERTIONS
+        → reclasificado: la capability de una fila con FECHA BAJA
+        es histórico INACTIVO (regla B4), no positivo vigente en
+        conflicto. Nueva expectativa: ENUMERATED_ABSENCE +
+        blocker TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED →
+        INDETERMINATE (el resultado global no cambia; cambia la
+        clasificación honesta de la evidencia)
+```
+
+Adicionalmente el sucesor convierte `expected_negative_evidence_class`
+en enum cerrado `NONE | EXPLICIT_WITHDRAWAL | EXPIRY |
+ENUMERATED_ABSENCE | ENTITY_BAJA` y traslada la explicación a
+`expected_blocker`/`expected_evidence_note`.
 
 ```text
 E3-001  DENIZEN GLOBAL FINANCIAL (ES_BE!6822)          E3-01
@@ -342,6 +373,7 @@ E2  DONE — vocabulario PSD2 granular congelado (namespace PAYMENT_*,
     mapeo verbatim EBA + correspondencia BdE; BdE "5" = COMPOSITE
     Ley 16/2009, explicado por la columna NORMATIVA del propio xlsx)
 E3  DONE — corpus preregistrado, 10 anclas reales, 0 sintéticas
+    (sucesor -002 tras E3-F01/F02/F03; -001 histórico)
 E4  derivation delta (negativos granulares + route_key)
 E5  agregación negativa en assess()
 E6  divergence audit / cierre G1

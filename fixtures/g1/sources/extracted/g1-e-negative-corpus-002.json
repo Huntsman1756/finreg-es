@@ -1,0 +1,732 @@
+{
+  "extract_id": "g1-e-negative-corpus-002-2026-09-14",
+  "extractor": "mechanical extraction over frozen snapshots (zipfile/json/xml literals) + human review; capa probatoria, no parser operacional",
+  "extractor_version": "G1E_CORPUS_EXTRACT_V1",
+  "extracted_at": "2026-09-14",
+  "preregistered_before_derivation": "2026-09-14 - freeze E1+E2 publicado en main (103c24c) antes de construir este corpus; ninguna regla de negativos ni granularidad PSD2 existe aun en derivation.py/assess()",
+  "semantic_model": {
+    "route_key": "(entry_mechanism, territorial_basis) - ver docs/g1-e-negative-semantics.md",
+    "negative_evidence_classes": [
+      "NONE",
+      "EXPLICIT_WITHDRAWAL",
+      "EXPIRY",
+      "ENUMERATED_ABSENCE",
+      "ENTITY_BAJA"
+    ],
+    "expectation_fields": "expected_negative_evidence_class (enum cerrado) + expected_blocker (opcional) + expected_evidence_note (opcional) + expected_route_outcome + expected_global_assessment",
+    "guard_rail": "ROOT WITHDRAWAL IS NOT ENTITY-GLOBAL: la retirada de una raiz cierra solo la familia de rutas que desciende de ella; otras autorizaciones de la misma persona juridica quedan abiertas",
+    "ent_aut_interval_semantics": "interval_end=EXCLUSIVE: ENT_AUT [a1,a2] produce intervalo [a1,a2) - la ruta esta cerrada EN la fecha de retirada, no el dia siguiente. Propiedad versionada E4; default legacy inclusive para artefactos anteriores"
+  },
+  "umbrella_scope_note": "PAYMENT_SERVICES negativo exige TODOS los constituyentes aplicables a la clase cerrados; el universo por clase no esta probado aun, por tanto este corpus solo preregistra negativos granulares (servicio x ruta) y nunca negativos umbrella",
+  "entities": [
+    {
+      "corpus_id": "E3-001",
+      "entity": "DENIZEN GLOBAL FINANCIAL, S.A.",
+      "category": "E3-01",
+      "description": "PI domestica con retirada explicita concordante en dos fuentes: BdE FECHA BAJA 23/07/2020 'Revocacion de la inscripcion por renuncia expresa' + EBA ENT_AUT par [2019-03-15, 2020-07-23]. Raiz unica.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "ES_BE!6822",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260526191343957"
+          },
+          "fields": {
+            "ENT_NAM": "DENIZEN GLOBAL FINANCIAL, S.A.",
+            "ENT_AUT": [
+              "2019-03-15",
+              "2020-07-23"
+            ],
+            "Services_ES": [
+              "PS_020",
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_05A",
+              "PS_060"
+            ]
+          }
+        },
+        {
+          "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+          "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+          "snapshot_sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "6822"
+          },
+          "fields": {
+            "TIPO ENTIDAD": "Entidad de pago",
+            "FECHA BAJA": "23/07/2020",
+            "MOTIVO BAJA": "Revocacion de la inscripcion por renuncia expresa",
+            "ACTIVIDADES": [
+              "2",
+              "3.A",
+              "3.B",
+              "3.C",
+              "5.A",
+              "6"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2020-07-22",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC OPEN",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para MONEY_REMITTANCE"
+        },
+        {
+          "as_of": "2020-07-23",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC CLOSED",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para MONEY_REMITTANCE (unica raiz, todas las vias cerradas, dos fuentes concordantes)"
+        },
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC CLOSED",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para MONEY_REMITTANCE"
+        }
+      ],
+      "notes": "Dual-source same-day withdrawal (T1 BdE renuncia + T2 EBA par). Control limpio: un solo dia separa el estado abierto del cerrado."
+    },
+    {
+      "corpus_id": "E3-002",
+      "entity": "MMG Corporation s.r.o.",
+      "category": "E3-02",
+      "description": "PI checa con secuencia ENT_AUT len=3: autorizada 2017-05-30, retirada 2019-07-12, re-autorizada 2024-07-12. Intervalos preservados en un solo registro.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "CZ_CNB!29142024",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260820190047319"
+          },
+          "fields": {
+            "ENT_NAM": "MMG Corporation s.r.o.",
+            "ENT_AUT": [
+              "2017-05-30",
+              "2019-07-12",
+              "2024-07-12"
+            ],
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2018-06-01",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "AUTHORISATION+FREEDOM_TO_PROVIDE_SERVICES OPEN (intervalo [2017-05-30, 2019-07-12))",
+          "expected_global_assessment": "CONFIRMED_ENTITLED, effective_from = 2017-05-30 (fecha de la raiz; la fecha juridica territorial ES sigue siendo EVIDENCE_AS_OF)"
+        },
+        {
+          "as_of": "2020-01-01",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "familia de rutas del primer intervalo CLOSED",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para servicios Annex I.3 via FPS (raiz retirada, sin reautorizacion todavia, sin otra raiz)"
+        },
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "AUTHORISATION+FREEDOM_TO_PROVIDE_SERVICES OPEN",
+          "expected_global_assessment": "CONFIRMED_ENTITLED, effective_from raiz = 2024-07-12 (ultima autorizacion, no la primera)",
+          "expected_evidence_note": "retirada historica en el intervalo medio; los intervalos ENT_AUT son [from,to)"
+        }
+      ],
+      "notes": "Prueba la bitemporalidad real de la secuencia: tres probes antes/durante/despues. El snapshot actual solo conserva Services{ES} vigentes; el alcance ES durante la ventana 2019-2024 no es reconstruible desde el snapshot, por eso el probe medio se ancla a la raiz (cierre de familia) y no a una via ES concreta."
+    },
+    {
+      "corpus_id": "E3-003",
+      "entity": "BANKINTER CONSUMER FINANCE, E.F.C., S.A.",
+      "category": "E3-03",
+      "description": "Baja BdE por transformacion (22/02/2019, TEEFPH) seguida de autorizacion EBA como PI (15/03/2019) y retirada posterior (01/07/2026). El mismo NIF/LEI continua; la transformacion cambio el tipo registral, no extinguio la persona.",
+      "source_records": [
+        {
+          "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+          "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+          "snapshot_sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "8832"
+          },
+          "fields": {
+            "TIPO ENTIDAD": "Establecimientos financieros credito e pago hibridas",
+            "DOCUMENTO IDENTIFICATIVO": "A82650672",
+            "FECHA BAJA": "22/02/2019",
+            "MOTIVO BAJA": "Por transformacion en otro tipo de entidad",
+            "ACTIVIDADES": [
+              "A.1",
+              "A.2",
+              "A.3",
+              "B",
+              "C.1",
+              "C.2",
+              "C.3",
+              "C.4",
+              "C.5",
+              "D",
+              "5.A",
+              "8"
+            ]
+          }
+        },
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "ES_BE!8832",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260710191146901"
+          },
+          "fields": {
+            "ENT_NAM": "BANKINTER CONSUMER FINANCE, E.F.C., S.A.",
+            "ENT_AUT": [
+              "2019-03-15",
+              "2026-07-01"
+            ],
+            "Services_ES": [
+              "PS_05A",
+              "PS_080"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2020-06-01",
+          "expected_negative_evidence_class": "ENTITY_BAJA",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC OPEN (raiz EBA activa)",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para PAYMENT_INSTRUMENT_ISSUING (EBA PS_05A); 0 negativos derivados de la fila BdE",
+          "expected_blocker": "TRANSFORMATION_NOT_WITHDRAWAL_SEMANTICS",
+          "expected_evidence_note": "baja registral por transformacion: no es retirada de autorizacion; produce 0 negativos"
+        },
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC CLOSED",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para PAYMENT_INSTRUMENT_ISSUING; la retirada EBA si cierra la raiz PI"
+        }
+      ],
+      "notes": "Control temporal limpio: el as_of 2020-06-01 separa la baja-transformacion (hecho de forma registral) de la retirada EBA (hecho de autorizacion). Mismo NIF A82650672 en ambas fuentes = identidad exacta."
+    },
+    {
+      "corpus_id": "E3-004",
+      "entity": "CERRO CATEDRAL ENTIDAD DE PAGO, S.A.",
+      "category": "E3-04",
+      "description": "PI domestica activa (sin FECHA BAJA) cuya enumeracion BdE ACTIVIDADES contiene solo codigo 6 (envio de dinero). Slice COMPLETE_ENUMERATION B5: domestic PI en registro obligatorio.",
+      "source_records": [
+        {
+          "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+          "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+          "snapshot_sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "6844"
+          },
+          "fields": {
+            "TIPO ENTIDAD": "Entidad de pago",
+            "FECHA BAJA": null,
+            "ACTIVIDADES": [
+              "6"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "ENUMERATED_ABSENCE",
+          "expected_route_outcome": "AUTHORISATION+DOMESTIC: negativo granular para PAYMENT_ACCOUNT_CASH_PLACEMENT (codigo 1 ausente de la enumeracion completa)",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para PAYMENT_ACCOUNT_CASH_PLACEMENT; CONFIRMED_ENTITLED para MONEY_REMITTANCE (codigo 6 presente)"
+        }
+      ],
+      "notes": "Codigo atomico, sin ambiguedad de granularidad (nada que ver con el 5 COMPOSITE). La entidad es positiva para un servicio y negativa para otro en la misma via: demuestra que el negativo es granular, no de entidad ni de umbrella."
+    },
+    {
+      "corpus_id": "E3-005",
+      "entity": "Mollie B.V.",
+      "category": "E3-05",
+      "description": "Misma persona juridica (nat_ref F0038) con dos raices: PSD_PI retirada el 2025-02-03 y PSD_EMI autorizada el mismo 2025-02-03 (transicion PI->EMI). La retirada de la raiz PI cierra su familia de rutas; la raiz EMI permanece abierta con servicios ES.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "NL_DNB!F0038",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20251030222249713"
+          },
+          "fields": {
+            "ENT_NAM": "Mollie B.V.",
+            "ENT_NAT_REF_COD": "F0038",
+            "ENT_AUT": [
+              "2019-02-19",
+              "2025-02-03"
+            ],
+            "Services": {
+              "NL": [
+                "PS_010",
+                "PS_020",
+                "PS_03A",
+                "PS_03B",
+                "PS_03C",
+                "PS_05A",
+                "PS_05B"
+              ]
+            }
+          },
+          "note": "La raiz PI solo declaro servicios en NL (sin PS_070/PS_080 tampoco en NL); nunca tuvo via ES"
+        },
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "NL_DNB!F0038",
+            "EntityType": "PSD_EMI",
+            "EntityVersion": "20251030222249713"
+          },
+          "fields": {
+            "ENT_NAM": "Mollie B.V.",
+            "ENT_NAT_REF_COD": "F0038",
+            "ENT_AUT": [
+              "2025-02-03"
+            ],
+            "Services_ES": [
+              "ES_010",
+              "PS_010",
+              "PS_020",
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_05A",
+              "PS_05B",
+              "PS_070",
+              "PS_080"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2024-01-01",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "raiz PI OPEN; sin via ES declarada en el snapshot",
+          "expected_global_assessment": "NO_ENTITLEMENT_EVIDENCED para servicios ES (ninguna via ES en esa fecha)"
+        },
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "familia PI CLOSED; familia EMI OPEN -> AUTHORISATION+FREEDOM_TO_PROVIDE_SERVICES OPEN via raiz EMI",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para PAYMENT_CREDIT_TRANSFER_EXECUTION en ES (raiz EMI); ROOT_WITHDRAWAL_IS_NOT_ENTITY_GLOBAL demostrado",
+          "expected_evidence_note": "raiz PI retirada 2025-02-03: cierra la familia de rutas que desciende de ella; la raiz EMI (autorizada el mismo dia) permanece abierta"
+        }
+      ],
+      "notes": "La retirada PI y la autorizacion EMI comparten fecha: cambio de forma autorizatoria, no desaparicion. Cerrar la entidad por la retirada PI seria exactamente el error que E1 prohibe."
+    },
+    {
+      "corpus_id": "E3-006",
+      "entity": "FINTONIC (6892 -> 6935)",
+      "category": "E3-06",
+      "description": "Cadena sucesoria real: FINTONIC SERVICIOS FINANCIEROS (6892, TEEP {7,8}, EBA PSD_PI {PS_070,PS_080}, retirada/escision 29/01/2024, SUCESORAS 6935) -> FINTONIC AGREGACION DE CUENTAS (6935, BdE TEEP {7,8,1} baja transformacion 26/11/2024; EBA PSD_AISP {PS_080} autorizada 03/12/2024, ACTIVE).",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "ES_BE!6892",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260526191343957"
+          },
+          "fields": {
+            "ENT_NAM": "FINTONIC SERVICIOS FINANCIEROS, S.L.",
+            "ENT_AUT": [
+              "2019-10-11",
+              "2024-01-29"
+            ],
+            "Services_ES": [
+              "PS_070",
+              "PS_080"
+            ]
+          }
+        },
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "ES_BE!6935",
+            "EntityType": "PSD_AISP",
+            "EntityVersion": "20260526191343957"
+          },
+          "fields": {
+            "ENT_NAM": "FINTONIC AGREGACION DE CUENTAS, S.L.",
+            "ENT_AUT": [
+              "2024-12-03"
+            ],
+            "Services_ES": [
+              "PS_080"
+            ]
+          }
+        },
+        {
+          "source": "BDE_REGISTRO_SERVICIOS_PAGO",
+          "snapshot_file": "raw/bde-registro-servicios-pago.xlsx",
+          "snapshot_sha256": "ea889fa101ec5f2c373b7f702412aa133479653b042e9290d913f93b1888b6f8",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "6935"
+          },
+          "fields": {
+            "TIPO ENTIDAD": "Entidad de pago",
+            "FECHA BAJA": "26/11/2024",
+            "MOTIVO BAJA": "Por transformacion en otro tipo de entidad",
+            "ACTIVIDADES": [
+              "7",
+              "8",
+              "1"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "query_activity": "ACCOUNT_INFORMATION_SERVICES",
+          "expected_negative_evidence_class": "ENTITY_BAJA",
+          "expected_route_outcome": "REGISTRATION+DOMESTIC OPEN via EBA PSD_AISP",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para ACCOUNT_INFORMATION_SERVICES",
+          "expected_blocker": "TRANSFORMATION_NOT_WITHDRAWAL_SEMANTICS",
+          "expected_evidence_note": "fila BdE 6935 baja transformacion 26/11/2024: hecho registral, no retirada; la via AISP (EBA) sigue abierta"
+        },
+        {
+          "as_of": "2026-09-14",
+          "query_activity": "PAYMENT_INITIATION_SERVICES",
+          "expected_negative_evidence_class": "ENUMERATED_ABSENCE",
+          "expected_route_outcome": "via PI CLOSED por retirada 6892/escision; via AISP no cubre PIS por construccion (registro != autorizacion de PIS); alcance historico BdE code 7 no transferible mecanicamente",
+          "expected_global_assessment": "INDETERMINATE para PAYMENT_INITIATION_SERVICES - negativo bloqueado, positivo no demostrado",
+          "expected_blocker": "TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED",
+          "expected_evidence_note": "PIS ausente de la enumeracion vigente (EBA AISP declara solo PS_080; el codigo 7 de la fila BdE es historico INACTIVO por regla B4 FECHA_BAJA, no positivo vigente). La continuidad juridica de la transformacion no es demostrable desde evidencia congelada -> negativo bloqueado -> INDETERMINATE"
+        }
+      ],
+      "notes": "La regla Fintonic se mantiene: ninguna cobertura completa autoriza a ignorar el positivo oficial BdE historico ni a promover el AISP a PI. Sin silent tier winner."
+    },
+    {
+      "corpus_id": "E3-007",
+      "entity": "SIBS Pagamentos",
+      "category": "E3-07",
+      "description": "PI portuguesa activa con servicios passportados a ES (EBA Services{ES}), totalmente ausente de ambos xlsx BdE (servicios-pago y con-establecimiento). La ausencia BdE es no interpretable: su enumeracion vive en EBA, no en BdE.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "PSD_PI!PT_BP!8703",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260423113407953"
+          },
+          "fields": {
+            "ENT_NAM": "SIBS Pagamentos",
+            "ENT_AUT": [
+              "2011-05-05"
+            ],
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_05B"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "AUTHORISATION+FREEDOM_TO_PROVIDE_SERVICES OPEN via EBA; ausencia BdE = NO_NEGATIVE_INFERENCE",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para PAYMENT_CREDIT_TRANSFER_EXECUTION en ES; 0 negativos por ausencia BdE",
+          "expected_evidence_note": "ausencia fuera del universo enumerado BdE: NO_NEGATIVE_INFERENCE; la enumeracion de la via LPS es EBA"
+        }
+      ],
+      "notes": "Verificado mecanicamente: 'SIBS' no aparece en sharedStrings de bde-registro-servicios-pago.xlsx ni de bde-registro-con-establecimiento.xlsx."
+    },
+    {
+      "corpus_id": "E3-008",
+      "entity": "Wise Europe SA",
+      "category": "E3-08",
+      "description": "PI belga activa: Services{ES} padre sin PS_070/PS_080; su PSD_BR ES tampoco declara PS_070/PS_080; la sucursal BdE 6946 tiene actividades {3.A,3.B,3.C,4.A,4.B,4.C,5.A,5.B,6} - sin codigo 7 ni 8. Tres vectores enumerados, cero evidencia de PIS/AIS.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "BE_NBB!0713629988",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20251030193213813"
+          },
+          "fields": {
+            "ENT_NAM": "Wise Europe SA",
+            "ENT_AUT": [
+              "2019-03-19"
+            ],
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_04A",
+              "PS_04B",
+              "PS_04C",
+              "PS_05A",
+              "PS_05B",
+              "PS_060"
+            ]
+          }
+        },
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "BE_NBB!0713629988!ES",
+            "EntityType": "PSD_BR",
+            "EntityVersion": "20260205200842226"
+          },
+          "fields": {
+            "DER_CHI_ENT_AUT": "Active",
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_04A",
+              "PS_04B",
+              "PS_04C",
+              "PS_05A",
+              "PS_05B",
+              "PS_060"
+            ]
+          }
+        },
+        {
+          "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+          "snapshot_file": "raw/bde-registro-con-establecimiento.xlsx",
+          "snapshot_sha256": "72faee42deb53eef432ce63f957a71f9a3fe703733181b69c79f0803cc535283",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "6946"
+          },
+          "fields": {
+            "NOMBRE": "WISE EUROPE S.A., SUCURSAL EN ESPANA",
+            "TIPO ENTIDAD": "Sucursal de entidad de pago extranjera comunitaria",
+            "FECHA ALTA": "10/04/2026",
+            "ACTIVIDADES": [
+              "3.A",
+              "3.B",
+              "3.C",
+              "4.A",
+              "4.B",
+              "4.C",
+              "5.A",
+              "5.B",
+              "6"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "query_activity": "PAYMENT_INITIATION_SERVICES",
+          "expected_negative_evidence_class": "ENUMERATED_ABSENCE",
+          "expected_route_outcome": "AUTHORISATION+FPS CLOSED para PIS; AUTHORISATION+BRANCH CLOSED para PIS",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para PAYMENT_INITIATION_SERVICES - todas las vias legalmente disponibles cerradas bajo enumeracion completa",
+          "expected_evidence_note": "PS_070 ausente en los tres vectores enumerados: Services{ES} padre, PSD_BR ES, BdE sucursal 6946 (sin codigo 7)"
+        },
+        {
+          "as_of": "2026-09-14",
+          "query_activity": "MONEY_REMITTANCE",
+          "expected_negative_evidence_class": "NONE",
+          "expected_route_outcome": "FPS OPEN + BRANCH OPEN (PS_060 / codigo 6 presentes)",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para MONEY_REMITTANCE"
+        }
+      ],
+      "notes": "El negativo PIS de Wise y el positivo PIS de Eupago (E3-009) son el mismo test con signo opuesto: la exhaustividad del vector EBA Services{ES} se apoya en el spec congelado ('Services (as specified in Annex I to PSD2)' por pais) y se corrobora con la enumeracion BdE de la sucursal."
+    },
+    {
+      "corpus_id": "E3-009",
+      "entity": "Eupago - Instituicao de Pagamento Lda",
+      "category": "E3-05+E3-08",
+      "description": "Padre PI portuguesa: Services{ES} sin PS_070/PS_080 -> via FPS cerrada para PIS por ENUMERATED_ABSENCE. Sucursal ES: EBA PSD_BR declara PS_070+PS_080 y BdE 6938 declara codigos 7+8 -> via BRANCH abierta para PIS. Negativo en una via + positivo en otra compatible.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "PSD_PI!PT_BP!8709",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20251030231925863"
+          },
+          "fields": {
+            "ENT_NAM": "Eupago - Instituicao de Pagamento Lda",
+            "ENT_AUT": [
+              "2015-04-13"
+            ],
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_05A",
+              "PS_05B",
+              "PS_060"
+            ]
+          }
+        },
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "PSD_PI!PT_BP!8709",
+            "EntityType": "PSD_BR",
+            "EntityVersion": "20260909084530565"
+          },
+          "fields": {
+            "DER_CHI_ENT_AUT": "Active",
+            "Services_ES": [
+              "PS_03A",
+              "PS_03B",
+              "PS_03C",
+              "PS_05A",
+              "PS_05B",
+              "PS_060",
+              "PS_070",
+              "PS_080"
+            ]
+          }
+        },
+        {
+          "source": "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+          "snapshot_file": "raw/bde-registro-con-establecimiento.xlsx",
+          "snapshot_sha256": "72faee42deb53eef432ce63f957a71f9a3fe703733181b69c79f0803cc535283",
+          "record_key": {
+            "field": "CODIGO BE",
+            "value": "6938"
+          },
+          "fields": {
+            "NOMBRE": "EUPAGO INSTITUICAO DE PAGAMENTO, SUCURSAL EN ESPANA LDA",
+            "TIPO ENTIDAD": "Sucursal de entidad de pago extranjera comunitaria",
+            "FECHA ALTA": "26/06/2024",
+            "ACTIVIDADES": [
+              "3.A",
+              "3.B",
+              "3.C",
+              "5.A",
+              "5.B",
+              "6",
+              "7",
+              "8"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "query_activity": "PAYMENT_INITIATION_SERVICES",
+          "expected_negative_evidence_class": "ENUMERATED_ABSENCE",
+          "expected_route_outcome": "AUTHORISATION+FPS CLOSED para PIS; AUTHORISATION+BRANCH OPEN para PIS (EBA PSD_BR + BdE codigo 7)",
+          "expected_global_assessment": "CONFIRMED_ENTITLED para PAYMENT_INITIATION_SERVICES - negativo en via A + positivo en via B compatible NO es conflicto",
+          "expected_evidence_note": "PS_070 ausente solo en la via FPS (Services{ES} padre); la via BRANCH declara PS_070 en PSD_BR y codigo 7 en BdE 6938"
+        }
+      ],
+      "notes": "Composicion E3-05 a nivel capability: misma actividad, dos vias, signos opuestos. Wise (E3-008) cierra las dos; Eupago cierra una y abre otra. Juntos son el par control/experimento de la agregacion route-aware."
+    },
+    {
+      "corpus_id": "E3-010",
+      "entity": "THUNES FINANCIAL SERVICES",
+      "category": "E3-01b",
+      "description": "PI francesa retirada el 2026-08-27 que PERMANECE LISTADA con Services{ES} [PS_03C, PS_05B] en el snapshot. Demuestra que los codigos de servicio son ambito historico declarado: presencia de codigos despues de la retirada != entitlement.",
+      "source_records": [
+        {
+          "source": "EBA_PSD2_REGISTER",
+          "snapshot_file": "raw/h4-eba-psd2-20260913.zip",
+          "snapshot_sha256": "948429ad71ea0ccbc03abe8d21eab7082075e09377874852b0fd265c2e0e1f31",
+          "record_key": {
+            "EntityCode": "FR_ACPR!384558",
+            "EntityType": "PSD_PI",
+            "EntityVersion": "20260831191438388"
+          },
+          "fields": {
+            "ENT_NAM": "THUNES FINANCIAL SERVICES",
+            "ENT_AUT": [
+              "2023-03-23",
+              "2026-08-27"
+            ],
+            "Services_ES": [
+              "PS_03C",
+              "PS_05B"
+            ]
+          }
+        }
+      ],
+      "probes": [
+        {
+          "as_of": "2026-09-14",
+          "expected_negative_evidence_class": "EXPLICIT_WITHDRAWAL",
+          "expected_route_outcome": "familia de rutas de la raiz PI CLOSED (incluida FPS pese a Services{ES} listados)",
+          "expected_global_assessment": "CONFIRMED_NOT_ENTITLED para PAYMENT_CREDIT_TRANSFER_EXECUTION en ES pese a que el codigo sigue listado"
+        }
+      ],
+      "notes": "Anti-patron congelado: la presencia de codigos de servicio tras la retirada no reabre la via. La enumeracion describe ambito historico declarado; la vigencia la gobierna la raiz."
+    }
+  ],
+  "outstanding_items": [
+    {
+      "item": "BdE codigo 5 atómico = COMPOSITE confirmado por fuente primaria",
+      "detail": "El propio xlsx discrimina por NORMATIVA: bare '5' aparece SOLO bajo LEY 16/2009 (regimen LPSE anterior, servicio 5 = 'emision y/o adquisicion' unitario); '5.A'/'5.B' aparecen bajo RDL 19/2018 y LEY 21/2011. La granularidad COMPOSITE del codigo 5 queda EXPLICADA por la fuente primaria, no por correlacion EBA. Sigue prohibido derivar negativos 05A/05B de un '5' bare: es un codigo de un regimen juridico distinto (Ley 16/2009), no una version gruesa del servicio PSD2. Las filas '3.1/3.2/3.3' y '4.1/4.2/4.3' siguen el mismo patron (Ley 16/2009) vs '3.A/3.B/3.C' y '4.A/4.B/4.C' (RDL 19/2018)."
+    },
+    {
+      "item": "Universo umbrella PAYMENT_SERVICES por clase no preregistrado",
+      "detail": "El conjunto de constituyentes 'aplicables' por entity_class no esta probado; este corpus solo contiene negativos granulares. Si E4 quiere un negativo umbrella necesitara primero ese universo por clase."
+    },
+    {
+      "item": "Entidad con positivo en otra via NO relacionada con capabilities",
+      "detail": "No se encontro en los snapshots una entidad con retirada de raiz autorizatoria + positivo en via de otro dominio (ej. MiCA) que cierre el caso 'root withdrawal != entity global' fuera de PSD2. Mollie (E3-005) lo cubre dentro de PSD2 (PI->EMI). El caso cross-domain queda NON_REPRESENTABLE_IN_CURRENT_CORPUS y podra probarse por test metamorfico."
+    }
+  ],
+  "counts": {
+    "entities": 10,
+    "categories_preregistered": [
+      "E3-01",
+      "E3-01b",
+      "E3-02",
+      "E3-03",
+      "E3-04",
+      "E3-05",
+      "E3-06",
+      "E3-07",
+      "E3-08"
+    ],
+    "synthetic_entities": 0
+  },
+  "succeeds": "g1-e-negative-corpus-2026-09-14",
+  "succession_reason": "E3.1 hardening: E3-F01 snapshot_sha256 completo 64 hex (BdE xlsx llevaban prefijo truncado); E3-F02 intervalos ENT_AUT declarados [from,to) via interval_end=EXCLUSIVE; E3-F03 Fintonic PIS reclasificado a ENUMERATED_ABSENCE + blocker TRANSFORMATION_SUCCESSOR_SEMANTICS_UNRESOLVED (la capability historica de una fila bajada no es positivo vigente en conflicto); expected_negative_evidence_class convertido a enum cerrado + expected_blocker/expected_evidence_note"
+}
