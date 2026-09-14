@@ -3,7 +3,7 @@
     "ruleset_id": "finreg-g1-derivation",
     "ruleset_version": "FINREG_G1_DERIVATION_V2",
     "gate": "G1-C",
-    "purpose": "SourceAssertion[] -> EntitlementAssertion[] + reported_facts. G1-C: mecanismo MiCA anclado a categoria CNMV (art.63 PSC=AUTHORISATION; art.60 entidad de credito=NOTIFICATION); granularidad por servicio (a-j); paises declarados -> reported_fact TERRITORIAL_ENTITLEMENT_DEFERRED (G1-D). El CSV ESMA nunca decide el mecanismo por si solo.",
+    "purpose": "SourceAssertion[] -> EntitlementAssertion[] + reported_facts. G1-C: mecanismo MiCA anclado a categoria CNMV (art.63 PSC=AUTHORISATION; art.60 entidad de credito=NOTIFICATION); granularidad por servicio (a-j); paises declarados -> reported_fact TERRITORIAL_ENTITLEMENT_DEFERRED (G1-D); input juridico requerido ausente -> finding clasificado, nunca abstencion silenciosa. El CSV ESMA nunca decide el mecanismo por si solo.",
     "frozen_inputs": {
       "claims_ledger": "fixtures/g1/claim-ledger-g1-c-001.json",
       "corpus": "fixtures/g0.5/corpus/entities.json",
@@ -20,7 +20,9 @@
       "eba_reporting_layer": "A5: EBA PSD2 es capa de reporte NCA oficial (T2), no constitutiva. evidence_basis=NCA_REPORTED_VIA_EBA. entry_mechanism lo gobierna EntityType: PI/EMI=AUTHORISATION, EPI/AISP/EEMI=REGISTRATION. ENL/EXC sin base Annex para status => INSUFFICIENT_LEGAL_BASIS. AG/BR heredan estado del parent: evidencia del parent, nunca autorizacion propia",
       "mica_mechanism_anchor": "la via juridica (art.60 NOTIFICATION / art.63 AUTHORISATION) se decide por (entity, crypto_service) cruzando categoria CNMV declarada x clase sectorial; ae_competentAuthority/ae_legalform/ae_authorisationNotificationDate NO son detectores de mecanismo",
       "mica_multi_route": "art.60 NOTIFICATION + art.63 AUTHORISATION sobre la misma entidad o servicio son COMPATIBLE_MULTI_ROUTE, nunca conflicto",
-      "mica_territorial": "ac_serviceCode_cou = donde se declara prestar; nunca entitlement territorial. Filas LP/sucursal -> reported_fact diferido a G1-D"
+      "mica_territorial": "ac_serviceCode_cou = donde se declara prestar; nunca entitlement territorial. Filas LP/sucursal -> reported_fact diferido a G1-D",
+      "mica_route_precedence": "precedencia por condiciones disjuntas (todas las reglas se evaluan): 1) checks de categoria (unknown/unsupported) 2) DATE_CONFLICT si ambas fechas presentes y divergen 3) REQUIRED_FIELD_MISSING si falta la fecha juridica CNMV o la fecha ESMA de concordancia 4) regla positiva solo si las fechas concuerdan. Fecha ausente != fechas divergentes: cada caso produce su finding, nunca ambos ni ninguno",
+      "mica_legal_date": "la fecha juridica de las rutas domesticas es cnmv_services_from ('desde la que puede prestar'); ae_authorisationNotificationDate NO es fallback: mezcla autorizacion y notificacion en un solo campo"
     },
     "failure_taxonomy": [
       "REQUIRED_FIELD_MISSING",
@@ -45,6 +47,187 @@
       "EBA_ENT_AUT_LAST_AUTH": "ultima fecha de la secuencia ENT_AUT en posicion impar (ultima autorizacion/registro); si la secuencia no es valida: REQUIRED_FIELD_UNDERIVABLE"
     },
     "rules": [
+      {
+        "rule_id": "mica-cnmv-category-unknown",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {
+              "field": "home_member_state",
+              "op": "EQ",
+              "value": "ES"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "EQ",
+              "value": null
+            }
+          ]
+        },
+        "finding": {
+          "classification": "UNKNOWN_CNMV_CATEGORY",
+          "detail": "entidad ES en registro ESMA sin categoria CNMV anclada: mecanismo no resoluble, 0 asercion"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Fail-closed: la presencia ESMA sola no decide art.60/63.",
+        "required_fields": [],
+        "coverage_preconditions": [],
+        "known_limitations": []
+      },
+      {
+        "rule_id": "mica-cnmv-category-unsupported",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {
+              "field": "home_member_state",
+              "op": "EQ",
+              "value": "ES"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "NOT_NULL"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "NOT_IN",
+              "value": [
+                "PSC (ESPAÑA)",
+                "ENTIDAD DE CRÉDITO (ESPAÑA)"
+              ]
+            }
+          ]
+        },
+        "finding": {
+          "classification": "UNSUPPORTED_ART60_ENTITY_CLASS",
+          "detail": "categoria CNMV sin regla positiva (LP/sucursal/otra clase art.60): conservado como evidencia; territorialidad defer G1-D"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "El ruleset es deliberadamente mas estrecho que la ley: solo rutas con casos reales probados.",
+        "required_fields": [],
+        "coverage_preconditions": [],
+        "known_limitations": []
+      },
+      {
+        "rule_id": "mica-cnmv-date-conflict",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {
+              "field": "home_member_state",
+              "op": "EQ",
+              "value": "ES"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "NOT_NULL"
+            },
+            {
+              "field": "mica_dates_agree",
+              "op": "EQ",
+              "value": "FALSE"
+            }
+          ]
+        },
+        "finding": {
+          "classification": "DATE_CONFLICT",
+          "detail": "fecha ESMA (authorisationNotificationDate) difiere de fecha CNMV 'desde la que puede prestar': sin precedencia silenciosa; abstencion"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Fechas divergentes = posible lag de publicacion o distinto significado juridico; fail-closed.",
+        "required_fields": [],
+        "coverage_preconditions": [],
+        "known_limitations": []
+      },
+      {
+        "rule_id": "mica-domestic-cnmv-service-date-missing",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {
+              "field": "home_member_state",
+              "op": "EQ",
+              "value": "ES"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "IN",
+              "value": [
+                "PSC (ESPAÑA)",
+                "ENTIDAD DE CRÉDITO (ESPAÑA)"
+              ]
+            },
+            {
+              "field": "mica_service_letters",
+              "op": "NOT_NULL"
+            },
+            {
+              "field": "cnmv_services_from",
+              "op": "EQ",
+              "value": null
+            }
+          ]
+        },
+        "finding": {
+          "classification": "REQUIRED_FIELD_MISSING",
+          "detail": "cnmv_services_from ausente: la fecha juridica de la ruta domestica ('desde la que puede prestar') no esta probada; authorisationNotificationDate ESMA no es fallback (significado juridico distinto). 0 asercion"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Abstencion auditable: categoria domestica reconocida y servicio explicito, pero falta el input juridico requerido. Disjunto con mica-cnmv-date-conflict: fecha ausente != fechas divergentes.",
+        "required_fields": [],
+        "coverage_preconditions": [],
+        "known_limitations": [
+          "la identidad exacta es invariante del join por corpus_id: los claims CNMV_PSC_REGISTER solo existen para entidades del corpus ya resueltas"
+        ]
+      },
+      {
+        "rule_id": "mica-domestic-esma-date-missing",
+        "required_source_contract": "ESMA_MICA_REGISTER",
+        "match": {
+          "source": "ESMA_MICA_REGISTER",
+          "conditions": [
+            {
+              "field": "home_member_state",
+              "op": "EQ",
+              "value": "ES"
+            },
+            {
+              "field": "cnmv_category",
+              "op": "IN",
+              "value": [
+                "PSC (ESPAÑA)",
+                "ENTIDAD DE CRÉDITO (ESPAÑA)"
+              ]
+            },
+            {
+              "field": "mica_service_letters",
+              "op": "NOT_NULL"
+            },
+            {
+              "field": "cnmv_services_from",
+              "op": "NOT_NULL"
+            },
+            {
+              "field": "authorisation_notification_date",
+              "op": "EQ",
+              "value": null
+            }
+          ]
+        },
+        "finding": {
+          "classification": "REQUIRED_FIELD_MISSING",
+          "detail": "authorisation_notification_date ausente: la concordancia ESMA<->CNMV no es verificable; sin evidencia de acuerdo no hay asercion (la fecha CNMV sola no se promociona)"
+        },
+        "failure_behavior": "FINDING_AND_NO_ASSERTION",
+        "rationale": "Caso simetrico: la fecha juridica CNMV existe pero la fecha del registro que la corrobora falta; la concordancia no se puede probar y la abstencion queda clasificada, no silenciosa.",
+        "required_fields": [],
+        "coverage_preconditions": [],
+        "known_limitations": []
+      },
       {
         "rule_id": "mica-art63-domestic-psc",
         "required_source_contract": "ESMA_MICA_REGISTER",
@@ -200,101 +383,6 @@
         "known_limitations": [
           "otras clases art.60 (CSD/ESI/EDE/gestoras/ORM) requieren equivalencia por servicio y corroboracion sectorial: sin reglas positivas hasta tener casos reales"
         ]
-      },
-      {
-        "rule_id": "mica-cnmv-date-conflict",
-        "required_source_contract": "ESMA_MICA_REGISTER",
-        "match": {
-          "source": "ESMA_MICA_REGISTER",
-          "conditions": [
-            {
-              "field": "home_member_state",
-              "op": "EQ",
-              "value": "ES"
-            },
-            {
-              "field": "cnmv_category",
-              "op": "NOT_NULL"
-            },
-            {
-              "field": "mica_dates_agree",
-              "op": "EQ",
-              "value": "FALSE"
-            }
-          ]
-        },
-        "finding": {
-          "classification": "DATE_CONFLICT",
-          "detail": "fecha ESMA (authorisationNotificationDate) difiere de fecha CNMV 'desde la que puede prestar': sin precedencia silenciosa; abstencion"
-        },
-        "failure_behavior": "FINDING_AND_NO_ASSERTION",
-        "rationale": "Fechas divergentes = posible lag de publicacion o distinto significado juridico; fail-closed.",
-        "required_fields": [],
-        "coverage_preconditions": [],
-        "known_limitations": []
-      },
-      {
-        "rule_id": "mica-cnmv-category-unknown",
-        "required_source_contract": "ESMA_MICA_REGISTER",
-        "match": {
-          "source": "ESMA_MICA_REGISTER",
-          "conditions": [
-            {
-              "field": "home_member_state",
-              "op": "EQ",
-              "value": "ES"
-            },
-            {
-              "field": "cnmv_category",
-              "op": "EQ",
-              "value": null
-            }
-          ]
-        },
-        "finding": {
-          "classification": "UNKNOWN_CNMV_CATEGORY",
-          "detail": "entidad ES en registro ESMA sin categoria CNMV anclada: mecanismo no resoluble, 0 asercion"
-        },
-        "failure_behavior": "FINDING_AND_NO_ASSERTION",
-        "rationale": "Fail-closed: la presencia ESMA sola no decide art.60/63.",
-        "required_fields": [],
-        "coverage_preconditions": [],
-        "known_limitations": []
-      },
-      {
-        "rule_id": "mica-cnmv-category-unsupported",
-        "required_source_contract": "ESMA_MICA_REGISTER",
-        "match": {
-          "source": "ESMA_MICA_REGISTER",
-          "conditions": [
-            {
-              "field": "home_member_state",
-              "op": "EQ",
-              "value": "ES"
-            },
-            {
-              "field": "cnmv_category",
-              "op": "NOT_NULL"
-            },
-            {
-              "field": "cnmv_category",
-              "op": "NOT_IN",
-              "value": [
-                "PSC (ESPAÑA)",
-                "ENTIDAD DE CRÉDITO (ESPAÑA)"
-              ]
-            }
-          ]
-        },
-        "finding": {
-          "classification": "UNSUPPORTED_ART60_ENTITY_CLASS",
-          "detail": "categoria CNMV sin regla positiva (LP/sucursal/otra clase art.60): conservado como evidencia; territorialidad defer G1-D"
-        },
-        "failure_behavior": "FINDING_AND_NO_ASSERTION",
-        "rationale": "El ruleset es deliberadamente mas estrecho que la ley: solo rutas con casos reales probados.",
-        "required_fields": [],
-        "coverage_preconditions": [],
-        "known_limitations": []
       },
       {
         "rule_id": "mica-passport-territorial-deferred",

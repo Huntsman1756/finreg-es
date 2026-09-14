@@ -15,14 +15,17 @@ import urllib.request
 from pathlib import Path
 
 from finreg_es.canonical import canonical_json, strict_json_loads
-from finreg_es.derivation import build_g1c_artifact
+from finreg_es.derivation import build_g1c_artifact, derive_entitlements
 from finreg_es.assessment_run import run_assessment
 
 
 ROOT = Path(__file__).parents[2]
 ARTIFACT_PATH = ROOT / "fixtures" / "g1" / "derived-assertions-g1-c-001.json"
-RUN_PATH = ROOT / "fixtures" / "g1" / "runs" / "assessment-run-g1-c-002.json"
+RUN_PATH = ROOT / "fixtures" / "g1" / "runs" / "assessment-run-g1-c-003.json"
 RULESET_PATH = ROOT / "fixtures" / "g1" / "derivation-rules.json"
+LEDGER_PATH = ROOT / "fixtures" / "g1" / "claim-ledger-g1-c-001.json"
+MANIFEST_PATH = ROOT / "fixtures" / "g1" / "sources" / "manifest-g1-c-run.json"
+CORPUS_PATH = ROOT / "fixtures" / "g0.5" / "corpus" / "entities.json"
 
 
 def _read(path: Path) -> dict:
@@ -181,3 +184,161 @@ def test_v2_convergence_two_legal_routes():
     # Multi-role PROSEGUR: ambas patas CONFIRMED_ENTITLED, 0 conflicto.
     assert cases["G1C-07"]["assessment"] == "CONFIRMED_ENTITLED"
     assert cases["G1C-08"]["assessment"] == "CONFIRMED_ENTITLED"
+
+
+# ------------------------------------------------------------------
+# Hardening metamorfico: input requerido ausente => finding clasificado
+# (G1-C: la abstencion debe ser auditable, nunca silenciosa).
+# ------------------------------------------------------------------
+
+
+def _derive_with_mutation(corpus_id: str, source: str, field: str, value):
+    """Copia en memoria del ledger congelado con un claim mutado."""
+    ledger = _read(LEDGER_PATH)
+    ruleset = _read(RULESET_PATH)
+    manifest = _read(MANIFEST_PATH)
+    corpus = _read(CORPUS_PATH)
+    for claim in ledger["claims"]:
+        if (
+            claim["corpus_id"] == corpus_id
+            and claim["source"] == source
+            and claim["field"] == field
+        ):
+            claim["normalized_value"] = value
+            break
+    else:
+        raise KeyError((corpus_id, source, field))
+    return derive_entitlements(
+        ledger, ruleset, manifest, corpus,
+        derivation_version="FINREG_G1_DERIVATION_V1", id_prefix="tst",
+    )
+
+
+def _entity(result, corpus_id):
+    return {
+        "assertions": [
+            a for a in result["assertions"] if a["entity_id"] == corpus_id
+        ],
+        "findings": [
+            f for f in result["findings"] if f["corpus_id"] == corpus_id
+        ],
+        "facts": [
+            f for f in result.get("reported_facts", [])
+            if f["corpus_id"] == corpus_id
+        ],
+    }
+
+
+def test_missing_cnmv_service_date_is_audited_not_silent():
+    """PSC domestico (BIT2ME) con services_from ausente: 0 asercion
+    positiva, exactamente 1 REQUIRED_FIELD_MISSING nombrando el campo,
+    y sin fallback a la fecha ESMA."""
+    result = _derive_with_mutation(
+        "G05-004", "CNMV_PSC_REGISTER", "services_from", None
+    )
+    entity = _entity(result, "G05-004")
+    assert not any(
+        a["rule_id"].startswith(("mica-art63", "mica-art60"))
+        for a in entity["assertions"]
+    )
+    missing = [
+        f for f in entity["findings"]
+        if f["classification"] == "REQUIRED_FIELD_MISSING"
+    ]
+    assert len(missing) == 1
+    assert missing[0]["rule_id"] == "mica-domestic-cnmv-service-date-missing"
+    assert "cnmv_services_from" in missing[0]["detail"]
+    assert not any(
+        f["classification"] == "DATE_CONFLICT" for f in entity["findings"]
+    )
+    # Sin fallback: ninguna asercion toma la fecha ESMA (31/10/2025).
+    assert not any(
+        a.get("effective_from") == "2025-10-31" for a in entity["assertions"]
+    )
+
+
+def test_missing_cnmv_service_date_credit_institution():
+    """Mismo comportamiento en la ruta art.60 (BBVA)."""
+    result = _derive_with_mutation(
+        "G05-001", "CNMV_PSC_REGISTER", "services_from", None
+    )
+    entity = _entity(result, "G05-001")
+    assert not any(
+        a["rule_id"].startswith(("mica-art63", "mica-art60"))
+        for a in entity["assertions"]
+    )
+    missing = [
+        f for f in entity["findings"]
+        if f["classification"] == "REQUIRED_FIELD_MISSING"
+    ]
+    assert len(missing) == 1
+    assert "cnmv_services_from" in missing[0]["detail"]
+
+
+def test_missing_esma_date_blocks_agreement_check():
+    """Fecha ESMA ausente con fecha CNMV presente: la concordancia no es
+    verificable -> REQUIRED_FIELD_MISSING (la fecha CNMV sola no se
+    promociona a asercion)."""
+    result = _derive_with_mutation(
+        "G05-004", "ESMA_MICA_REGISTER", "authorisation_notification_date", None
+    )
+    entity = _entity(result, "G05-004")
+    assert not any(
+        a["rule_id"].startswith(("mica-art63", "mica-art60"))
+        for a in entity["assertions"]
+    )
+    missing = [
+        f for f in entity["findings"]
+        if f["classification"] == "REQUIRED_FIELD_MISSING"
+    ]
+    assert len(missing) == 1
+    assert missing[0]["rule_id"] == "mica-domestic-esma-date-missing"
+
+
+def test_date_conflict_excludes_missing_date_finding():
+    """Fechas presentes y divergentes: solo DATE_CONFLICT, sin
+    REQUIRED_FIELD_MISSING adicional (precedencia disjunta)."""
+    result = _derive_with_mutation(
+        "G05-004", "CNMV_PSC_REGISTER", "services_from", "01/01/2020"
+    )
+    entity = _entity(result, "G05-004")
+    assert not any(
+        a["rule_id"].startswith(("mica-art63", "mica-art60"))
+        for a in entity["assertions"]
+    )
+    assert [
+        f["classification"] for f in entity["findings"]
+    ] == ["DATE_CONFLICT"]
+
+
+def test_missing_date_rule_does_not_fire_on_lp_row():
+    """Frontera C/D: la misma mutacion sobre una fila LP no dispara la
+    residual domestica — sigue UNSUPPORTED_ART60_ENTITY_CLASS / defer
+    G1-D, nunca una fecha domestica exigida."""
+    ledger = _read(LEDGER_PATH)
+    ruleset = _read(RULESET_PATH)
+    manifest = _read(MANIFEST_PATH)
+    corpus = _read(CORPUS_PATH)
+    for claim in ledger["claims"]:
+        if claim["corpus_id"] == "G05-004" and claim["source"] == "CNMV_PSC_REGISTER":
+            if claim["field"] == "cnmv_category":
+                claim["normalized_value"] = "PSC EN RÉGIMEN DE LP"
+            elif claim["field"] == "services_from":
+                claim["normalized_value"] = None
+    result = derive_entitlements(
+        ledger, ruleset, manifest, corpus,
+        derivation_version="FINREG_G1_DERIVATION_V1", id_prefix="tst",
+    )
+    entity = _entity(result, "G05-004")
+    assert not any(
+        a["rule_id"].startswith(("mica-art63", "mica-art60"))
+        for a in entity["assertions"]
+    )
+    assert not any(
+        f["classification"] == "REQUIRED_FIELD_MISSING"
+        for f in entity["findings"]
+    )
+    assert any(
+        f["classification"] == "UNSUPPORTED_ART60_ENTITY_CLASS"
+        for f in entity["findings"]
+    )

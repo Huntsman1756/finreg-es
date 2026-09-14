@@ -175,18 +175,34 @@ derivation.py
   + build_g1c_artifact() (ledger G1-C propio, manifest-g1-c-run).
 
 ruleset V2 (derivation-rules.json)
+  — orden = precedencia efectiva (condiciones disjuntas) —
+  mica-cnmv-category-unknown            UNKNOWN_CNMV_CATEGORY si sin ancla
+  mica-cnmv-category-unsupported        UNSUPPORTED_ART60_ENTITY_CLASS
+                                        (LP/sucursal/otras clases art.60)
+  mica-cnmv-date-conflict               DATE_CONFLICT si fechas difieren
+  mica-domestic-cnmv-service-date-missing
+                                        REQUIRED_FIELD_MISSING si falta
+                                        cnmv_services_from (la fecha
+                                        jurídica); la fecha ESMA no es
+                                        fallback
+  mica-domestic-esma-date-missing       REQUIRED_FIELD_MISSING si falta
+                                        authorisation_notification_date:
+                                        concordancia no verificable
   mica-art63-domestic-psc               PSC (ESPAÑA) → AUTHORISATION × servicio
   mica-art60-domestic-credit-institution ENTIDAD DE CRÉDITO (ESPAÑA)
                                         → NOTIFICATION × servicio
                                         (base legal anota los 40 días
                                         hábiles + qualification CRD)
-  mica-cnmv-date-conflict               DATE_CONFLICT si fechas difieren
-  mica-cnmv-category-unknown            UNKNOWN_CNMV_CATEGORY si sin ancla
-  mica-cnmv-category-unsupported        UNSUPPORTED_ART60_ENTITY_CLASS
-                                        (LP/sucursal/otras clases art.60)
   mica-passport-territorial-deferred    ac_serviceCode_cou con países
                                         ≠ home → reported_fact
                                         TERRITORIAL_ENTITLEMENT_DEFERRED
+
+  Precedencia (policy.mica_route_precedence):
+    1) checks de categoría  2) DATE_CONFLICT (ambas fechas, divergen)
+    3) REQUIRED_FIELD_MISSING (fecha jurídica o de concordancia ausente)
+    4) regla positiva (sólo si las fechas concuerdan)
+  Fecha ausente ≠ fechas divergentes: cada caso produce su finding,
+  nunca ambos ni ninguno.
 
   El ruleset es deliberadamente más estrecho que la ley: sólo rutas
   domésticas con casos reales probados. CSD/ESI/EDE/gestoras/ORM no
@@ -213,16 +229,28 @@ desde la que puede prestar", CNMV), no `ae_authorisationNotificationDate`
 notificación. Divergencia ESMA↔CNMV → `DATE_CONFLICT` + abstención;
 sin precedencia silenciosa.
 
-**Defecto G1-C-F01 (remediado):** la primera congelación de
-`derived-assertions-g1-c-001.json` declaró
-`derivation_ruleset_sha256=beebcfdc…`, una revisión del ruleset que
-quedó fuera del commit (delta probadamente inmaterial: el replay sobre
-el ruleset commiteado `9b4f2b65…` reproduce el cuerpo byte-idéntico —
-157 aserciones, 0 findings, 8 reported_facts). Remediación: artefacto
-regenerado contra el ruleset commiteado y run de verificación
-`assessment-run-g1-c-002.json` (9/9, integridad all-True). El run `-001`
-se conserva como registro histórico de la ejecución original;
-`tests/g1/test_g1c_replay.py` fija ahora el replay byte-idéntico.
+**Defecto G1-C-F01 (cerrado):**
+
+```text
+id                            G1-C-F01
+type                          PROVENANCE_INTEGRITY_DEFECT
+impact_on_derived_content     NONE   (replay sobre el ruleset
+                              commiteado 9b4f2b65… reproduce el cuerpo
+                              byte-idéntico: 157 aserciones, 0 findings,
+                              8 reported_facts)
+impact_on_chain_of_custody    MATERIAL (el artefacto -001 declaraba
+                              derivation_ruleset_sha256=beebcfdc…, una
+                              revisión del ruleset que nunca entró en
+                              un commit: input declarado irreproducible)
+resolution                    SUPERSEDED — artefacto regenerado contra
+                              inputs commiteados; runs -001/-002 se
+                              conservan como registro histórico
+valid_run                     g1c-run-003 (sobre el ruleset final con
+                              las residuales de fecha requerida)
+detector que faltaba          tests/g1/test_g1c_replay.py fija el replay
+                              byte-idéntico: habría detectado el sha
+                              stale en origen
+```
 
 Resultado del artefacto `derived-assertions-g1-c-001.json`:
 
@@ -265,9 +293,11 @@ G1C-09 BBVA      PAYMENT_SERVICES ES
           corroborada por CNMV no sustituye a la autorización
           bancaria en un registro sectorial que cubra la actividad)
 
-9/9 matches — run: fixtures/g1/runs/assessment-run-g1-c-001.json
-(verificación sobre la cadena remediada G1-C-F01:
-fixtures/g1/runs/assessment-run-g1-c-002.json, 9/9, integrity all-True)
+9/9 matches — runs:
+  -001 ejecución original (registro histórico, ver G1-C-F01)
+  -002 verificación de la remediación G1-C-F01 (9/9, integrity all-True)
+  -003 run válido sobre el ruleset final (residuales de fecha
+       requerida incluidas): 9/9, integrity all-True
 ```
 
 Auditoría de divergencias ESMA ↔ CNMV:
@@ -294,7 +324,17 @@ C3  DONE — mapping registro → mecanismo (refinado: por servicio, no por clas
 C4  DONE — extract CNMV anclado; categorías reales verificadas;
     gate C4→C5 superado
 C5  DONE — ruleset V2 + build_g1c_artifact; 47 aserciones MiCA por
-    servicio, mecanismo anclado CNMV
+    servicio, mecanismo anclado CNMV; residuales de fecha requerida
+    (abstención auditable, 0 silent required-input gaps)
 C6  DONE — 9/9 casos V2; convergencia AUTHORISATION/NOTIFICATION →
     CONFIRMED_ENTITLED; multi-role PROSEGUR; scope-guard verificado
+
+G1-C-F01  CLOSED / SUPERSEDED (PROVENANCE_INTEGRITY_DEFECT; contenido
+          derivado no afectado, cadena de custodia reparada)
+replay    byte-idéntico fijado por tests/g1 (artefacto + run -003)
+G0/G1-A   sin regresión
+run válido g1c-run-003 — fixtures/g1/runs/assessment-run-g1-c-003.json
+
+G1-C      CLOSED → siguiente: G1-D (territorialidad: passport PSD2 y
+          MiCA, LP/sucursal/limited-LP; dos familias reales ya en corpus)
 ```
