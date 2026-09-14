@@ -966,6 +966,41 @@ def main() -> None:
     )
     print(f"ruleset V5: {len(ruleset['ruleset']['rules'])} reglas")
 
+    # G1-E (E4.1): sucesor -002. Mismas reglas + declaracion de los
+    # campos de raiz (root_key / root_home_jurisdiction via campos
+    # derivados del grupo) y provenance en los hechos — E5 los consume.
+    # -001 permanece congelado como materializacion E4.
+    import copy
+
+    ruleset_v2 = copy.deepcopy(ruleset)
+    ruleset_v2["ruleset"]["ruleset_version"] = "FINREG_G1_DERIVATION_V6"
+    ruleset_v2["ruleset"]["purpose"] += (
+        " -002: cada emit declara root_key_from/root_home_jurisdiction_"
+        "from y cada emit_status_fact adjunta provenance (source_claim_"
+        "ids + source_assertions) para la evaluacion bitemporal y de "
+        "staleness de la raiz en E5."
+    )
+    for rule in ruleset_v2["ruleset"]["rules"]:
+        for emit in (
+            [rule["emit"]] if rule.get("emit") else []
+        ) + (
+            [rule["emit_per"]["emit"]] if rule.get("emit_per") else []
+        ):
+            emit["root_key_from"] = "root_key"
+            emit["root_home_jurisdiction_from"] = "root_home_jurisdiction"
+        if rule.get("emit_status_fact"):
+            spec = rule["emit_status_fact"]
+            spec["root_key_from"] = "root_key"
+            spec["root_home_jurisdiction_from"] = "root_home_jurisdiction"
+            spec["emit_source_provenance"] = True
+    OUT_V2 = OUT.with_name("derivation-rules-g1-e-002.json")
+    OUT_V2.write_bytes(
+        (json.dumps(ruleset_v2, ensure_ascii=False, indent=1) + "\n").encode(
+            "utf-8"
+        )
+    )
+    print(f"ruleset V6 (-002): {len(ruleset_v2['ruleset']['rules'])} reglas")
+
 
 if __name__ == "__main__":
     main()

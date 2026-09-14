@@ -478,7 +478,157 @@ def _group_claims(ledger: dict[str, Any]) -> list[dict[str, Any]]:
                 fields["mica_home_legal_ref"] = "art. 60 (art. 59(1)(b))"
                 fields["mica_home_entity_class"] = entity_class or "CASP"
 
+    # G1-E (E4.1): clave de raiz por grupo. Es un campo derivado mas —
+    # solo aparece en la salida cuando la regla lo declara via
+    # root_key_from / root_home_jurisdiction_from, por lo que el replay
+    # de artefactos anteriores es byte-identico.
+    _assign_root_keys(groups_list)
+
     return groups_list
+
+
+def _eba_entity_code_core(entity_type: Any, entity_code: Any) -> str | None:
+    """EntityCode sin el prefijo de tipo redundante.
+
+    El registro publica ambas formas: ``PT_BP!8703`` y
+    ``PSD_PI!PT_BP!8703``. La clave de raiz usa siempre la forma sin
+    prefijo de tipo para que parent/hijo coincidan.
+    """
+    if not isinstance(entity_code, str) or not entity_code:
+        return None
+    if isinstance(entity_type, str) and entity_code.startswith(
+        f"{entity_type}!"
+    ):
+        return entity_code[len(entity_type) + 1:]
+    return entity_code
+
+
+def _eba_home_jurisdiction(entity_code_core: Any) -> str | None:
+    """Home member state del EntityCode EBA (token ``CC_NCA``).
+
+    ``NL_DNB!F0038`` -> ``NL``; ``PT_BP!8703`` -> ``PT``;
+    ``BE_NBB!0713629988!ES`` -> ``BE`` (sufijo de sucursal ignorado).
+    """
+    if not isinstance(entity_code_core, str):
+        return None
+    for part in entity_code_core.split("!"):
+        if len(part) > 2 and part[2] == "_" and part[:2].isalpha():
+            return part[:2]
+    return None
+
+
+def _bde_tipo_psd_family(tipo_entidad: Any) -> str | None:
+    """Familia PSD2 del TIPO ENTIDAD BdE (para el join BdE -> raiz EBA).
+
+    Solo se usa para resolver la raiz mecanicamente; nunca como clase
+    juridica de la asercion (eso sigue saliendo del emit de la regla).
+    """
+    tipo = (tipo_entidad or "").lower()
+    if "sucursal" in tipo:
+        return "BRANCH"
+    if "dinero electr" in tipo:
+        return "PSD_EMI"
+    if "informaci" in tipo or "cuentas" in tipo:
+        return "PSD_AISP"
+    if "pago" in tipo:
+        # "Entidad de pago", "EFC e pago hibridas", "sucursal de EP"
+        # ya filtrada arriba.
+        return "PSD_PI"
+    return None
+
+
+def _assign_root_keys(groups_list: list[dict[str, Any]]) -> None:
+    """G1-E (E4.1): ``root_key``/``root_home_jurisdiction`` por grupo.
+
+    Identificador interno de la raiz de autorizacion — NO un objeto de
+    dominio nuevo. Reglas mecanicas:
+
+    - raiz EBA (PI/EMI/AISP/...): ``EBA|<EntityType>|<EntityCode core>``
+    - PSD_BR/PSD_AG: hereda la raiz del parent (ent_*_par_ent)
+    - BdE domestica (PAIS ORIGEN=ES): hereda la raiz EBA si existe un
+      unico registro EBA del mismo tipo con EntityCode
+      ``ES_BE!<codigo_be>``; en caso contrario raiz propia
+      ``BDE|<familia>|<codigo_be>`` (p. ej. el EP 6935 de Fintonic es
+      una inscripcion distinta del AISP 6935 EBA — el codigo coincide
+      pero el tipo no)
+    - BdE sucursal (pais != ES o tipo sucursal): hereda la raiz del
+      unico PSD_BR de la entidad; sin el, raiz propia BdE
+
+    Una retirada sobre un ``root_key`` nunca cierra otra raiz de la
+    misma persona juridica (Mollie PI vs EMI).
+    """
+    for group in groups_list:
+        if group["source"] != "EBA_PSD2_REGISTER":
+            continue
+        fields = group["fields"]
+        entity_type = fields.get("entity_type")
+        if entity_type in ("PSD_BR", "PSD_AG"):
+            par_type = fields.get("ent_typ_par_ent")
+            par_code = _eba_entity_code_core(
+                par_type, fields.get("ent_cod_par_ent")
+            )
+            if par_type and par_code:
+                fields["root_key"] = f"EBA|{par_type}|{par_code}"
+                fields["root_home_jurisdiction"] = _eba_home_jurisdiction(
+                    par_code
+                )
+        else:
+            code = _eba_entity_code_core(entity_type, fields.get("entity_code"))
+            if entity_type and code:
+                fields["root_key"] = f"EBA|{entity_type}|{code}"
+                fields["root_home_jurisdiction"] = _eba_home_jurisdiction(
+                    code
+                )
+
+    for group in groups_list:
+        if group["source"] not in (
+            "BDE_REGISTRO_SERVICIOS_PAGO",
+            "BDE_REGISTRO_CON_ESTABLECIMIENTO",
+        ):
+            continue
+        fields = group["fields"]
+        codigo = fields.get("codigo_be")
+        family = _bde_tipo_psd_family(fields.get("tipo_entidad"))
+        pais = fields.get("pais_origen")
+        inherited: str | None = None
+        inherited_home: str | None = None
+        if pais == "ES" and family in ("PSD_PI", "PSD_EMI", "PSD_AISP"):
+            target = f"ES_BE!{codigo}"
+            candidates = [
+                g["fields"]["root_key"]
+                for g in groups_list
+                if g["corpus_id"] == group["corpus_id"]
+                and g["source"] == "EBA_PSD2_REGISTER"
+                and g["fields"].get("entity_type") == family
+                and _eba_entity_code_core(
+                    g["fields"].get("entity_type"),
+                    g["fields"].get("entity_code"),
+                )
+                == target
+            ]
+            if len(candidates) == 1:
+                inherited = candidates[0]
+                inherited_home = "ES"
+        elif family == "BRANCH" or (pais and pais != "ES"):
+            branches = [
+                g["fields"]
+                for g in groups_list
+                if g["corpus_id"] == group["corpus_id"]
+                and g["source"] == "EBA_PSD2_REGISTER"
+                and g["fields"].get("entity_type") == "PSD_BR"
+                and g["fields"].get("root_key")
+            ]
+            if len(branches) == 1:
+                inherited = branches[0]["root_key"]
+                inherited_home = branches[0].get("root_home_jurisdiction")
+        if inherited is not None:
+            fields["root_key"] = inherited
+            fields["root_home_jurisdiction"] = inherited_home
+        elif codigo:
+            fields["root_key"] = (
+                f"BDE|{family or 'UNKNOWN'}|{codigo}"
+            )
+            fields["root_home_jurisdiction"] = pais
 
 
 def _source_assertion(group: dict[str, Any], manifest: dict[str, Any]) -> dict:
@@ -776,6 +926,17 @@ def _emit_assertion(
             item if emit["raw_capability_code"] == "$ITEM"
             else emit["raw_capability_code"]
         )
+    # G1-E (E4.1): raiz de autorizacion de la asercion. Copia directa
+    # de un campo derivado del grupo (declarado por la regla) — los FPS
+    # y branches heredan la raiz de su parent por _assign_root_keys.
+    for passthrough in ("root_key", "root_home_jurisdiction"):
+        declared = emit.get(f"{passthrough}_from")
+        if declared is not None:
+            value = fields.get(
+                declared if isinstance(declared, str) else declared["field"]
+            )
+            if value is not None:
+                assertion[passthrough] = value
     return assertion
 
 
@@ -952,6 +1113,28 @@ def derive_entitlements(
                     )
                 elif "effective_from" in fact_spec:
                     fact["effective_from"] = fact_spec["effective_from"]
+                # G1-E (E4.1): la raiz que cierra el hecho y su
+                # provenance — E5 evalua el hecho en el as_of y aplica
+                # la politica de staleness del contrato de su fuente.
+                for passthrough in ("root_key", "root_home_jurisdiction"):
+                    declared = fact_spec.get(f"{passthrough}_from")
+                    if declared is not None:
+                        value = fields.get(
+                            declared
+                            if isinstance(declared, str)
+                            else declared["field"]
+                        )
+                        if value is not None:
+                            fact[passthrough] = value
+                if fact_spec.get("emit_source_provenance"):
+                    fact["source_claim_ids"] = group["claim_ids"] + [
+                        cid
+                        for g in group.get("corroborating_groups", [])
+                        for cid in g["claim_ids"]
+                    ]
+                    fact["source_assertions"] = [source_assertion] + group.get(
+                        "corroborating_source_assertions", []
+                    )
                 reported_facts.append(fact)
                 continue
             if "emit_per" in rule:
@@ -1102,6 +1285,18 @@ def to_entitlement_assertions(artifact: dict[str, Any]) -> list[EntitlementAsser
                 tuple(a["status_intervals"]) if a.get("status_intervals") else None
             ),
             evidence_composition=a.get("evidence_composition"),
+            # G1-E (E4.1): puente del contrato negativo E4. Campos
+            # ausentes en artefactos anteriores a -002 -> None.
+            interval_end=a.get("interval_end"),
+            negative_scope=a.get("negative_scope"),
+            negative_evidence_class=a.get("negative_evidence_class"),
+            raw_capability_code=a.get("raw_capability_code"),
+            source_granularity=a.get("source_granularity"),
+            coverage_policy_id=a.get("coverage_policy_id"),
+            admissibility=a.get("admissibility"),
+            blocker=a.get("blocker"),
+            root_key=a.get("root_key"),
+            root_home_jurisdiction=a.get("root_home_jurisdiction"),
         )
         for a in artifact["assertions"]
     ]
@@ -1271,6 +1466,23 @@ def build_g1e_artifact(repo_root: Path) -> dict[str, Any]:
     )
 
 
+def build_g1e_v2_artifact(repo_root: Path) -> dict[str, Any]:
+    """Artefacto G1-E (E4.1, sucesor -002): mismas entradas -001 con el
+    ruleset V6 que declara root_key/root_home_jurisdiction en
+    aserciones y hechos + provenance en los hechos. La cadena -001
+    permanece congelada como materializacion E4."""
+    return _build_artifact(
+        repo_root,
+        ledger_rel="fixtures/g1/claim-ledger-g1-e-001.json",
+        ruleset_rel="fixtures/g1/derivation-rules-g1-e-002.json",
+        corpus_rel="fixtures/g1/corpus-g1-e-001.json",
+        manifest_rel="fixtures/g1/sources/manifest-g1-e-run.json",
+        artifact_version=G1_ARTIFACT_VERSION,
+        derivation_version=G1E_DERIVATION_VERSION,
+        id_prefix="g1e",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -1282,6 +1494,9 @@ def main(argv: list[str] | None = None) -> int:
         "--g1d2", action="store_true", help="artefacto G1-D-F01 (sucesor -002)"
     )
     parser.add_argument("--g1e", action="store_true", help="artefacto G1-E (E4)")
+    parser.add_argument(
+        "--g1e2", action="store_true", help="artefacto G1-E (E4.1, sucesor -002)"
+    )
     args = parser.parse_args(argv)
 
     builder = build_artifact
@@ -1295,6 +1510,8 @@ def main(argv: list[str] | None = None) -> int:
         builder = build_g1d_v2_artifact
     if args.g1e:
         builder = build_g1e_artifact
+    if args.g1e2:
+        builder = build_g1e_v2_artifact
     artifact = builder(args.repo_root.resolve())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as stream:

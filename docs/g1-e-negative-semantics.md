@@ -579,6 +579,92 @@ más el contrato de campos, la exclusividad `[from,to)`, la no-
 retroproyección territorial, la ausencia de descomposición de códigos
 COMPOSITE y la determinación byte-idéntica del artefacto.
 
+## E4.1/E5-A — Bridge de materialización a assessment
+
+La materialización E4 (`-001`) no llegaba íntegra al motor:
+`to_entitlement_assertions()` descartaba la semántica negativa y los
+`ROOT_FAMILY` facts no identificaban mecánicamente qué raíz cerraban.
+El sucesor `-002` (ruleset `FINREG_G1_DERIVATION_V6`) remedia el
+puente sin tocar `-001`:
+
+```text
+EntitlementAssertion gana:  negative_scope, negative_evidence_class,
+  raw_capability_code, source_granularity, coverage_policy_id,
+  admissibility, blocker, interval_end, root_key,
+  root_home_jurisdiction
+covers()/effective_effect_at():
+  interval_end=EXCLUSIVE => [from,to) cerrada EN effective_to
+  (default None = semántica legacy inclusiva de G0/G1-D, intacta)
+
+root_key =  EBA|<EntityType>|<EntityCode-core>   (Mollie:
+            EBA|PSD_PI|NL_DNB!F0038 != EBA|PSD_EMI|NL_DNB!F0038)
+            PSD_BR/PSD_AG heredan la raíz del parent EBA; BdE
+            domestic hereda la raíz EBA que casa (tipo+codigo) o
+            usa BDE|<familia>|<codigo_be> propia (CERRO, Fintonic-EP)
+root_home_jurisdiction:  home==ES => {DOMESTIC};  home!=ES =>
+            {FPS, BRANCH}  — el universo de vías se deriva del home
+            de la raíz, nunca de un country code incidental
+
+ROOT_FAMILY facts:  + source_claim_ids, source_assertions,
+            root_key, root_home_jurisdiction — evaluables en
+            freshness y bitemporalmente (status_intervals [from,to))
+```
+
+## E5 — ASSESSMENT_SEMANTICS_V3 (agregación route-aware)
+
+Versión nueva en `semantics.py`; V1/V2 no mutan. Algoritmo:
+
+```text
+1. matching por query (entity x activity x jurisdiction
+   [x territorial_basis]) — la base territorial explicita acota la
+   query a una sola vía
+2. admissibility=BLOCKED se excluye de toda ruta (informa, no cierra)
+3. root_state(as_of) por root_key via status_intervals [from,to) +
+   retiradas/bajas con freshness comprobable:
+   OPEN | CLOSED | UNRESOLVED (baja sin resolución) | ABSENT
+   (la raíz aún no existía en as_of)
+4. rutas = (root_key, territorial_basis); positivo+negativo
+   admisibles en la misma ruta => ROUTE_CONFLICT => INDETERMINATE
+5. cualquier ruta limpia abierta => CONFIRMED_ENTITLED
+6. CONFIRMED_NOT_ENTITLED solo si toda raíz aplicable (la raíz debe
+   poder sostener la actividad: un PSD_AISP nunca cierra una query
+   PIS) está CLOSED o tiene todas sus vías legalmente posibles
+   cerradas: ROOT_FAMILY_WITHDRAWN | ALL_AVAILABLE_ROUTES_CLOSED
+7. blocked/unresolved/conflicto sin otra vía abierta => INDETERMINATE
+```
+
+### Resultado — 22/22 casos preregistrados, 0 divergencias
+
+```text
+DENIZEN   07-22 ENTITLED · 07-23 NOT_ENTITLED (ROOT_FAMILY_WITHDRAWN,
+          frontera exclusiva) · 2026 NOT_ENTITLED
+MMG       2018 INDETERMINATE (TERRITORIAL_ENTITLEMENT_UNRESOLVED)
+          · 2020 NOT_ENTITLED (gap ENT_AUT) · 2026 ENTITLED
+BANKINTER 2020 ENTITLED (baja transformación no cierra)
+          · 2026 NOT_ENTITLED (retirada EBA)
+CERRO     CASH_PLACEMENT NOT_ENTITLED (ALL_AVAILABLE_ROUTES_CLOSED)
+          · MONEY_REMITTANCE ENTITLED — misma vía, sin contaminación
+MOLLIE    MR@2024 NO_ENTITLEMENT_EVIDENCED · CTE@2026 ENTITLED
+          (raíz EMI; la retirada PI no es entity-global)
+FINTONIC  AIS ENTITLED (raíz AISP) · PIS INDETERMINATE
+          (NEGATIVE_EVIDENCE_BLOCKED — nunca NOT_ENTITLED)
+SIBS      CTE ENTITLED · ausencia BdE no infiere (poblacional)
+WISE      PIS NOT_ENTITLED (ALL_AVAILABLE_ROUTES_CLOSED, global y
+          scoped BRANCH) · MR ENTITLED (sin contaminación cruzada)
+EUPAGO    PIS ENTITLED global · +FPS NOT_ENTITLED · +BRANCH ENTITLED
+THUNES    CTE NOT_ENTITLED (ROOT_FAMILY_WITHDRAWN; Services{ES}
+          post-retirada no generan positivos)
+```
+
+Metamórficos fijados: conflicto intra-ruta => ROUTE_CONFLICT;
+un `ROOT_FAMILY` fact sin `source_assertions` no puede cerrar una
+raíz (freshness no comprobable). Umbrella negativo `PAYMENT_SERVICES`
+excluido (universo de constituyentes no establecido).
+
+`tests/g1/test_g1e_v3_aggregation.py` (23 tests) fija la cadena:
+`-001` intacto, `-002` byte-determinista, run `assessment-run-g1-e-001`
+replayable offline, y cada control anterior.
+
 ## Secuencia restante
 
 ```text
@@ -592,6 +678,12 @@ E4  DONE — derivación de negativos granulares materializada
     (negative_scope ROOT_FAMILY|ROUTE_CAPABILITY, interval_end
     EXCLUSIVE, capability-vector completeness scoped; artefactos
     g1-e-001 deterministas; assess() intacto)
-E5  agregación negativa en assess()
+E4.1/E5-A
+    DONE — bridge al dominio de assessment (campos E4 completos,
+    interval_end EXCLUSIVE consumible, root_key + provenance en
+    facts, evaluación bitemporal de raíz; sucesor -002)
+E5  DONE — ASSESSMENT_SEMANTICS_V3 route-aware (22/22 casos;
+    Wise NOT_ENTITLED vs Eupago ENTITLED reproduce el contraste
+    preregistrado; V1/V2 congeladas)
 E6  divergence audit / cierre G1
 ```

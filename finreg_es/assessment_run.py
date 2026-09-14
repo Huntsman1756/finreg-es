@@ -66,6 +66,16 @@ G1D2_LEDGER_PATH = G1_DIR / "claim-ledger-g1-d-002.json"
 G1D2_CORPUS_PATH = G1_DIR / "corpus-g1-d-002.json"
 G1_ASSESSMENT_RUN_V3 = "FINREG_G1_ASSESSMENT_V3"
 
+# G1-E (E5): agregacion route-aware ASSESSMENT_SEMANTICS_V3 sobre la
+# materializacion E4.1 (-002). -001 queda como materializacion E4
+# historica y nunca entra al motor.
+G1E_DERIVED_PATH = G1_DIR / "derived-assertions-g1-e-002.json"
+G1E_RULESET_PATH = G1_DIR / "derivation-rules-g1-e-002.json"
+G1E_CASES_PATH = G1_DIR / "assessment-cases-g1-e.json"
+G1E_LEDGER_PATH = G1_DIR / "claim-ledger-g1-e-001.json"
+G1E_CORPUS_PATH = G1_DIR / "corpus-g1-e-001.json"
+G1_ASSESSMENT_RUN_V4 = "FINREG_G1_ASSESSMENT_V4"
+
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -110,8 +120,18 @@ def run_assessment(
     g1d2: bool = False,
     executed_at: str | None = None,
     code_commit: str | None = None,
+    g1e: bool = False,
 ) -> dict[str, Any]:
-    if g1d2:
+    if g1e:
+        artifact_path = repo_root / G1E_DERIVED_PATH
+        ruleset_path = repo_root / G1E_RULESET_PATH
+        cases_path = repo_root / G1E_CASES_PATH
+        ledger_path = repo_root / G1E_LEDGER_PATH
+        corpus_path = repo_root / G1E_CORPUS_PATH
+        run_version = G1_ASSESSMENT_RUN_V4
+        gate = "G1-E5"
+        semantics_version = "V3"
+    elif g1d2:
         artifact_path = repo_root / G1D2_DERIVED_PATH
         ruleset_path = repo_root / G1D2_RULESET_PATH
         cases_path = repo_root / G1D2_CASES_PATH
@@ -209,7 +229,8 @@ def run_assessment(
             assertions=assertions,
             contracts=contracts,
             semantics_version=semantics_version,
-            reported_facts=reported_facts if (g1 or g1c or g1d) else None,
+            reported_facts=reported_facts if (g1 or g1c or g1d or g1e) else None,
+            territorial_basis=case.get("territorial_basis"),
         )
         matching_ids = [
             e["assertion_id"] for e in result.assertion_evaluations
@@ -225,14 +246,17 @@ def run_assessment(
         entry_mechanisms = sorted(
             {a["entry_mechanism"] for a in result.assertions}
         )
+        query = {
+            "entity_id": case["entity_id"],
+            "activity": case["activity"],
+            "jurisdiction": case["jurisdiction"],
+            "as_of": case["as_of"],
+        }
+        if case.get("territorial_basis") is not None:
+            query["territorial_basis"] = case["territorial_basis"]
         case_result = {
             "case_id": case["case_id"],
-            "query": {
-                "entity_id": case["entity_id"],
-                "activity": case["activity"],
-                "jurisdiction": case["jurisdiction"],
-                "as_of": case["as_of"],
-            },
+            "query": query,
             "identity_resolution": str(result.identity_resolution),
             "assessment": str(result.assessment),
             "reason": str(result.reason),
@@ -258,7 +282,7 @@ def run_assessment(
             "reason_match": case.get("expected_reason") is not None
             and str(result.reason) == case["expected_reason"],
         }
-        if g1 or g1c or g1d:
+        if g1 or g1c or g1d or g1e:
             matched_facts = [
                 f["fact_id"]
                 for f in reported_facts
@@ -369,6 +393,7 @@ def run_assessment(
             **input_shas,
             "frozen_input_integrity": integrity,
             "executed_at": executed_at,
+            **({"semantics_version": "ASSESSMENT_SEMANTICS_V3"} if g1e else {}),
             **({"semantics_version": "ASSESSMENT_SEMANTICS_V2"} if (g1 or g1c or g1d) else {}),
             **({"metamorphic_cases_excluded": metamorphic_excluded} if g1d else {}),
         },
@@ -426,6 +451,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Artefactos y casos G1-D + ASSESSMENT_SEMANTICS_V2")
     parser.add_argument("--g1d2", action="store_true",
                         help="Artefactos y casos G1-D-F01 (-002) + metrica dual")
+    parser.add_argument("--g1e", action="store_true",
+                        help="Artefactos y casos G1-E (-002) + ASSESSMENT_SEMANTICS_V3")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--executed-at")
@@ -439,6 +466,7 @@ def main(argv: list[str] | None = None) -> int:
         g1c=args.g1c,
         g1d=args.g1d,
         g1d2=args.g1d2,
+        g1e=args.g1e,
         executed_at=args.executed_at,
         code_commit=args.code_commit,
     )

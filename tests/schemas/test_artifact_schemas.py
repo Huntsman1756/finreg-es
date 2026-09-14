@@ -92,8 +92,10 @@ ARTIFACT_MAP = {
     "fixtures/g1/claim-ledger-g1-e-*.json": "v1/claim-ledger",
     "fixtures/g1/derivation-rules-g1-e-*.json": "v1.3/derivation-ruleset",
     "fixtures/g1/derived-assertions-g1-e-*.json": "v1.3/derived-assertions",
+    "fixtures/g1/assessment-cases-g1-e*.json": "v1.3/assessment-cases",
     "fixtures/g1/runs/*.json": "v1.1/assessment-run",
     "fixtures/g1/runs/assessment-run-g1-d-*.json": "v1.2/assessment-run",
+    "fixtures/g1/runs/assessment-run-g1-e-*.json": "v1.3/assessment-run",
 }
 
 # Artefactos historicos de analisis / fixtures sinteticos fuera del

@@ -137,6 +137,12 @@ class AssessmentReason(StrEnum):
     TERRITORIAL_ROUTE_UNRESOLVED_LIMITED_LP = (
         "TERRITORIAL_ROUTE_UNRESOLVED_LIMITED_LP"
     )
+    # ASSESSMENT_SEMANTICS_V3 (G1-E, E5): agregacion route-aware sobre
+    # los hechos negativos materializados en E4 (negative_scope).
+    ROOT_FAMILY_WITHDRAWN = "ROOT_FAMILY_WITHDRAWN"
+    ALL_AVAILABLE_ROUTES_CLOSED = "ALL_AVAILABLE_ROUTES_CLOSED"
+    NEGATIVE_EVIDENCE_BLOCKED = "NEGATIVE_EVIDENCE_BLOCKED"
+    ROUTE_CONFLICT = "ROUTE_CONFLICT"
 
 
 # Actividades canónicas (conjunto mínimo congelado para G0; extender
