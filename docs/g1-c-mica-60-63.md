@@ -193,6 +193,37 @@ ruleset V2 (derivation-rules.json)
   tienen regla positiva aún.
 ```
 
+Matriz de compatibilidad de rutas (congelada en `ruleset.policy`):
+
+```text
+same entity + same service
+  art.60/NOTIFICATION + art.63/AUTHORISATION
+    → COMPATIBLE_MULTI_ROUTE → 2 assertions válidas
+art.63 domestic + fila territorial LP/sucursal
+    → sin conflicto automático → distinta territorial_basis
+categoría CNMV dice art.60 × regla inferiría art.63 mismo servicio
+    → SOURCE_CATEGORY_CONFLICT → 0 ganador silencioso
+    (maquinaria congelada; en este ruleset el mecanismo sólo sale de
+    la categoría CNMV, así que el conflicto no puede dispararse aún)
+```
+
+`effective_from`: la fecha jurídica es `cnmv_services_from` ("fecha
+desde la que puede prestar", CNMV), no `ae_authorisationNotificationDate`
+— el nombre ESMA mezcla ambos conceptos y no distingue autorización de
+notificación. Divergencia ESMA↔CNMV → `DATE_CONFLICT` + abstención;
+sin precedencia silenciosa.
+
+**Defecto G1-C-F01 (remediado):** la primera congelación de
+`derived-assertions-g1-c-001.json` declaró
+`derivation_ruleset_sha256=beebcfdc…`, una revisión del ruleset que
+quedó fuera del commit (delta probadamente inmaterial: el replay sobre
+el ruleset commiteado `9b4f2b65…` reproduce el cuerpo byte-idéntico —
+157 aserciones, 0 findings, 8 reported_facts). Remediación: artefacto
+regenerado contra el ruleset commiteado y run de verificación
+`assessment-run-g1-c-002.json` (9/9, integridad all-True). El run `-001`
+se conserva como registro histórico de la ejecución original;
+`tests/g1/test_g1c_replay.py` fija ahora el replay byte-idéntico.
+
 Resultado del artefacto `derived-assertions-g1-c-001.json`:
 
 ```text
@@ -235,6 +266,8 @@ G1C-09 BBVA      PAYMENT_SERVICES ES
           bancaria en un registro sectorial que cubra la actividad)
 
 9/9 matches — run: fixtures/g1/runs/assessment-run-g1-c-001.json
+(verificación sobre la cadena remediada G1-C-F01:
+fixtures/g1/runs/assessment-run-g1-c-002.json, 9/9, integrity all-True)
 ```
 
 Auditoría de divergencias ESMA ↔ CNMV:
