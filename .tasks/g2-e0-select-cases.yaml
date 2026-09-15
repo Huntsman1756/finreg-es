@@ -1,0 +1,66 @@
+task_id: g2-e0-select-cases
+kind: preregistration
+status: ready
+lifecycle: oneshot
+skill: preregister-gate
+goal: >-
+  Seleccionar 3–5 casos bitemporales REALES del corpus actual y
+  congelar sus outcomes esperados para G2-E (AssessmentQuery con
+  valid_at × known_at). Cero código de producción: esta task sólo
+  inspecciona el corpus y produce el fixture de casos + doc.
+inputs:
+  appeared_records: fixtures/g2/events/eba-psd2-20260914-vs-20260915.json
+  comparison: fixtures/g2/comparisons/eba-psd2-20260914-vs-20260915.json
+  g1_scenarios: fixtures/regulatory/scenarios.json
+gate:
+  - docs/g2-snapshot-history-contract.md
+constraints:
+  no_production_code: true
+  max_cases: 5
+  source_as_of_never_from_retrieved_at: true
+  no_catalog_retrofit: >-
+    DER_CHI_ENT_AUT ya tiene semántica congelada en G1 (derived
+    Active/Inactive status heredado del parent). Si entre los 278
+    hay un Active↔Inactive relevante, registrarlo como candidato
+    para una extensión preregistrada futura del catálogo G2-C0;
+    nunca requisito de E0 ni clasificación retroactiva.
+questions_falsables:
+  - >-
+    ¿Puede FinReg devolver assessment diferente para el mismo
+    valid_at cuando cambia known_at, únicamente porque cierta
+    evidencia todavía no había sido observada?
+  - >-
+    Con el mismo known_at, ¿cambia correctamente la assessment al
+    mover valid_at a través de un intervalo jurídico conocido?
+expected:
+  artifact: fixtures/g2/e0/bitemporal-cases.json
+  doc: docs/g2-e0-bitemporal-cases.md
+  case_mix:
+    - >-
+      known_at: un record EBA real de los 67 added del 15/09 con
+      ENT_AUT interpretable (y si existe, services.ES). Si la fuente
+      declara effective_from=T0 anterior a su observación: valid_at=T0+X
+      con known_at=2026-09-14 → evidencia inexistente; mismo valid_at
+      con known_at=2026-09-15T03:00Z → evidencia ya usable. Si ningún
+      record added tiene ENT_AUT propia interpretable, documentarlo
+      como finding (fail-closed), no forzar el caso.
+    - >-
+      valid_at: un caso G1 con intervalo [from,to) real (p.ej.
+      DENIZEN/MMG) cuya assessment cambia al cruzar la frontera del
+      intervalo con known_at fijo.
+    - >-
+      control: un caso cuya assessment NO cambia al mover known_at
+      dentro del rango de observaciones disponibles.
+  frozen_outcomes: >-
+    cada caso lleva assessment esperada por cada par
+    (valid_at, known_at) evaluado, la evidencia usable en K y la
+    excluida por observada después.
+  full_suite: PASS
+evidence_required: >-
+  tabla caso → (valid_at, known_at) → assessment esperada + evidencia
+  admisible/excluida + referencia a los artefactos fuente usados.
+notes: >-
+  G2-E reutilizará ASSESSMENT_SEMANTICS_V3, covers() y
+  effective_effect_at(); no se crea motor temporal paralelo.
+  known_at controla evidencia observable (retrieved_at <= K);
+  nunca modifica effective_from/effective_to.
