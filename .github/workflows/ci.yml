@@ -25,7 +25,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Instala tooling de tests (runtime core = stdlib-only)
-        run: python -m pip install "jsonschema>=4.21,<5" pytest
+        # typer/mcp solo los usan los tests de adapters/ (G3-B);
+        # finreg_es/ sigue stdlib-only — hay un test estructural que
+        # lo verifica.
+        run: python -m pip install "jsonschema>=4.21,<5" pytest "typer>=0.26,<0.28" "mcp>=2,<3"
 
       - name: Suite completa (offline, determinista)
         run: python -m pytest
