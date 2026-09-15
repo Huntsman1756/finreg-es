@@ -17,8 +17,8 @@ inputs:
       note: la metadata publica latest_version_relative_zip_path +
         sha256_hash + timestamp; descargar el zip fechado desde
         golden_copy_path_context. Verificar sha local vs publicado.
-      last_known: fixtures/g2/sources/raw/eba-psd2-202609141600.zip
-        (sha 8e28bb25…, source_as_of 2026-09-14T16:00:14Z)
+      last_known: fixtures/g2/sources/raw/eba-psd2-202609150000.zip
+        (sha a582908c…, source_as_of 2026-09-15T00:00:40Z)
     - series_key: bde-registro-servicios-pago|full
       register_id: bde-registro-servicios-pago
       source_url: https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ServicioPagos.xlsx
