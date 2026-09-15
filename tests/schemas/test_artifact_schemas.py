@@ -125,7 +125,11 @@ UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json",
                   # G2-C1: artefactos de candidatos a evento regulatorio —
                   # pendientes de contrato schema en G2 como los demas
                   # artefactos G2 (comparisons, manifest).
-                  "fixtures/g2/events/*.json"]
+                  "fixtures/g2/events/*.json",
+                  # G2-E0: fixture de casos bitemporales preregistrados —
+                  # pendiente de contrato schema en G2 como el resto de
+                  # artefactos G2.
+                  "fixtures/g2/e0/*.json"]
 
 
 def _covered_files() -> dict[Path, str]:
