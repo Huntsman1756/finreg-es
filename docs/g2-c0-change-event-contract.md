@@ -132,7 +132,19 @@ G2-C0-scaffold  DONE (synthetic)
        El código procede del cold-run fallido sobre una task blocked
        (rama experiment/g2-c1-blocked-smoke); reaplicado tras endurecer
        STATUS IS AUTHORITATIVE (tools/task_preflight.py).
-G2-C   OPEN           validado sobre slice sintético; pendiente el
-                      primer Type-B/C real del corpus longitudinal
-                      (task g2-c1, status=blocked).
+G2-C   DONE (primer Type-B/C real, task g2-c1)
+                      comparación EBA 20260914→20260915
+                      (added=67, removed=0, changed=312) →
+                      67 ENTITY_RECORD_APPEARED (SUPPORTED,
+                      EVIDENCE_AS_OF) + 312
+                      UNCLASSIFIED_STRUCTURAL_CHANGE (BLOCKED,
+                      NO_PREREGISTERED_RULE: ENT_ADD/ENT_NAM/
+                      ENT_POS_COD/ENT_TOW_CIT_RES/DER_CHI_ENT_AUT
+                      fuera del catálogo) — fail-closed operando
+                      como se preregistró
+                      (fixtures/g2/events/eba-psd2-20260914-vs-20260915.json).
+                      Ningún cambio real tocó ENT_AUT ni services.ES:
+                      las filas del catálogo para retirada/
+                      reautorización/capability siguen demostradas
+                      sólo sobre el slice sintético.
 ```

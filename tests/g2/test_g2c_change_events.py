@@ -22,6 +22,11 @@ ROOT = Path(__file__).parents[2]
 REAL_COMPARISON = (
     ROOT / "fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json"
 )
+# Primer par real con Type-B/C del corpus longitudinal (task g2-c1,
+# desbloqueado por g2-acquire-next 2026-09-15).
+REAL_COMPARISON_0915 = (
+    ROOT / "fixtures/g2/comparisons/eba-psd2-20260914-vs-20260915.json"
+)
 
 LEFT_ID = "eba-psd2-register|2026-09-13|aaaabbbbccccdddd"
 RIGHT_ID = "eba-psd2-register|2026-09-14T19:36:43Z|eeeeffff00001111"
@@ -312,6 +317,75 @@ def test_c11_real_frozen_comparison_produces_zero_candidates():
     assert result["candidates"] == []
     assert result["summary"]["input"] == {"added": 0, "removed": 0, "changed": 0}
     assert result["summary"]["candidates"] == 0
+
+
+def test_real_pair_0915_first_type_bc_classifies_candidates():
+    """Replay sobre el primer Type-B/C real del corpus (task g2-c1):
+    EBA 20260914 -> 20260915, added=67 removed=0 changed=312.
+
+    Resultado por contrato:
+    - 67 records added => ENTITY_RECORD_APPEARED (SUPPORTED,
+      EVIDENCE_AS_OF; presencia != entitlement).
+    - 312 changed en paths fuera del catalogo (ENT_ADD, ENT_NAM,
+      ENT_POS_COD, ENT_TOW_CIT_RES, DER_CHI_ENT_AUT — ninguno es
+      ENT_AUT ni services.ES) => UNCLASSIFIED_STRUCTURAL_CHANGE,
+      BLOCKED + NO_PREREGISTERED_RULE. Fail-closed: ni evento
+      inventado ni NOT_REGULATORY inventado.
+    - La fuente no publica fecha juridica: cero effective_from
+      fabricados; el cambio queda acotado a (observed_after,
+      observed_by].
+    """
+    doc = strict_json_loads(REAL_COMPARISON_0915.read_text(encoding="utf-8"))
+    result = classify_changes(doc)
+    assert result["summary"] == {
+        "input": {"added": 67, "removed": 0, "changed": 312},
+        "candidates": 379,
+        "supported": 67,
+        "blocked": 312,
+    }
+
+    appeared = [
+        c for c in result["candidates"]
+        if c["candidate_type"] == "ENTITY_RECORD_APPEARED"
+    ]
+    assert len(appeared) == 67
+    for c in appeared:
+        assert c["admissibility"] == "SUPPORTED"
+        assert c["effective_basis"] == "EVIDENCE_AS_OF"
+        assert "effective_from" not in c
+        assert "entitlement" not in c
+
+    unclassified = [
+        c for c in result["candidates"]
+        if c["candidate_type"] == "UNCLASSIFIED_STRUCTURAL_CHANGE"
+    ]
+    assert len(unclassified) == 312
+    non_catalog_paths = {
+        ("properties", "DER_CHI_ENT_AUT"),
+        ("properties", "ENT_ADD"),
+        ("properties", "ENT_NAM"),
+        ("properties", "ENT_POS_COD"),
+        ("properties", "ENT_TOW_CIT_RES"),
+    }
+    for c in unclassified:
+        assert c["admissibility"] == "BLOCKED"
+        assert c["blocker"] == "NO_PREREGISTERED_RULE"
+        assert c["effective_basis"] == "UNKNOWN"
+        assert tuple(c["field_path"]) in non_catalog_paths
+
+    # Sin cambios en ENT_AUT / services.ES: cero candidatos de
+    # retirada, reautorizacion o capability.
+    types = {c["candidate_type"] for c in result["candidates"]}
+    assert types == {
+        "ENTITY_RECORD_APPEARED",
+        "UNCLASSIFIED_STRUCTURAL_CHANGE",
+    }
+
+    # Intervalo de observacion bilateral; nunca fecha juridica.
+    for c in result["candidates"]:
+        assert c["observed_after"] == "2026-09-14T19:36:43Z"
+        assert c["observed_by"] == "2026-09-15T02:35:43Z"
+        assert "effective_from" not in c
 
 
 def test_c12_non_comparable_yields_zero_candidates():

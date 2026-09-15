@@ -1,10 +1,13 @@
 """Genera los artefactos G2-C1 de candidatos a evento regulatorio.
 
-Entradas (task .tasks/g2-c1.yaml):
+Entradas (tasks .tasks/g2-c1-synthetic.yaml y .tasks/g2-c1.yaml):
 
-1. Par real EBA congelado — ``fixtures/g2/comparisons/eba-psd2-
-   20260913-vs-20260914.json`` (0/0/0 cambios => 0 candidatos; la capa
-   se ejecuta y no hay nada que clasificar).
+1. Pares reales EBA congelados — ``fixtures/g2/comparisons/``:
+   - ``eba-psd2-20260913-vs-20260914.json`` (0/0/0 cambios => 0
+     candidatos; la capa se ejecuta y no hay nada que clasificar).
+   - ``eba-psd2-20260914-vs-20260915.json`` (primer Type-B/C real del
+     corpus longitudinal: added=67, removed=0, changed=312 => 67
+     ENTITY_RECORD_APPEARED + 312 UNCLASSIFIED_STRUCTURAL_CHANGE).
 2. Slice sintetico del contrato — decision expresa del blocker del task
    (``docs/g2-c0-change-event-contract.md``: "espera primer Type-B/C
    real o slice sintetico decidido expresamente"). Se construye con la
@@ -25,7 +28,11 @@ from finreg_es.canonical import canonical_json, sha256_hex, strict_json_loads
 from finreg_es.change_events import FINREG_G2C_EVENT_RULES_V1, classify_changes
 from finreg_es.snapshot_diff import ObservationRef, compare_observations
 
-COMPARISON = ROOT / "fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json"
+# Pares reales congelados procesados por la capa (artefacto por par).
+COMPARISONS = [
+    ROOT / "fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json",
+    ROOT / "fixtures/g2/comparisons/eba-psd2-20260914-vs-20260915.json",
+]
 OUT_DIR = ROOT / "fixtures/g2/events"
 
 
@@ -61,22 +68,24 @@ def _events_doc(artifact: str, source_comparison: dict, result: dict,
 
 
 def _real() -> None:
-    raw = COMPARISON.read_bytes()
-    doc = strict_json_loads(raw.decode("utf-8"))
-    result = classify_changes(doc)
-    _emit(
-        OUT_DIR / "eba-psd2-20260913-vs-20260914.json",
-        _events_doc(
-            "g2-c1-events-eba-psd2-20260913-20260914",
-            {
-                "kind": "frozen-comparison",
-                "file": "fixtures/g2/comparisons/eba-psd2-20260913-vs-20260914.json",
-                "sha256": hashlib.sha256(raw).hexdigest(),
-            },
-            result,
-            doc["comparison"],
-        ),
-    )
+    for comparison_path in COMPARISONS:
+        raw = comparison_path.read_bytes()
+        doc = strict_json_loads(raw.decode("utf-8"))
+        result = classify_changes(doc)
+        stem = comparison_path.stem  # eba-psd2-<left>-vs-<right>
+        _emit(
+            OUT_DIR / comparison_path.name,
+            _events_doc(
+                "g2-c1-events-" + stem.replace("-vs-", "-"),
+                {
+                    "kind": "frozen-comparison",
+                    "file": comparison_path.relative_to(ROOT).as_posix(),
+                    "sha256": hashlib.sha256(raw).hexdigest(),
+                },
+                result,
+                doc["comparison"],
+            ),
+        )
 
 
 def _obs(sha: str, retrieved: str, as_of: str) -> ObservationRef:
