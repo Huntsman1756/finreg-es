@@ -1,7 +1,7 @@
 task_id: g2-c1-synthetic
 kind: gate-execution
 skill: run-gate
-status: ready
+status: done
 goal: >-
   Implementar y probar el mapping G2-C0 (structural change →
   regulatory change candidate) sobre un slice sintético
