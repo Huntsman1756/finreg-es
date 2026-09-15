@@ -1,0 +1,52 @@
+task_id: g2-f-closeout
+kind: closeout
+status: ready
+lifecycle: oneshot
+skill: close-gate
+goal: >-
+  Cierre formal de G2: verificar cada criterio preregistrado de
+  docs/g2-scope.md contra evidencia, replay byte-identico de la
+  cadena autoritativa, invariants del sistema, limites declarados,
+  docs/G2-FINAL-REPORT.md y tag anotado.
+inputs:
+  scope: docs/g2-scope.md
+  e0_cases: fixtures/g2/e0/bitemporal-cases.json
+gate:
+  - docs/g2-scope.md
+  - docs/g2-snapshot-history-contract.md
+  - docs/g2-c0-change-event-contract.md
+  - docs/g2-e0-bitemporal-cases.md
+  - docs/g2-e1-bitemporal-assessment-contract.md
+  - docs/g2-e1a-untraceable-audit-addendum.md
+constraints:
+  no_production_code: true
+  runtime_stdlib_only: true
+expected:
+  replay: >-
+    fixture E0, comparaciones y artefactos de eventos congelados
+    regeneran byte-identicos; 18/18 probes bitemporales.
+  regressions: >-
+    full suite PASS (G0/G1 congelados sin regresion); CI real del
+    HEAD de closeout con test 3.11-3.13 + oracles verde.
+  invariants: >-
+    raw sha != structural change; removed != withdrawal; added !=
+    entitlement; known_at nunca muta valid-time; evidencia sin
+    provenance nunca visible; evidence_set_id liga los bytes
+    consumidos.
+  limitations_declared: >-
+    gap de catalogo DER_CHI_ENT_AUT (E0-F02); normalizadores G2 de
+    ESMA/BdE incompletos; sub-day known_at fuera de alcance; sin
+    claim/lease para agentes paralelos; historia longitudinal aun
+    superficial en profundidad de calendario.
+  report: docs/G2-FINAL-REPORT.md
+  tag: g2-longitudinal-evidence-closed
+  scope_status: docs/g2-scope.md pasa a CLOSED/PASS
+evidence_required: >-
+  report con cadena autoritativa (artefactos + sha256), veredicto
+  por criterio preregistrado, CI run id y lista de limites
+  declarados.
+notes: >-
+  g2-acquire-next sigue ready tras el cierre: es operacion continua
+  del sistema, no razon para mantener G2 abierto. Sin mutation
+  testing adicional salvo defecto concreto: el objetivo es cerrar
+  la fase, no abrir otra ronda de hardening por inercia.
