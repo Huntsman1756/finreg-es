@@ -1,6 +1,6 @@
 task_id: g3-a-oss-scan
 kind: evaluation
-status: ready
+status: done
 lifecycle: oneshot
 skill: oss-scan
 goal: >-
