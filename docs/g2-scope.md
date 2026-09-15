@@ -1,8 +1,10 @@
 # FinReg España — G2: preregistro de evidencia regulatoria longitudinal
 
-> **Estado: OPEN — preregistro**. G1 quedó congelado en
-> `g1-regulatory-semantics-closed`; no se reabre salvo defecto
-> reproducible nuevo.
+> **Estado: CLOSED / PASS** — `g2-longitudinal-evidence-closed`.
+> Veredictos por workstream, cadena autoritativa y límites en
+> `docs/G2-FINAL-REPORT.md`. G1 quedó congelado en
+> `g1-regulatory-semantics-closed`; ni G1 ni G2 se reabren salvo
+> defecto reproducible nuevo.
 
 ## Tesis
 
@@ -102,3 +104,7 @@ records (claims) y difear a nivel de registro keyed por identidad.
 - auditoría E6-equivalente verde (G2-F)
 - mismo gate: replay determinista, 0 deps runtime, tests verdes
 ```
+
+Todos verificados en G2-F (ver `docs/G2-FINAL-REPORT.md`); G2-D
+cierra con qualificación declarada — corpus real pero superficial en
+profundidad de calendario.
