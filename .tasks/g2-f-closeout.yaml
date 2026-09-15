@@ -1,6 +1,6 @@
 task_id: g2-f-closeout
 kind: closeout
-status: ready
+status: done
 lifecycle: oneshot
 skill: close-gate
 goal: >-
