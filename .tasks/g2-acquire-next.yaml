@@ -1,0 +1,60 @@
+task_id: g2-acquire-next
+kind: acquisition
+status: ready
+skill: freeze-primary-evidence
+goal: >-
+  Capturar una nueva observación por serie oficial prioritaria
+  (EBA PSD2, BdE servicios-pago, ESMA MiCA casps) según el contrato
+  G2-A y la skill freeze-primary-evidence. Cero interpretación
+  jurídica.
+inputs:
+  series:
+    - series_key: eba-psd2-register|full
+      register_id: eba-psd2-register
+      discovery_url: https://euclid.eba.europa.eu/register/api/filemetadata
+      note: la metadata publica latest_version_relative_zip_path +
+        sha256_hash + timestamp; descargar el zip fechado desde
+        golden_copy_path_context. Verificar sha local vs publicado.
+      last_known: fixtures/g2/sources/raw/eba-psd2-202609141600.zip
+        (sha 8e28bb25…, source_as_of 2026-09-14T16:00:14Z)
+    - series_key: bde-registro-servicios-pago|full
+      register_id: bde-registro-servicios-pago
+      source_url: https://www.bde.es/f/webbe/SGE/regis/ficheros/es/Registro_ServicioPagos.xlsx
+      note: source_as_of se lee de los bytes ("FECHA: dd/mm/aaaa" en
+        sheet1). Último content_id ea889fa1…, source_as_of 2026-09-10.
+    - series_key: esma-mica-casps|full
+      register_id: esma-mica-register
+      source_url: https://www.esma.europa.eu (sección MiCA register,
+        CSV casps)
+      note: último content_id 0af299b1…, source_as_of 2026-09-14.
+gate:
+  - docs/g2-snapshot-history-contract.md
+constraints:
+  runtime_stdlib_only: true
+  no_legal_interpretation: true
+  no_duplicate_bytes: >-
+    mismo content_id => no guardar fichero nuevo; registrar sólo la
+    observación en el manifiesto.
+  manifests_immutable: históricos no se modifican; manifiesto nuevo.
+expected:
+  manifest: fixtures/g2/sources/manifest-g2-acq-<fecha>.json
+  per_series:
+    - observation registrada con retrieved_at propio y
+      source_as_of leído de la fuente
+    - succession_state clasificado (contrato §9)
+  conditional_diff: >-
+    si un content_id cambia y existe normalizador G2 para la serie
+    (hoy: EBA → FINREG_G2_EBA_NORMALIZATION_V1), ejecutar
+    compare_observations y guardar la comparación en
+    fixtures/g2/comparisons/. Si cambia una serie sin normalizador,
+    finding NORMALIZER_MISSING (no implementar ad-hoc).
+  unblock_report: >-
+    si la comparación produce added/removed/changed != 0 (Type-B/C
+    real), reportarlo y actualizar .tasks/g2-c1.yaml status a
+    `ready` con referencia al artefacto que lo prueba (unblock_when
+    cumplido, auditable vía git).
+  tests: tests/g2/test_g2b_snapshot_diff.py
+  full_suite: PASS
+evidence_required: >-
+  resumen por serie: content_id, observation_id, succession_state,
+  bytes guardados o reutilizados, diffs ejecutados, findings.

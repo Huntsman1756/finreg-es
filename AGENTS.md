@@ -50,6 +50,14 @@ python -m finreg_es.openlineage_export && git status --porcelain openlineage/
 CI: job `test` (3.11–3.13, jsonschema+pytest) + job `oracles`
 (hypothesis+dictdiffer; nunca skip silencioso).
 
+## Limitaciones conocidas (no implementadas a propósito)
+
+- **Sin claim/lease atómico**: dos agentes podrían leer la misma task
+  `ready` a la vez y ambos pasar el preflight antes de que uno la
+  mueva a `in_progress`. No hay scheduler ni locking mientras la
+  ejecución sea secuencial; si aparece la carrera real, el hardening
+  es `ready → claim exclusivo → in_progress → done|blocked`.
+
 ## Congelaciones activas
 
 - G1: `g1-regulatory-semantics-closed` — no reabrir sin defecto
