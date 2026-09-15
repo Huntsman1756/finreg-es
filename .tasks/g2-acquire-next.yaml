@@ -1,6 +1,8 @@
 task_id: g2-acquire-next
 kind: acquisition
 status: ready
+lifecycle: recurring
+post_success_status: ready
 skill: freeze-primary-evidence
 goal: >-
   Capturar una nueva observación por serie oficial prioritaria
@@ -24,14 +26,23 @@ inputs:
         sheet1). Último content_id ea889fa1…, source_as_of 2026-09-10.
     - series_key: esma-mica-casps|full
       register_id: esma-mica-register
-      source_url: https://www.esma.europa.eu (sección MiCA register,
-        CSV casps)
-      note: último content_id 0af299b1…, source_as_of 2026-09-14.
+      source_url: https://www.esma.europa.eu/sites/default/files/2024-12/CASPS.csv
+      source_contract: fixtures/contracts/esma-mica-register.json
+      note: >-
+        último content_id 0af299b1…, source_as_of 2026-09-14. URL
+        fechada congelada en manifests g0.5/g1; si devuelve error o
+        la fuente cambia de ubicación, es un finding de adquisición
+        (fail-closed), no una tarea de redescubrimiento.
 gate:
   - docs/g2-snapshot-history-contract.md
 constraints:
   runtime_stdlib_only: true
   no_legal_interpretation: true
+  keep_task_ready_after_success: >-
+    task recurrente: al terminar, status permanece `ready`
+    (NUNCA `done`). Cada ciclo produce un manifiesto nuevo; el
+    único cambio de status permitido es el desbloqueo atómico de
+    g2-c1 definido en expected.unblock_report.
   no_duplicate_bytes: >-
     mismo content_id => no guardar fichero nuevo; registrar sólo la
     observación en el manifiesto.
@@ -50,9 +61,19 @@ expected:
     finding NORMALIZER_MISSING (no implementar ad-hoc).
   unblock_report: >-
     si la comparación produce added/removed/changed != 0 (Type-B/C
-    real), reportarlo y actualizar .tasks/g2-c1.yaml status a
-    `ready` con referencia al artefacto que lo prueba (unblock_when
-    cumplido, auditable vía git).
+    real), el desbloqueo de g2-c1 es ATÓMICO y en el mismo commit
+    que el manifiesto y la comparación que lo prueban:
+      1. guardar manifest nuevo
+      2. guardar comparison en fixtures/g2/comparisons/
+      3. verificar added/removed/changed != 0
+      4. actualizar .tasks/g2-c1.yaml:
+           inputs.comparison: <artefacto NUEVO type-B/C>
+           status: ready
+           unblock_evidence:
+             comparison: <mismo artefacto>
+             condition: added_or_removed_or_changed_nonzero
+      5. un solo commit con todo lo anterior
+    Nunca dejar g2-c1 en `ready` apuntando a la comparación 0/0/0.
   tests: tests/g2/test_g2b_snapshot_diff.py
   full_suite: PASS
 evidence_required: >-
