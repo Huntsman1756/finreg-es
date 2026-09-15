@@ -1,6 +1,6 @@
 task_id: g2-e2-implement
 kind: gate-execution
-status: ready
+status: done
 lifecycle: oneshot
 skill: run-gate
 goal: >-
