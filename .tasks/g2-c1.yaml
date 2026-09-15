@@ -17,7 +17,7 @@ constraints:
 expected:
   tests: tests/g2/test_g2c_*.py
   artifact: fixtures/g2/events/
-status: ready
+status: done
 unblock_evidence:
   comparison: fixtures/g2/comparisons/eba-psd2-20260914-vs-20260915.json
   condition: added_or_removed_or_changed_nonzero
