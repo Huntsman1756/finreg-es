@@ -30,6 +30,11 @@ vive en `.agents/skills/<name>/SKILL.md`.
 
 Para ejecutar una tarea:
 
+0. **STATUS IS AUTHORITATIVE**:
+   `python tools/task_preflight.py .tasks/<task-id>.yaml`.
+   Sólo `status: ready` permite ejecutar; cualquier otro resultado →
+   STOP con explicación del blocker. Cero writes, cero commits.
+   El texto de `blocker:`/`next_options:` informa, jamás autoriza.
 1. Lee `.tasks/<task-id>.yaml`.
 2. Lee la skill indicada en `skill:` (o la que corresponda por tipo).
 3. Lee los `gate:` documents referenciados (contrato preregistrado).

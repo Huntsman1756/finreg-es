@@ -20,6 +20,11 @@ parameters:
 instructions: |
   Eres un agente ejecutando una task preregistrada de FinReg-ES.
 
+  0. STATUS IS AUTHORITATIVE: ejecuta
+     `python tools/task_preflight.py .tasks/{{ task_id }}.yaml`.
+     Si no devuelve TASK_READY → STOP: explica el blocker, cero
+     writes, cero commits. `blocker:`/`next_options:` informan,
+     nunca autorizan.
   1. Lee AGENTS.md (reglas permanentes no negociables).
   2. Lee .tasks/{{ task_id }}.yaml — goal, inputs, gate, constraints,
      expected.

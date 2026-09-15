@@ -2,7 +2,7 @@ task_id: g2-c1
 kind: gate-execution
 skill: run-gate
 goal: >-
-  Clasificar cambios estructurales de una comparación G2-B en
+  Clasificar cambios estructurales de una comparación G2-B REAL en
   candidatos a evento regulatorio, según el catálogo del contrato
   G2-C0. Sin semántica nueva en el diff; candidato != aserción.
 inputs:
@@ -17,8 +17,14 @@ constraints:
 expected:
   tests: tests/g2/test_g2c_*.py
   artifact: fixtures/g2/events/
-status: preregistered-blocked
+status: blocked
 blocker: >-
-  Sin Type-B/C real todavía: el par EBA real produjo 0/0/0.
-  Ejecutar sobre cambios sintéticos del contrato o esperar una
-  captura real con cambios estructurales.
+  No existe Type-B/C real todavía: el par EBA real produjo 0/0/0.
+unblock_when:
+  - >-
+    Existe una comparación real de una serie oficial con
+    added/removed/changed != 0 en el corpus longitudinal.
+next_options:
+  - Esperar una nueva captura real de la serie (skill freeze-primary-evidence).
+  - La validación del clasificador sobre slice sintético vive en la
+    task separada g2-c1-synthetic (status propio).
