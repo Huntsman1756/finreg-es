@@ -1,0 +1,50 @@
+task_id: g3-b-adapters
+kind: gate-execution
+status: ready
+lifecycle: oneshot
+skill: run-gate
+
+goal: >-
+  Implementar las superficies read-only preregistradas en
+  docs/g3-b-adapter-contract.md: CLI Typer + MCP stdio sobre un
+  unico facade adapters/common.py que llama al core congelado sin
+  duplicar ni alterar semantica regulatoria.
+
+gate:
+  - docs/g3-b-adapter-contract.md
+  - docs/g3-scope.md
+  - docs/g3-a-oss-scan-surfaces.md
+
+constraints:
+  core_stdlib_only: true
+  adapters_no_semantics: true
+  read_only_no_writes: true
+  mcp_v2_mcpserver_stdio: true
+  deps_as_optional_extras: true
+  no_datasette_sqlite_in_b: true
+
+expected:
+  files:
+    - adapters/__init__.py
+    - adapters/common.py
+    - adapters/cli.py
+    - adapters/mcp_server.py
+    - tests/g3/test_g3b_adapters.py
+  acceptance: >-
+    5 operaciones reales (assess, assess-bitemporal, evidence,
+    explain, changes); payload FinReg canonico identico CLI==MCP;
+    test estructural de frontera de imports en finreg_es/; errores
+    estructurados fail-closed; MCP stdio descubre superficie; CLI
+    help+comandos; suite verde; audit_g2f_replay PASS.
+  full_suite: PASS
+
+evidence_required: >-
+  adapters/ con facade unico; tests/g3 con parity, frontera
+  estructural, fail-closed y smoke stdio; CI test job instala
+  extras de adapters.
+
+notes: >-
+  Datasette/SQLite queda en G3-C (ADOPT-PILOT). FastAPI sigue
+  REFERENCE. El envelope MCP no tiene que ser byte-identico al
+  stdout del CLI; el payload FinReg canonico si. mcp>=2,<3 con
+  MCPServer v2; typer>=0.26,<0.28.
