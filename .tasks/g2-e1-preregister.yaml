@@ -1,6 +1,6 @@
 task_id: g2-e1-preregister
 kind: preregistration
-status: ready
+status: done
 lifecycle: oneshot
 skill: preregister-gate
 goal: >-
