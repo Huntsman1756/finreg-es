@@ -25,10 +25,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Instala tooling de tests (runtime core = stdlib-only)
-        # typer/mcp solo los usan los tests de adapters/ (G3-B);
-        # finreg_es/ sigue stdlib-only — hay un test estructural que
-        # lo verifica.
-        run: python -m pip install "jsonschema>=4.21,<5" pytest "typer>=0.26,<0.28" "mcp>=2,<3"
+        # typer/mcp solo los usan los tests de adapters/ (G3-B) y
+        # datasette el smoke del pilot G3-C; finreg_es/ sigue
+        # stdlib-only — hay un test estructural que lo verifica.
+        run: python -m pip install "jsonschema>=4.21,<5" pytest "typer>=0.26,<0.28" "mcp>=2,<3" "datasette==0.65.4"
 
       - name: Suite completa (offline, determinista)
         run: python -m pytest

@@ -17,6 +17,10 @@ tooling = ["jsonschema>=4.21,<5", "hypothesis>=6.100,<7", "mutmut>=3.2,<4", "dic
 cli = ["typer>=0.26,<0.28"]
 mcp = ["mcp>=2,<3"]
 adapters = ["typer>=0.26,<0.28", "mcp>=2,<3"]
+# G3-C pilot Datasette (docs/g3-c-projection-contract.md): visor
+# immutable de la proyeccion SQLite. Linea estable fijada; la alpha
+# 1.0 queda fuera del pilot.
+datasette = ["datasette==0.65.4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
