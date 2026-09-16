@@ -1,6 +1,6 @@
 task_id: g3-e2-closeout
 kind: closeout
-status: ready
+status: done
 lifecycle: oneshot
 skill: close-gate
 blocker: >-
