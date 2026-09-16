@@ -1,6 +1,6 @@
 task_id: g3-e1-package-build
 kind: gate-execution
-status: ready
+status: done
 lifecycle: oneshot
 skill: run-gate
 
