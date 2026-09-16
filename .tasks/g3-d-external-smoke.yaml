@@ -1,0 +1,49 @@
+task_id: g3-d-external-smoke
+kind: gate-execution
+status: ready
+lifecycle: oneshot
+skill: run-gate
+
+goal: >-
+  Implementar el smoke externo preregistrado en
+  docs/g3-d-external-smoke-contract.md: harness black-box
+  tools/smoke_g3d_external.py que recorre la cadena S1-S5 por las
+  superficies publicas (CLI subprocess, MCP stdio, Datasette HTTP)
+  + wrapper pytest con enforcement estructural de D1.
+
+gate:
+  - docs/g3-d-external-smoke-contract.md
+  - docs/g3-scope.md
+  - docs/g3-b-adapter-contract.md
+  - docs/g3-c-projection-contract.md
+
+constraints:
+  black_box_only: true
+  no_finreg_internal_imports: true
+  no_adapter_imports_in_client: true
+  no_direct_sqlite_access: true
+  no_packaging_changes: true
+  no_surface_changes_to_make_smoke_pass: true
+
+expected:
+  files:
+    - tools/smoke_g3d_external.py
+    - tests/g3/test_g3d_external_smoke.py
+  acceptance: >-
+    cadena S1-S5 ejecutada desde fuera; parity CLI==MCP por
+    protocolo; discovery MCP real; Datasette por HTTP; provenance
+    E2E assertion->source_assertions->snapshot; cambio BLOCKED
+    navegable entre superficies; error fail-closed observable;
+    cero writes; full suite verde; audit_g2f_replay PASS. Veredicto
+    PASS/QUALIFIED/FAIL registrado segun contrato.
+  full_suite: PASS
+
+evidence_required: >-
+  harness ejecutable como proceso externo con informe canonico
+  {verdict, checks}; test que lo lanza y hace enforcement AST de
+  D1; cero modificaciones en adapters/, fixtures/, pyproject o CI.
+
+notes: >-
+  G3-D prueba el checkout actual — wheel/console scripts/executable
+  `finreg` son G3-E. Si la superficie publica no basta para un
+  escenario, el veredicto es QUALIFIED/FAIL, nunca un parche.
