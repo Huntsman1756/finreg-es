@@ -1,6 +1,6 @@
 task_id: g3-d-external-smoke
 kind: gate-execution
-status: ready
+status: done
 lifecycle: oneshot
 skill: run-gate
 
