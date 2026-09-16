@@ -11,6 +11,10 @@ Y desde G2, una segunda:
 > ¿Qué podía afirmarse *jurídicamente* en `valid_at` usando sólo la
 > evidencia observada hasta `known_at` — sin retroproyección?
 
+Desde G3, esas respuestas se consumen por **superficies read-only
+estables** — CLI `finreg`, servidor MCP y proyección Datasette —
+instalables como wheel puro que lleva su evidencia congelada dentro.
+
 Cero dependencias runtime (stdlib Python). Determinista, offline,
 fail-closed. Construido como estudio de caso de ingeniería de datos
 regulatoria: cada afirmación que el sistema emite es trazable hasta un
@@ -42,6 +46,14 @@ bitemporal      AssessmentQuery(valid_at × known_at)
         │       → filtra evidencia por K, delega el veredicto en V3
         ▼
 openlineage     export opcional: lineage de artefactos (OSS std)
+        │
+        ▼
+superficies     facade único (adapters/common.py), read-only
+        │       → CLI `finreg` · MCP stdio v2 (5 operaciones)
+        │       → proyección SQLite lossless → Datasette -i
+        ▼
+runtime bundle  wheel puro: paquetes + fixtures congelados
+                byte-for-byte en adapters/_data/
 ```
 
 `canonical.py` fija la serialización determinista
@@ -107,6 +119,62 @@ intactas para replay):
 - Universo de evidencia versionado: cada resultado registra
   `evidence_set_id` ligado al sha256 de los bytes consumidos.
 
+## Superficies públicas read-only (G3)
+
+Tres superficies sobre una facade única (`adapters/common.py`) —
+ninguna contiene semántica regulatoria; todas delegan en el core
+congelado:
+
+- **CLI `finreg`** (extra `[cli]`, Typer): `assess`,
+  `assess-bitemporal`, `evidence`, `explain`, `changes` — payload
+  canonical JSON en stdout; errores estructurados en stderr.
+- **MCP stdio** (extra `[mcp]`, SDK v2): las mismas 5 operaciones
+  como tools; payload canónico idéntico al CLI.
+- **Datasette immutable** (extra `[datasette]`): visor HTTP/JSON de
+  la proyección SQLite lossless (`fixtures/g3/projection/`) —
+  evidencia, provenance y cambios longitudinales navegables.
+
+Un cliente black-box puede ir de una respuesta a su evidencia oficial
+cruzando superficies: `used_assertion_id` → assertion →
+`source_assertions` → `raw_snapshot_sha256`/`source_url`/`retrieved_at`
+(smoke externo `tools/smoke_g3d_external.py`, veredicto PASS).
+
+### Quickstart (wheel local)
+
+No hay release pública: la instalación soportada es construir el
+wheel desde el tag congelado. Requiere `build` + `hatchling`
+(toolings de desarrollo; el wheel resultante tiene 0 deps runtime).
+
+```bash
+git clone https://github.com/Huntsman1756/finreg-es.git
+cd finreg-es
+git checkout g3-consumability-closed
+python -m build                  # produce dist/finreg_es-0.0.1-*.whl
+python -m venv .venv
+.venv\Scripts\activate           # o .venv/bin/activate en POSIX
+pip install "dist/finreg_es-0.0.1-py3-none-any.whl[cli]"
+finreg --help
+finreg assess-bitemporal --entity-id E3-001 --activity MONEY_REMITTANCE \
+  --jurisdiction ES --valid-at 2020-07-22 --known-at 2026-09-13
+# → CONFIRMED_ENTITLED / ACTIVE_ENTITLEMENT_EVIDENCED
+#   evidence_set_id: derived-assertions-g1-e-002@sha256:2fb08d67…
+```
+
+El wheel incluye el **runtime evidence bundle**
+(`adapters/_data/fixtures/`): contracts, evidence set, eventos G2 y
+proyección — byte-for-byte idénticos al repo (verificado por sha256
+en `tests/g3/test_g3e_packaging.py`). Sin el bundle el CLI también
+acepta paths explícitos (`--evidence-set`, `--contracts-dir`,
+`--events-dir`). El wheel base sin extras instala con 0 deps y
+`finreg` falla limpio indicando `finreg-es[cli]`.
+
+### Ejemplos autoritativos
+
+`docs/examples/` contiene stdout real capturado sobre el tag — cada
+fichero es canonical JSON exacto con `command + sha256(stdout)` en
+`docs/examples/manifest.json` (extractos en este README; los outputs
+completos son los artefactos).
+
 ## Resultados
 
 | Métrica | Valor |
@@ -118,7 +186,11 @@ intactas para replay):
 | Casos bitemporales reales (G2-E0) | 5 casos · 18/18 probes |
 | Pares EBA reales comparados (G2-B) | 2 (0/0/0 y 67/0/312) |
 | Candidatos regulatorios (G2-C) | 379 → 67 SUPPORTED + 312 BLOCKED |
-| Tests | 515 PASS |
+| Operaciones públicas (G3-B) | 5, payload idéntico CLI ≡ MCP |
+| Filas proyectadas a SQLite (G3-C) | 1197 en 7 tablas, digest lógico fijado |
+| Smoke externo black-box (G3-D) | 8/8 checks, 0 imports internos |
+| Ficheros del runtime bundle (G3-E) | 17, sha256 repo = wheel = instalado |
+| Tests | 564 PASS |
 | Dependencias runtime | 0 (stdlib puro) |
 
 Replay determinista: mismos inputs → mismos bytes. La cadena
@@ -167,18 +239,29 @@ reutiliza cuando existe una solución madura.
 | DataHub | REJECT | catálogo generalista, provenance insuficiente |
 
 Informes: `docs/G0-FINAL-REPORT.md`, `docs/G1-FINAL-REPORT.md`,
-`docs/G2-FINAL-REPORT.md`. ADRs y verificación por fase: `docs/`.
+`docs/G2-FINAL-REPORT.md`, `docs/G3-FINAL-REPORT.md`. ADRs y
+verificación por fase: `docs/`.
 
 ## Reproducir
 
 ```bash
-python -m pytest          # 515 tests, offline
+python -m pytest          # 564 tests, offline
 python -m finreg_es.openlineage_export   # regenera openlineage/ byte-idéntico
 python tools/audit_g2f_replay.py         # replay byte-idéntico de la cadena G2
+python -m build                          # wheel + sdist reproducibles (G3-E)
 ```
 
 Sin servicios, sin red, sin credenciales. Todo input es un fichero del
 repo; todo output es un artefacto hash-fijado.
+
+## Lo que no es
+
+- **No es un servicio**: superficies locales y read-only; sin auth,
+  multiusuario ni hosting. Datasette es un pilot/visor, no producción.
+- **No es distribución soportada**: no hay publicación en PyPI; el
+  wheel se construye localmente desde el tag.
+- **No es exhaustivo**: la cobertura es la de los snapshots
+  congelados (5 fuentes oficiales), no todo el mercado.
 
 ## Licencia
 
