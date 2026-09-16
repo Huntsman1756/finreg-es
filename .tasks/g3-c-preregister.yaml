@@ -1,6 +1,6 @@
 task_id: g3-c-preregister
 kind: preregistration
-status: ready
+status: done
 lifecycle: oneshot
 skill: preregister-gate
 
