@@ -139,25 +139,34 @@ cruzando superficies: `used_assertion_id` → assertion →
 `source_assertions` → `raw_snapshot_sha256`/`source_url`/`retrieved_at`
 (smoke externo `tools/smoke_g3d_external.py`, veredicto PASS).
 
-### Quickstart (wheel local)
+### Quickstart (`v0.0.1`)
 
-No hay release pública: la instalación soportada es construir el
-wheel desde el tag congelado. Requiere `build` + `hatchling`
-(toolings de desarrollo; el wheel resultante tiene 0 deps runtime).
+La pre-release pública [`v0.0.1`](https://github.com/Huntsman1756/finreg-es/releases/tag/v0.0.1)
+incluye wheel y sdist con SHA-256 publicados en las notas del release.
+No se publica en PyPI: puedes instalar el wheel descargado del release
+o reconstruirlo desde el tag exacto.
+
+Instalación desde el wheel descargado:
 
 ```bash
-git clone https://github.com/Huntsman1756/finreg-es.git
-cd finreg-es
-git checkout g3-consumability-closed
-python -m build                  # produce dist/finreg_es-0.0.1-*.whl
 python -m venv .venv
 .venv\Scripts\activate           # o .venv/bin/activate en POSIX
-pip install "dist/finreg_es-0.0.1-py3-none-any.whl[cli]"
+pip install "finreg_es-0.0.1-py3-none-any.whl[cli]"
 finreg --help
 finreg assess-bitemporal --entity-id E3-001 --activity MONEY_REMITTANCE \
   --jurisdiction ES --valid-at 2020-07-22 --known-at 2026-09-13
 # → CONFIRMED_ENTITLED / ACTIVE_ENTITLEMENT_EVIDENCED
 #   evidence_set_id: derived-assertions-g1-e-002@sha256:2fb08d67…
+```
+
+Para reconstruir el mismo artefacto desde fuente:
+
+```bash
+git clone https://github.com/Huntsman1756/finreg-es.git
+cd finreg-es
+git checkout v0.0.1
+python -m pip install "build>=1.2,<2" "hatchling>=1.26,<2"
+python -m build
 ```
 
 El wheel incluye el **runtime evidence bundle**
@@ -258,8 +267,9 @@ repo; todo output es un artefacto hash-fijado.
 
 - **No es un servicio**: superficies locales y read-only; sin auth,
   multiusuario ni hosting. Datasette es un pilot/visor, no producción.
-- **No es distribución soportada**: no hay publicación en PyPI; el
-  wheel se construye localmente desde el tag.
+- **No es distribución vía PyPI ni un canal con SLA**: `v0.0.1` se
+  publica como GitHub pre-release con wheel, sdist y hashes; no hay
+  publicación en PyPI ni compromiso de soporte productivo.
 - **No es exhaustivo**: la cobertura es la de los snapshots
   congelados (5 fuentes oficiales), no todo el mercado.
 

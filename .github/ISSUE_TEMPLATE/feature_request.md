@@ -1,19 +1,29 @@
 ---
 name: Propuesta de mejora
-about: Nueva fuente, regla de derivación o cobertura
+about: Mejora motivada por un consumidor concreto o una carencia reproducible
 title: ""
 labels: enhancement
 assignees: ""
 ---
 
-**Qué propones**
+## Necesidad concreta
 
-<!-- Una frase -->
+<!-- Qué consumidor, flujo o fallo reproducible justifica el cambio. -->
 
-**Por qué**
+## Resultado esperado
 
-<!-- Qué pregunta regulatoria desbloquea; qué evidencia oficial la soporta -->
+<!-- Qué debería poder hacerse que hoy no puede hacerse. -->
 
-**Invariantes afectados**
+## Evidencia / fuente oficial
 
-<!-- ¿Rompe determinismo, fail-closed, provenance o stdlib-only? Explica por qué no -->
+<!-- Para cambios regulatorios o de cobertura, indica la evidencia oficial relevante. -->
+
+## Impacto en invariantes
+
+<!-- Explica el impacto sobre determinismo, fail-closed, provenance y core stdlib-only. -->
+
+## Reutilización antes de construir
+
+<!-- Si añade infraestructura genérica, indica qué OSS se ha evaluado o por qué procede un scan failure-driven. -->
+
+> FinReg-ES está en maintenance/feedback mode. Las nuevas capacidades se preregistran antes de implementación.

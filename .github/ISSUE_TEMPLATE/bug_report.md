@@ -6,22 +6,27 @@ labels: bug
 assignees: ""
 ---
 
-**Qué esperabas**
+## Qué esperabas
 
-<!-- Ej.: replay byte-idéntico de fixtures/g1/derived-assertions-g1-c-001.json -->
+<!-- Comportamiento esperado o invariante que debería mantenerse. -->
 
-**Qué ocurrió**
+## Qué ocurrió
 
-<!-- Salida real, diff, o clasificación inesperada -->
+<!-- Salida real, diff o clasificación inesperada. No incluyas secretos ni datos personales. -->
 
-**Reproducir**
+## Reproducción mínima
 
 ```bash
-# comandos mínimos (todo es offline: python -m pytest, entrypoints build_*)
+# comandos mínimos y reproducibles
 ```
 
-**Contexto**
+## Contexto
 
-- Commit:
+- Versión/tag o commit:
 - Python:
-- ¿Toca artefactos congelados? (si sí, indica cuál y su sha256 declarado)
+- Sistema operativo:
+- ¿Toca artefactos congelados? Si sí, indica path y SHA-256 declarado:
+
+## Evidencia adicional
+
+<!-- Adjunta sólo lo necesario. Para vulnerabilidades usa Security Advisories, no este issue. -->

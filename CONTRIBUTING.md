@@ -1,45 +1,56 @@
 # Contribuir
 
-Gracias por el interés. Este repositorio es un estudio de caso de
-ingeniería de datos regulatoria: antes de proponer cambios, lee el
-`README.md` y los docs de `docs/` para entender las invariantes del
-proyecto.
+Gracias por el interés. FinReg-ES está en **maintenance/feedback mode**:
+se priorizan defectos reproducibles y necesidades de consumidores concretos.
+Las nuevas capacidades requieren preregistro antes de tocar producto.
+
+Antes de proponer cambios, lee `README.md`, los informes `docs/G*-FINAL-REPORT.md`
+y las invariantes del proyecto.
 
 ## Setup y verificación
 
+El paquete base mantiene `dependencies = []`. Para contribuir instala sólo el
+tooling de desarrollo necesario:
+
 ```bash
-python -m pytest                          # suite completa, offline
-pip install "jsonschema>=4.21,<5"         # sólo para tests/schemas (tooling)
-python -m finreg_es.openlineage_export    # regenera openlineage/ byte-idéntico
+python -m pip install ".[tooling]"
+python -m pytest
+python -m finreg_es.openlineage_export    # debe regenerar byte-idéntico
+python tools/audit_g2f_replay.py          # replay de la cadena G2
 ```
 
-Sin servicios, sin red, sin credenciales. Todo input es un fichero del
-repo; todo output es un artefacto hash-fijado.
+Para trabajar con las superficies opcionales de G3:
+
+```bash
+python -m pip install ".[adapters,datasette]"
+finreg --help
+```
+
+La CI es la referencia final de compatibilidad para Python 3.11, 3.12 y 3.13.
 
 ## Convenciones no negociables
 
-- **Determinista**: mismos inputs → mismos bytes. Toda serialización
-  pasa por `canonical.py` (`FINREG_CANONICAL_JSON_V1`).
-- **Fail-closed**: evidencia insuficiente produce un finding
-  clasificado, nunca una aserción positiva inventada.
-- **Stdlib-only en runtime**: `finreg_es/` no puede depender de nada
-  externo (hay un test que lo fija). `jsonschema` es tooling-only.
-- **Provenance**: toda afirmación emitida es trazable a un snapshot
-  congelado por sha256. No se afirma nada sin claim.
-- **No se reescribe la historia**: un artefacto o run defectuoso se
-  conserva; la remediación se emite como artefacto/run que lo supersedes
-  (ver G05-B-F01, G1-C-F01 en `docs/`).
-- **Clasificación ≠ autorización**: no promocionar listados
-  estadísticos a evidencia de entitlement.
-- **OSS scan antes de construir**: ninguna infraestructura genérica
-  nueva sin un scan failure-driven previo
-  (`docs/adr-oss-scan-failure-driven.md`). La semántica regulatoria es
-  propia; la infraestructura genérica se reutiliza cuando existe una
-  solución madura.
+- **Determinista**: mismos inputs → mismos bytes cuando el contrato lo exige. Toda serialización canónica pasa por `canonical.py` (`FINREG_CANONICAL_JSON_V1`).
+- **Fail-closed**: evidencia insuficiente produce un finding clasificado, nunca una aserción positiva inventada.
+- **Stdlib-only en el core**: `finreg_es/` no puede depender de paquetes externos. Las superficies opcionales viven fuera del core.
+- **Provenance**: toda afirmación emitida es trazable a un snapshot congelado por SHA-256. No se afirma nada sin claim.
+- **No reescribir historia**: un artefacto o run defectuoso se conserva; la remediación se emite como artefacto/run sucesor.
+- **Clasificación ≠ autorización**: no promocionar listados estadísticos a evidencia de entitlement.
+- **OSS scan antes de construir**: ninguna infraestructura genérica nueva sin un scan failure-driven previo (`docs/adr-oss-scan-failure-driven.md`).
+- **Preregistro**: cambios semánticos o de capacidad se preregistran antes de implementación.
 
 ## Pull requests
 
-- `python -m pytest` en verde.
-- Los artefactos congelados sólo cambian regenerándolos desde sus
-  entrypoints (`build_*`, `run_assessment`), nunca editados a mano.
-- Estilo de commit: `tipo(ámbito): resumen` (ver `git log`).
+Un PR debe incluir:
+
+- defecto reproducible o consumidor concreto que justifica el cambio;
+- `python -m pytest` en verde;
+- artefactos congelados regenerados desde sus entrypoints, nunca editados a mano;
+- evidencia de que no se rompe determinismo, fail-closed ni provenance;
+- scan OSS previo si añade infraestructura genérica;
+- cero secretos, credenciales o datos personales en diffs, fixtures o logs.
+
+Estilo de commit: `tipo(ámbito): resumen` (ver `git log`).
+
+Los cambios de mantenimiento documental que no alteran producto pueden ser más
+pequeños, pero deben seguir dejando la CI verde.
