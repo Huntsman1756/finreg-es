@@ -1,6 +1,6 @@
 task_id: g3-c-datasette-pilot
 kind: gate-execution
-status: ready
+status: done
 lifecycle: oneshot
 skill: run-gate
 
