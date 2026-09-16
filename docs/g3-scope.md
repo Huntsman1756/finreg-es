@@ -1,8 +1,10 @@
 # FinReg España — G3: consumibilidad del motor
 
-> **Estado: OPEN — preregistro**. G1 y G2 congelados
-> (`g1-regulatory-semantics-closed`, `g2-longitudinal-evidence-closed`);
-> no se reabren salvo defecto reproducible nuevo.
+> **Estado: CLOSED / PASS** — `g3-consumability-closed`
+> (docs/G3-FINAL-REPORT.md). G1, G2 y G3 congelados
+> (`g1-regulatory-semantics-closed`, `g2-longitudinal-evidence-closed`,
+> `g3-consumability-closed`); no se reabren salvo defecto
+> reproducible nuevo.
 
 ## Tesis
 
