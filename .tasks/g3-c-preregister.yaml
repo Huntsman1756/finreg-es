@@ -1,0 +1,78 @@
+task_id: g3-c-preregister
+kind: preregistration
+status: ready
+lifecycle: oneshot
+skill: preregister-gate
+
+goal: >-
+  Congelar el contrato de la proyeccion SQLite lossless + pilot
+  Datasette (docs/g3-c-projection-contract.md) antes de
+  implementarla. Cero codigo de produccion: la salida es el
+  documento con el schema de tablas, el contrato de determinismo
+  logico, el manifest de lineage, los casos de aceptacion C1-C5 y
+  los tests estructurales vinculantes.
+
+inputs:
+  evidence_set: fixtures/g1/derived-assertions-g1-e-002.json
+  comparisons_dir: fixtures/g2/comparisons
+  events_dir: fixtures/g2/events
+
+gate:
+  - docs/g3-scope.md
+  - docs/g3-a-oss-scan-surfaces.md
+  - docs/g3-b-adapter-contract.md
+
+constraints:
+  no_production_code: true
+  datasette_not_engine: >-
+    Datasette es superficie de evidencia/provenance/exploracion
+    (casos 3-5 del scan G3-A); nunca ejecuta assess()/
+    assess_bitemporal() ni duplica semantica regulatoria. CLI/MCP
+    (G3-B) siguen siendo las query/assessment surfaces.
+  logical_not_file_determinism: >-
+    el determinismo contractual es logico (schema + row counts +
+    filas ordenadas + hashes canonicos de fila +
+    logical_projection_sha256); el SHA del fichero .sqlite NO es
+    requisito cross-platform (version SQLite, page layout, pragmas,
+    VACUUM).
+  no_custom_ui: >-
+    cero templates, plugins o endpoints propios de Datasette; si la
+    UI/JSON API estandar no cubre un caso, el pilot queda
+    QUALIFIED/FAIL — no se recrea una app a medida dentro de
+    Datasette.
+
+questions_falsables:
+  - >-
+    ¿Puede un tercero resolver los casos 3-5 (evidencia, drill-down
+    de explicacion, cambio longitudinal) sobre la proyeccion usando
+    solo la UI/JSON API estandar de Datasette en modo inmutable, sin
+    perdida de provenance?
+  - >-
+    ¿Es la proyeccion lossless de verdad: cada fila conserva el
+    objeto fuente canonico completo (payload_json round-trip) y toda
+    referencia de provenance resuelve?
+
+expected:
+  doc: docs/g3-c-projection-contract.md
+  acceptance_criteria: >-
+    casos C1-C5 preregistrados con resultado esperado concreto:
+    C1 evidence_set_id -> items; C2 assertion_id ->
+    source_assertions -> snapshot sha/url/retrieved_at; C3
+    used_assertion_id de respuesta CLI/MCP real -> exactamente esa
+    assertion en Datasette; C4 record_key del par
+    eba-psd2-20260914-vs-20260915 -> structural_changes ->
+    change_candidates; C5 un candidato BLOCKED NO_PREREGISTERED_RULE
+    de los 312 del par con blocker visible. Resultados validos
+    declarados (PASS / QUALIFIED / FAIL) antes de observar datos.
+  full_suite: PASS
+
+evidence_required: >-
+  contrato publicado y commiteado antes de cualquier builder o test
+  de produccion; la task g3-c-datasette-pilot solo puede existir
+  ready cuando el contrato ya este en el repo.
+
+notes: >-
+  G3-C se separa en preregistro (esta task) y ejecucion
+  (g3-c-datasette-pilot). La proyeccion es artefacto derivado
+  reconstruible; la autoridad sigue en los JSON congelados y sus
+  sha256, no en el .sqlite.
