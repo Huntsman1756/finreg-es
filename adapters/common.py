@@ -25,7 +25,15 @@ from finreg_es.derivation import (
 )
 from finreg_es.semantics import assess
 
-ROOT = Path(__file__).resolve().parents[1]
+# G3-E (docs/g3-e0-packaging-contract.md S5): en el wheel instalado
+# el runtime evidence bundle viaja en adapters/_data/ y los
+# defaults fixtures/* resuelven ahi; en checkout _data no existe y
+# ROOT sigue siendo el repo root — comportamiento historico
+# identico. Un path explicito del usuario siempre se usa tal cual.
+_PKG_DIR = Path(__file__).resolve().parent
+ROOT = (
+    _PKG_DIR / "_data" if (_PKG_DIR / "_data").is_dir() else _PKG_DIR.parent
+)
 
 DEFAULT_EVIDENCE_SET = "fixtures/g1/derived-assertions-g1-e-002.json"
 DEFAULT_CONTRACTS_DIR = "fixtures/contracts"

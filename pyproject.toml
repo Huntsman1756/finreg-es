@@ -1,3 +1,10 @@
+# G3-E (docs/g3-e0-packaging-contract.md S3): hatchling ADOPT —
+# force-include mapea los fixtures congelados al runtime evidence
+# bundle del wheel sin duplicarlos en el source tree.
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
 [project]
 name = "finreg-es"
 version = "0.0.1"
@@ -22,6 +29,12 @@ adapters = ["typer>=0.26,<0.28", "mcp>=2,<3"]
 # 1.0 queda fuera del pilot.
 datasette = ["datasette==0.65.4"]
 
+# G3-E S7: console script via shim stdlib-only — el wheel base
+# (dependencies=[]) no deja un ejecutable roto; sin typer emite un
+# error estructurado indicando el extra.
+[project.scripts]
+finreg = "adapters.entrypoint:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
@@ -35,3 +48,16 @@ source_paths = ["finreg_es/semantics.py", "finreg_es/temporal.py", "finreg_es/co
 also_copy = ["finreg_es", "fixtures", "schemas", "tools"]
 pytest_add_cli_args_test_selection = ["tests/g1", "tests/semantics", "tests/coverage", "tests/g07", "tests/identity"]
 pytest_add_cli_args = ["-x", "-q"]
+
+# G3-E S4: wheel puro = finreg_es + adapters + runtime evidence
+# bundle. force-include copia byte-for-byte los ORIGINALES del repo
+# a adapters/_data/fixtures/ dentro del wheel — cero copias
+# versionadas en el source tree.
+[tool.hatch.build.targets.wheel]
+packages = ["adapters", "finreg_es"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"fixtures/contracts" = "adapters/_data/fixtures/contracts"
+"fixtures/g1/derived-assertions-g1-e-002.json" = "adapters/_data/fixtures/g1/derived-assertions-g1-e-002.json"
+"fixtures/g2/events" = "adapters/_data/fixtures/g2/events"
+"fixtures/g3/projection" = "adapters/_data/fixtures/g3/projection"
