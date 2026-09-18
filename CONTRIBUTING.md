@@ -9,22 +9,57 @@ y las invariantes del proyecto.
 
 ## Setup y verificación
 
-El paquete base mantiene `dependencies = []`. Para contribuir instala sólo el
-tooling de desarrollo necesario:
+El paquete base mantiene `dependencies = []`. Desde la raíz del checkout,
+crea y activa un entorno virtual con Python 3.11 o posterior.
 
-```bash
-python -m pip install ".[tooling]"
-python -m pytest
-python -m finreg_es.openlineage_export    # debe regenerar byte-idéntico
-python tools/audit_g2f_replay.py          # replay de la cadena G2
+POSIX (sh/bash/zsh):
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
 ```
 
-Para trabajar con las superficies opcionales de G3:
+Windows (PowerShell):
 
-```bash
-python -m pip install ".[adapters,datasette]"
-finreg --help
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
+
+Windows (cmd.exe):
+
+```bat
+py -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+Si PowerShell bloquea la activación, usa cmd.exe o ejecuta los comandos
+siguientes con `.\.venv\Scripts\python.exe` en lugar de `python`.
+
+En el entorno virtual, instala el extra completo de tests y verifica:
+
+```sh
+python -m pip install ".[test]"
+python -m pip check
+python -m pytest -ra
+```
+
+El extra `[test]` incluye los oráculos, las superficies opcionales de G3 y
+las herramientas de empaquetado necesarias para la suite completa.
+`[tooling]` se conserva por compatibilidad, incluido mutmut (Linux/WSL),
+pero no sustituye a `[test]`.
+
+Para verificar regeneración y replay, usa un checkout desechable: el replay
+reconstruye artefactos en rutas históricas, no sólo los lee. No lo ejecutes
+en un checkout con trabajo en curso. Prepara allí el mismo entorno anterior.
+
+```sh
+python -m finreg_es.openlineage_export
+python tools/audit_g2f_replay.py
+```
+
+Ambos deben regenerar byte-idéntico; no se deben sobrescribir ni publicar
+cambios en los artefactos históricos como remediación.
 
 La CI es la referencia final de compatibilidad para Python 3.11, 3.12 y 3.13.
 

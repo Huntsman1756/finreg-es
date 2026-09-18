@@ -5,9 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -29,10 +33,13 @@ jobs:
         # datasette el smoke del pilot G3-C y build+hatchling el
         # packaging E1; finreg_es/ sigue stdlib-only — hay un test
         # estructural que lo verifica.
-        run: python -m pip install "jsonschema>=4.21,<5" pytest "typer>=0.26,<0.28" "mcp>=2,<3" "datasette==0.65.4" "build>=1.2,<2" "hatchling>=1.26,<2"
+        run: python -m pip install ".[test]"
+
+      - name: Verifica dependencias instaladas
+        run: python -m pip check
 
       - name: Suite completa (offline, determinista)
-        run: python -m pytest
+        run: python -m pytest -ra
 
       - name: Export OpenLineage regenera byte-idéntico
         run: |
@@ -44,6 +51,7 @@ jobs:
     # opcional. Si la dependencia falta, el job falla — no se acepta
     # un skip silencioso como evidencia.
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 

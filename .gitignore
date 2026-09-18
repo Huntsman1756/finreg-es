@@ -14,3 +14,9 @@ build/
 venv/
 .idea/
 .vscode/
+.env
+.env.*
+!.env.example
+/opencode.json
+/opencode.jsonc
+.coverage.*

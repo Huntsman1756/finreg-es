@@ -15,6 +15,17 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
+test = [
+    "pytest>=8,<10",
+    "jsonschema>=4.21,<5",
+    "hypothesis>=6.100,<7",
+    "dictdiffer>=0.9,<0.11",
+    "build>=1.2,<2",
+    "hatchling>=1.26,<2",
+    "typer>=0.26,<0.28",
+    "mcp>=2,<3",
+    "datasette==0.65.4",
+]
 # Tooling/CI only: JSON Schema validation of artifact contracts.
 # finreg_es runtime must remain stdlib-only (zero-dep auditability).
 tooling = ["jsonschema>=4.21,<5", "hypothesis>=6.100,<7", "mutmut>=3.2,<4", "dictdiffer>=0.9,<0.11"]

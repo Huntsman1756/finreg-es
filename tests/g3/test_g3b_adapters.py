@@ -344,6 +344,21 @@ def test_cli_error_is_structured_and_exits():
     assert "message" in err["error"]
 
 
+@pytest.mark.parametrize("command", ["assess", "assess-bitemporal", "explain"])
+def test_cli_malformed_contract_returns_structured_error(tmp_path, command):
+    (tmp_path / "broken.json").write_text("{", encoding="utf-8")
+    args = [command, *_CLI_ASSESS_ARGS, "--contracts-dir", str(tmp_path)]
+    if command == "assess-bitemporal":
+        args += ["--known-at", _KNOWN_AT]
+    result = RUNNER.invoke(cli_app, args)
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    err = strict_json_loads(result.stderr)
+    assert err["error"]["code"] == "invalid_artifact"
+    assert err["error"]["message"]
+    assert "Traceback" not in result.stderr
+
+
 def test_cli_help_lists_five_ops():
     result = RUNNER.invoke(cli_app, ["--help"])
     assert result.exit_code == 0
