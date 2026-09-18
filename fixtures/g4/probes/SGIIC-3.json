@@ -1,0 +1,406 @@
+{
+  "views": {
+    "dg_current": {
+      "page_title": "CNMV - Sociedades gestoras de Instituciones de Inversión Colectiva - ABANCA GESTION DE ACTIVOS, SGIIC, SA - Datos generales",
+      "declared_data_date": null,
+      "registry_number": "",
+      "registration_date": "",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Capital social"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Capital social"
+            ],
+            [
+              "C/ SERRANO 45, 3&#170; PLANTA - 28001 MADRID (MADRID)",
+              "5.000.000,00"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Fondo de garantía"
+          ],
+          "rows": [
+            [
+              "Fondo de garantía"
+            ],
+            [
+              "Fondo de Garantía de Inversiones (FOGAIN)"
+            ]
+          ]
+        }
+      ]
+    },
+    "dg_fs_18092025": {
+      "page_title": "CNMV - Sociedades gestoras de Instituciones de Inversión Colectiva - ABANCA GESTION DE ACTIVOS, SGIIC, SA - Datos generales",
+      "declared_data_date": null,
+      "registry_number": "",
+      "registration_date": "",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Capital social"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Capital social"
+            ],
+            [
+              "C/ SERRANO 45, 3&#170; PLANTA - 28001 MADRID (MADRID)",
+              "5.000.000,00"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Fondo de garantía"
+          ],
+          "rows": [
+            [
+              "Fondo de garantía"
+            ],
+            [
+              "Fondo de Garantía de Inversiones (FOGAIN)"
+            ]
+          ]
+        }
+      ]
+    },
+    "dg_fs_18092023": {
+      "page_title": "CNMV - Sociedades gestoras de Instituciones de Inversión Colectiva - ABANCA GESTION DE ACTIVOS, SGIIC, SA - Datos generales",
+      "declared_data_date": null,
+      "registry_number": "",
+      "registration_date": "",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Capital social"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Capital social"
+            ],
+            [
+              "C/ SERRANO 45, 3&#170; PLANTA - 28001 MADRID (MADRID)",
+              "5.000.000,00"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Fondo de garantía"
+          ],
+          "rows": [
+            [
+              "Fondo de garantía"
+            ],
+            [
+              "Fondo de Garantía de Inversiones (FOGAIN)"
+            ]
+          ]
+        }
+      ]
+    },
+    "dg_fs_18092021": {
+      "page_title": "CNMV - Sociedades gestoras de Instituciones de Inversión Colectiva - IMANTIA CAPITAL, S.G.I.I.C., S.A. - Datos generales",
+      "declared_data_date": null,
+      "registry_number": "",
+      "registration_date": "",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Capital social"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Capital social"
+            ],
+            [
+              "C/ SERRANO 45, 3&#170; PLANTA - 28001 MADRID (MADRID)",
+              "5.000.000,00"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Fondo de garantía"
+          ],
+          "rows": [
+            [
+              "Fondo de garantía"
+            ],
+            [
+              "Fondo de Garantía de Inversiones (FOGAIN)"
+            ]
+          ]
+        }
+      ]
+    },
+    "vista_4": {
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Apellidos y nombre",
+            "Cargo",
+            "Fecha nombramiento (*)"
+          ],
+          "rows": [
+            [
+              "Apellidos y nombre",
+              "Cargo",
+              "Fecha nombramiento (*)"
+            ],
+            [
+              "LOPEZ JACOME, PEDRO RAUL",
+              "PRESIDENTE",
+              "03/08/2022"
+            ],
+            [
+              "CASTRO BECERRA, ENRIQUE",
+              "DIRECTOR GENERAL",
+              "01/10/2022"
+            ],
+            [
+              "ALVAREZ SANCHEZ, JOSE EDUARDO",
+              "CONSEJERO",
+              "18/05/2015"
+            ],
+            [
+              "AMO FERNANDEZ DE AVILA, JAVIER",
+              "CONSEJERO",
+              "03/08/2022"
+            ],
+            [
+              "IGLESIAS HERRAIZ, LETICIA",
+              "CONSEJERO",
+              "03/08/2022"
+            ],
+            [
+              "LOPEZ JACOME, PEDRO RAUL",
+              "CONSEJERO",
+              "29/07/2016"
+            ],
+            [
+              "VARGAS-ZU&#209;IGA MENDOZA, JUAN LUIS",
+              "CONSEJERO",
+              "18/05/2015"
+            ],
+            [
+              "ALVAREZ SANCHEZ, JOSE EDUARDO",
+              "SECRETARIO",
+              "18/05/2015"
+            ]
+          ]
+        }
+      ]
+    },
+    "vista_7": {
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Socio",
+            "Porcentaje (*)"
+          ],
+          "rows": [
+            [
+              "Socio",
+              "Porcentaje (*)"
+            ],
+            [
+              "ABANCA CORPORACION BANCARIA, S.A.",
+              "91,65 %"
+            ],
+            [
+              "ABANCA GESTION DE ACTIVOS, SGIIC, SA",
+              "8,34 %"
+            ]
+          ]
+        }
+      ]
+    },
+    "vista_9": {
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ]
+    },
+    "vista_17": {
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Fecha registro oficial",
+            "Documento"
+          ],
+          "rows": [
+            [
+              "Fecha registro oficial",
+              "Documento"
+            ],
+            [
+              "27/01/2023"
+            ]
+          ]
+        }
+      ]
+    },
+    "vista_20": {
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  "errors": []
+}
