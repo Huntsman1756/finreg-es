@@ -1,0 +1,28 @@
+---
+import Base from "../layouts/Base.astro";
+import { sources } from "../lib/data";
+---
+<Base title="Fuentes" crumbs={[{ href: "/fuentes/", label: "Fuentes" }]}>
+  <h1>Fuentes</h1>
+  <p class="muted small">
+    Fuentes oficiales utilizadas en la proyección actual. Cada entrada enlaza
+    a la URL consultada o al artefacto congelado; los hashes SHA-256
+    identifican los bytes exactos observados.
+  </p>
+  <table>
+    <thead><tr><th>Fuente</th><th>Referencia</th><th>Observada</th></tr></thead>
+    <tbody>
+      {sources.map((s: any) => (
+        <tr>
+          <td class="small">{s.source}</td>
+          <td class="src">
+            {s.url ? <a href={s.url}>{s.url.slice(0, 90)}{s.url.length > 90 ? "…" : ""}</a> : s.artifact}
+            {s.sha256 && <div><code>{s.sha256.slice(0, 20)}…</code></div>}
+            {s.requested_fs && <div class="muted">fs pedido: {s.requested_fs}</div>}
+          </td>
+          <td class="src">{s.retrieved_at?.slice(0, 10) ?? s.as_of ?? "—"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Base>

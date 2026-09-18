@@ -1,0 +1,37 @@
+---
+import Base from "../layouts/Base.astro";
+import { index, verticalLabel } from "../lib/data";
+const byVertical = new Map<string, any[]>();
+for (const e of index as any[]) {
+  const v = verticalLabel(e.id);
+  byVertical.set(v, [...(byVertical.get(v) ?? []), e]);
+}
+const DESC: Record<string, string> = {
+  "ESI · CNMV": "Empresas de servicios de inversión españolas — registro CNMV (esis.aspx).",
+  "SGIIC · CNMV": "Sociedades gestoras de instituciones de inversión colectiva — registro CNMV (sgiic.aspx), con estados históricos fs.",
+  "EDE · BdE/EBA": "Entidades de dinero electrónico — Registro de Servicios de Pago del Banco de España + registro EBA PSD2.",
+  "Seguros · DGSFP": "Entidades aseguradoras y sucursales EEE — identidad consumida del artefacto OpenDGSFP.",
+};
+---
+<Base title="Reguladores" crumbs={[{ href: "/reguladores/", label: "Reguladores" }]}>
+  <h1>Reguladores y superficies</h1>
+  {[...byVertical.entries()].map(([v, ents]) => (
+    <>
+      <h2>{v}</h2>
+      <p class="muted small">{DESC[v]}</p>
+      <table>
+        <tbody>
+          {ents.map((e: any) => (
+            <tr><td><a href={`/entidad/${e.id}/`}>{e.name}</a></td>
+                <td class={e.status === "REGISTERED" ? "status ok" : "status off"}>{e.status}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  ))}
+  <p class="small muted">
+    Las advertencias de entidades no autorizadas y clones se consumen del
+    artefacto AlertaFin (registro de advertencias CNMV) y se enlazan sólo por
+    identificador exacto.
+  </p>
+</Base>
