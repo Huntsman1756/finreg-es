@@ -101,5 +101,5 @@ docs/product/{PRODUCT-CONTRACT,PUBLIC-DATA-MODEL,WEB-ARCHITECTURE}.md
   propio, refresh programado de evidencia con manifests sucesores,
   más verticales del registro español, contratos schema v1.x para
   `fixtures/g4/` (hoy UNSCOPED declarado).
-- Tag `v0.1` y merge a `main`: **autorizados por este veredicto**,
+- Tag `v0.1.0` y merge a `main`: **autorizados por este veredicto**,
   pendientes de ejecución explícita del usuario.
