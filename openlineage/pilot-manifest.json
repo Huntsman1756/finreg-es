@@ -1,7 +1,0 @@
-{
-  "pilot_id": "openlineage-v1",
-  "exporter_version": "FINREG_OL_EXPORT_V1",
-  "lineage_observed_at": "2026-09-13T22:30:00Z",
-  "spec": "https://openlineage.io/spec/2-0-2/OpenLineage.json",
-  "note": "JobEvent.eventTime = lineage_observed_at: instante declarado del export, fijado una vez y reutilizado en todo replay. freeze_commit_time en el facet finreg_job_contract = instante historico de freeze del artefacto (git commit time)."
-}
