@@ -1,0 +1,460 @@
+{
+  "cnmv": {
+    "Búsqueda información gobierno corporativo": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Condiciones finales presentadas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de Agencias de Calificaci&oacute;n Crediticia registradas en la Uni&oacute;n Europea": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de Agentes": {
+      "files": 2,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de Empresas de Asesoramiento Financiero Nacional": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de Sociedades y Agencias de Valores, Sociedades Gestoras de Cartera y Empresas de Asesoramiento Financiero": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de empresas de servicios de inversión extranjeras": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta de entidades de crédito": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consulta por entidades": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Consultas de entidades de capital riesgo": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Datos generales": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Distribución por bolsas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Distribución por sectores": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Empresas de Asesoramiento Financiero Nacional": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Empresas de Servicios de Inversión Españolas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Empresas de Servicios de Inversión Extranjeras": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Empresas de servicios de inversión designadas como ERIR": {
+      "files": 1,
+      "records": 1,
+      "nif_links": 1
+    },
+    "Entidades Registradas de Capital Riesgo": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Entidades de crédito": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Entidades en las que se delega la funci&oacute;n de gesti&oacute;n": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Entidades que realizan la función de valoración": {
+      "files": 3,
+      "records": 25,
+      "nif_links": 25
+    },
+    "Escrituras de Anotaciones en cuenta y Entidades de llevanza": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Folletos de admisión": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Folletos de emisión y OPVs": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Fondos de Activos Bancarios": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Información financiera intermedia": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Información financiera intermedia. Fondos de activos bancarios": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Información financiera intermedia. Fondos de titulización": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Listado completo de FIA": {
+      "files": 413,
+      "records": 4125,
+      "nif_links": 4125
+    },
+    "Listado completo de UCITS": {
+      "files": 123,
+      "records": 1227,
+      "nif_links": 1227
+    },
+    "Listado completo de fondos de capital-riesgo": {
+      "files": 46,
+      "records": 456,
+      "nif_links": 455
+    },
+    "Listado completo de fondos de capital-riesgo europeos": {
+      "files": 29,
+      "records": 289,
+      "nif_links": 289
+    },
+    "Listado completo de fondos de capital-riesgo pyme": {
+      "files": 3,
+      "records": 24,
+      "nif_links": 24
+    },
+    "Listado completo de fondos de emprendimiento social europeos": {
+      "files": 2,
+      "records": 16,
+      "nif_links": 16
+    },
+    "Listado completo de fondos de inversión a largo plazo europeo": {
+      "files": 1,
+      "records": 9,
+      "nif_links": 9
+    },
+    "Listado completo de fondos de inversión colectiva de tipo cerrado": {
+      "files": 8,
+      "records": 71,
+      "nif_links": 71
+    },
+    "Listado completo de sociedades de capital-riesgo": {
+      "files": 72,
+      "records": 715,
+      "nif_links": 714
+    },
+    "Listado completo de sociedades de capital-riesgo pyme": {
+      "files": 3,
+      "records": 30,
+      "nif_links": 30
+    },
+    "Listado completo de sociedades de inversión colectiva de tipo cerrado": {
+      "files": 6,
+      "records": 58,
+      "nif_links": 58
+    },
+    "Listado completo de sociedades gestoras de entidades de inversión de tipo cerrado": {
+      "files": 1,
+      "records": 165,
+      "nif_links": 165
+    },
+    "Listado de Empresas de Asesoramiento Financiero": {
+      "files": 1,
+      "records": 93,
+      "nif_links": 0
+    },
+    "Listado de Empresas de Asesoramiento Financiero Nacional": {
+      "files": 1,
+      "records": 60,
+      "nif_links": 0
+    },
+    "Listado de Empresas de Servicios de Inversión del Espacio Económico Europeo con Sucursal": {
+      "files": 1,
+      "records": 48,
+      "nif_links": 0
+    },
+    "Listado de Empresas de Servicios de Inversión del Espacio Económico Europeo en Libre Prestación": {
+      "files": 1,
+      "records": 802,
+      "nif_links": 0
+    },
+    "Listado de Empresas de Servicios de Inversión fuera del Espacio Económico Europeo con Sucursal": {
+      "files": 1,
+      "records": 1,
+      "nif_links": 0
+    },
+    "Listado de Empresas de Servicios de Inversión fuera del Espacio Económico Europeo en Libre Prestación": {
+      "files": 1,
+      "records": 11,
+      "nif_links": 0
+    },
+    "Listado de Sociedades Gestoras de Cartera": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Listado de Sociedades y Agencias de Valores": {
+      "files": 1,
+      "records": 111,
+      "nif_links": 111
+    },
+    "Listado de entidades de crédito comunitarias operantes en España en régimen de libre prestación de servicios": {
+      "files": 1,
+      "records": 470,
+      "nif_links": 0
+    },
+    "Listado de entidades de crédito españolas": {
+      "files": 1,
+      "records": 102,
+      "nif_links": 0
+    },
+    "Listado de entidades de crédito extracomunitarias operantes en España en régimen de libre prestación de servicios": {
+      "files": 1,
+      "records": 3,
+      "nif_links": 0
+    },
+    "Listado de entidades financieras filiales de entidades de crédito comunitarias operantes en España en régimen de libre prestación de servicios": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Listado de sucursales de entidades de crédito comunitarias": {
+      "files": 1,
+      "records": 50,
+      "nif_links": 0
+    },
+    "Listado de sucursales de entidades de crédito extracomunitarias": {
+      "files": 1,
+      "records": 1,
+      "nif_links": 0
+    },
+    "Notificación de directivos y personas vinculadas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "OPAS": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Observaciones": {
+      "files": 3,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Otros buscadores de entidades en la WEB de la CNMV": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Participaciones Significativas y Autocartera en Sociedades cotizadas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Pasaportes recibidos por la CNMV": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Plataformas de financiación participativa no armonizadas": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Posiciones cortas.  Consulta de notificaciones": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Proveedores de servicios de criptoactivos": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Proveedores de servicios de financiación participativa": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 27
+    },
+    "Proveedores de servicios de financiación participativa europeos que prestan servicios en España": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 48
+    },
+    "Proveedores del servicio de suministro datos": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Registro Oficial de Fondos de Titulización": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Registro público de sanciones impuestas por la CNMV": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Registros Oficiales de Instituciones de Inversión Colectiva nacionales, gestoras y depositarios": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Registros Oficiales de emisiones, admisiones y OPAS": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Servicios de financiación participativa": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    },
+    "Sociedades Gestoras de Fondos de Titulización": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 7
+    },
+    "Vehículos de inversión extranjeros": {
+      "files": 1,
+      "records": 0,
+      "nif_links": 0
+    }
+  },
+  "opendgsfp": {
+    "entities": 3355,
+    "by_kind": {
+      "EEA_BRANCH": 210,
+      "INSURANCE_UNDERTAKING": 1774,
+      "REINSURANCE_UNDERTAKING": 19,
+      "UNDERTAKING": 1352
+    },
+    "identifier_schemes": {
+      "dgsfp:clave": 2759,
+      "es:nif": 900,
+      "eiopa:identification_code": 1022,
+      "bde:european_code": 312,
+      "bde:supervisor_code": 207,
+      "lei": 1046
+    }
+  },
+  "bde": {
+    "bde-registro-entidades.xlsx": {
+      "rows": 5662,
+      "with_docid": 4353,
+      "with_lei": 597
+    },
+    "bde-registro-entidades-credito.xlsx": {
+      "rows": 2613,
+      "with_docid": 1359,
+      "with_lei": 417
+    },
+    "bde-registro-con-establecimiento.xlsx": {
+      "rows": 4361,
+      "with_docid": 4297,
+      "with_lei": 456
+    },
+    "bde-registro-sin-establecimiento.xlsx": {
+      "rows": 1439,
+      "with_docid": 188,
+      "with_lei": 155
+    },
+    "bde-registro-servicios-pago.xlsx": {
+      "rows": 211,
+      "with_docid": 211,
+      "with_lei": 115
+    }
+  },
+  "eba": {
+    "total": 330358,
+    "by_type": {
+      "PSD_AG": 323689,
+      "PSD_EPI": 2759,
+      "PSD_EXC": 1660,
+      "PSD_PI": 1020,
+      "PSD_EMI": 429,
+      "PSD_ENL": 336,
+      "PSD_BR": 248,
+      "PSD_AISP": 129,
+      "PSD_EEMI": 88
+    },
+    "es_be": 108802,
+    "es_be_by_type": {
+      "PSD_PI": 79,
+      "PSD_EMI": 12,
+      "PSD_AISP": 7,
+      "PSD_EPI": 15,
+      "PSD_EXC": 30,
+      "PSD_BR": 44,
+      "PSD_AG": 108615
+    },
+    "passport_into_es_hint": 0,
+    "nca_owners": 30
+  },
+  "esma": {
+    "esma-mica-casps.csv": {
+      "rows": 346
+    },
+    "esma-mica-ncasp.csv": {
+      "rows": 167
+    }
+  },
+  "overlap": {
+    "nif_bde_x_cnmv": 3,
+    "nif_bde_x_dgsfp": 1,
+    "nif_cnmv_x_dgsfp": 0,
+    "lei_bde_x_dgsfp": 0,
+    "sets": {
+      "bde_nif": 3696,
+      "bde_lei": 415,
+      "cnmv_nif": 7401,
+      "dgsfp_nif": 857,
+      "dgsfp_lei": 1046
+    }
+  }
+}
