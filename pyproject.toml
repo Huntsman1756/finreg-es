@@ -25,6 +25,9 @@ test = [
     "typer>=0.26,<0.28",
     "mcp>=2,<3",
     "datasette==0.65.4",
+    # tools/g4/build_projection.py lee el XLSX BdE congelado; la suite
+    # lo invoca en CI (ver extra g4).
+    "openpyxl>=3.1,<4",
 ]
 # Tooling/CI only: JSON Schema validation of artifact contracts.
 # finreg_es runtime must remain stdlib-only (zero-dep auditability).
