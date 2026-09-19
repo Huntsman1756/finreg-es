@@ -1,0 +1,397 @@
+{
+  "views": {
+    "vista_5": {
+      "semantic": "fondos_gestionados",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Tipo IIC",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Tipo IIC",
+              "Denominación"
+            ],
+            [
+              "3989",
+              "Fondo de inversión",
+              "A&G RENTA FIJA CORTO PLAZO, FI"
+            ],
+            [
+              "114",
+              "Fondo de inversión libre",
+              "CRIPTOMONEDAS, FIL"
+            ],
+            [
+              "3072",
+              "Fondo de inversión",
+              "GLOBAL MANAGERS FUNDS, FI"
+            ],
+            [
+              "4881",
+              "Fondo de inversión",
+              "GREDOS BOLSA EURO, FI"
+            ],
+            [
+              "4883",
+              "Fondo de inversión",
+              "GREDOS BOLSA INTERNACIONAL, FI"
+            ],
+            [
+              "4882",
+              "Fondo de inversión",
+              "GREDOS MODERADO, FI"
+            ],
+            [
+              "5389",
+              "Fondo de inversión",
+              "GREDOS RENTA FIJA, FI"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_6": {
+      "semantic": "sociedades_gestionadas",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Tipo IIC",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Tipo IIC",
+              "Denominación"
+            ],
+            [
+              "3211",
+              "Sociedad de inversión de capital variable",
+              "ALCESTIS INVESTMENT, SICAV, S.A."
+            ],
+            [
+              "2749",
+              "Sociedad de inversión de capital variable",
+              "BIZCOCHERO INVERSIONES, SICAV S.A."
+            ],
+            [
+              "769",
+              "Sociedad de inversión de capital variable",
+              "CARFY, SICAV S.A."
+            ],
+            [
+              "1010",
+              "Sociedad de inversión de capital variable",
+              "GRAZALEMA INVERSIONES, SICAV, S.A."
+            ],
+            [
+              "3674",
+              "Sociedad de inversión de capital variable",
+              "JUFERUCA SICAV S.A."
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_10": {
+      "semantic": "sucursales_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_11": {
+      "semantic": "sucursales_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_12": {
+      "semantic": "libre_prestacion_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "País",
+            "Agentes de"
+          ],
+          "rows": [
+            [
+              "País",
+              "Agentes de"
+            ],
+            [
+              "LUXEMBURGO"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_13": {
+      "semantic": "libre_prestacion_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_16": {
+      "semantic": "atencion_cliente",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nombre",
+            "Teléfono",
+            "Fax",
+            "Correo electrónico",
+            "Página Web"
+          ],
+          "rows": [
+            [
+              "Nombre",
+              "Teléfono",
+              "Fax",
+              "Correo electrónico",
+              "Página Web"
+            ],
+            [
+              "ROC&#205;O APARICIO PARIENTE",
+              "915902121",
+              "&nbsp;",
+              "atencion.cliente@ayg.es",
+              "www.ayg.es"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Localidad",
+            "Provincia",
+            "Código postal"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Localidad",
+              "Provincia",
+              "Código postal"
+            ],
+            [
+              "PASEO DE LA CASTELLANA, 92",
+              "MADRID",
+              "MADRID",
+              "28046"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_38": {
+      "semantic": "auditorias",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "195",
+              "25/01/2002"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Ejercicio",
+            "Auditora",
+            "Cuentas anuales"
+          ],
+          "rows": [
+            [
+              "Ejercicio",
+              "Auditora",
+              "Cuentas anuales"
+            ],
+            [
+              "2025",
+              "PWC"
+            ],
+            [
+              "2024",
+              "PWC"
+            ],
+            [
+              "2023",
+              "GRANT THORNTON"
+            ],
+            [
+              "2022",
+              "PWC"
+            ],
+            [
+              "2021",
+              "PWC"
+            ],
+            [
+              "2020",
+              "PWC"
+            ],
+            [
+              "2018",
+              "PWC"
+            ],
+            [
+              "2017",
+              "PWC"
+            ],
+            [
+              "2016",
+              "PWC"
+            ],
+            [
+              "2015",
+              "PWC"
+            ],
+            [
+              "2014",
+              "PWC"
+            ],
+            [
+              "2013",
+              "PWC"
+            ],
+            [
+              "2012",
+              "PWC"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    }
+  },
+  "errors": []
+}

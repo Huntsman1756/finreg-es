@@ -1,0 +1,402 @@
+{
+  "views": {
+    "vista_5": {
+      "semantic": "fondos_gestionados",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Tipo IIC",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Tipo IIC",
+              "Denominación"
+            ],
+            [
+              "114",
+              "Fondo de inversión",
+              "GESCONSULT LEON VALORES  MIXTO FLEXIBLE, FI"
+            ],
+            [
+              "5403",
+              "Fondo de inversión",
+              "GESCONSULT OPORTUNIDAD RENTA FIJA, FI"
+            ],
+            [
+              "110",
+              "Fondo de inversión",
+              "GESCONSULT RENTA FIJA FLEXIBLE, FI"
+            ],
+            [
+              "183",
+              "Fondo de inversión",
+              "GESCONSULT RENTA VARIABLE EUROZONA, FI"
+            ],
+            [
+              "336",
+              "Fondo de inversión",
+              "GESCONSULT RENTA VARIABLE IBERIA, FI"
+            ],
+            [
+              "241",
+              "Fondo de inversión",
+              "GESCONSULT, FI"
+            ],
+            [
+              "5277",
+              "Fondo de inversión",
+              "MOMENTO, FI"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Denominación"
+            ],
+            [
+              "332",
+              "GESCONSULT BALIAN PRIVATE EQUITY, FCR"
+            ],
+            [
+              "444",
+              "GESCONSULT BALIAN PRIVATE EQUITY II, FCR (EN LIQUIDACIÓN)"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_6": {
+      "semantic": "sociedades_gestionadas",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Tipo IIC",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Tipo IIC",
+              "Denominación"
+            ],
+            [
+              "3868",
+              "Sociedad de inversión de capital variable",
+              "VILANA CAPITAL, SICAV, SA"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Denominación"
+            ],
+            [
+              "504",
+              "GESCONSULT BALIAN PRIVATE EQUITY, SCR, S.A.,"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_10": {
+      "semantic": "sucursales_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_11": {
+      "semantic": "sucursales_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_12": {
+      "semantic": "libre_prestacion_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_13": {
+      "semantic": "libre_prestacion_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_16": {
+      "semantic": "atencion_cliente",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nombre",
+            "Teléfono",
+            "Fax",
+            "Correo electrónico",
+            "Página Web"
+          ],
+          "rows": [
+            [
+              "Nombre",
+              "Teléfono",
+              "Fax",
+              "Correo electrónico",
+              "Página Web"
+            ],
+            [
+              "DANIEL SEVILLANO RODRIGUEZ",
+              "&nbsp;",
+              "&nbsp;",
+              "atencionalcliente@gesconsult.es",
+              "www.gesconsult.es"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Localidad",
+            "Provincia",
+            "Código postal"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Localidad",
+              "Provincia",
+              "Código postal"
+            ],
+            [
+              "CALLE SERRANO NÚMERO 37",
+              "MADRID",
+              "MADRID",
+              "28001"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_38": {
+      "semantic": "auditorias",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "57",
+              "12/02/1987"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Ejercicio",
+            "Auditora",
+            "Cuentas anuales"
+          ],
+          "rows": [
+            [
+              "Ejercicio",
+              "Auditora",
+              "Cuentas anuales"
+            ],
+            [
+              "2025",
+              "Deloitte S.L."
+            ],
+            [
+              "2024",
+              "Deloitte S.L."
+            ],
+            [
+              "2023",
+              "DELOITTE, SL"
+            ],
+            [
+              "2022",
+              "Deloitte, SL"
+            ],
+            [
+              "2021",
+              "DELOITTE, SL"
+            ],
+            [
+              "2020",
+              "Deloitte, SL"
+            ],
+            [
+              "2019",
+              "DELOITTE SL"
+            ],
+            [
+              "2018",
+              "Deloitte, S.L."
+            ],
+            [
+              "2017",
+              "Deloitte, S.L."
+            ],
+            [
+              "2016",
+              "Deloitte, S.L."
+            ],
+            [
+              "2015",
+              "Deloitte, S.L."
+            ],
+            [
+              "2014",
+              "Deloitte, S.L."
+            ],
+            [
+              "2013",
+              "Deloitte, S.L."
+            ],
+            [
+              "2012",
+              "Deloitte, S.L."
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    }
+  },
+  "errors": []
+}

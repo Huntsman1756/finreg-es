@@ -108,7 +108,8 @@ const idLabel = (s: string) => ({ "es:nif": "NIF", lei: "LEI" }[s] ?? s);
     <p class="unknown">Pasaporte/libre prestación: sin evidencia en la fuente congelada.</p>
   )}
 
-  {(e.organisation.administrators?.length > 0 || e.organisation.shareholders?.length > 0) && (
+  {(e.organisation.administrators?.length > 0 || e.organisation.shareholders?.length > 0
+    || e.organisation.audits?.length > 0 || e.organisation.customer_service) && (
     <>
       <h2>Organización</h2>
       {e.organisation.shareholders?.length > 0 && (
@@ -125,6 +126,49 @@ const idLabel = (s: string) => ({ "es:nif": "NIF", lei: "LEI" }[s] ?? s);
           </tbody>
         </table>
       )}
+      {e.organisation.audits?.length > 0 && (
+        <table>
+          <thead><tr><th>Ejercicio</th><th>Auditora</th></tr></thead>
+          <tbody>{e.organisation.audits.map((a: any) => (
+            <tr><td class="small">{a.year}</td><td>{a.auditor}</td></tr>))}
+          </tbody>
+        </table>
+      )}
+      {e.organisation.customer_service && (
+        <table>
+          <tbody>
+            <tr><th style="width:12rem">Atención al cliente</th>
+              <td>{[e.organisation.customer_service.name,
+                    e.organisation.customer_service.phone,
+                    e.organisation.customer_service.email,
+                    e.organisation.customer_service.web].filter(Boolean).join(" · ")}
+                {e.organisation.customer_service.address && (
+                  <div class="small muted">
+                    {[e.organisation.customer_service.address,
+                      e.organisation.customer_service.locality,
+                      e.organisation.customer_service.province,
+                      e.organisation.customer_service.postal_code].filter(Boolean).join(", ")}
+                  </div>)}
+              </td></tr>
+          </tbody>
+        </table>
+      )}
+    </>
+  )}
+
+  {e.managed_entities?.length > 0 && (
+    <>
+      <h2>IIC gestionadas</h2>
+      <table>
+        <thead><tr><th>Nº registro</th><th>Tipo</th><th>Denominación</th></tr></thead>
+        <tbody>{e.managed_entities.map((m: any) => (
+          <tr>
+            <td class="small">{m.register_number}</td>
+            <td class="small muted">{m.type ?? (m.kind === "MANAGED_COMPANY" ? "Sociedad gestionada" : m.kind)}</td>
+            <td>{m.name}</td>
+          </tr>))}
+        </tbody>
+      </table>
     </>
   )}
 

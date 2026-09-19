@@ -132,7 +132,12 @@ UNSCOPED_GLOBS = ["fixtures/g0.5/sources/raw/*.json",
                   "fixtures/g2/e0/*.json",
                   # G3-C: manifest de la proyeccion SQLite — pendiente
                   # de contrato schema en G3 como los artefactos G2.
-                  "fixtures/g3/projection/*.json"]
+                  "fixtures/g3/projection/*.json",
+                  # G4: corpus, probes y manifests del vertical de
+                  # producto (capturas raw de autoridad + manifests de
+                  # freeze con retrieved_at por item) — pendientes de
+                  # contrato schema como los artefactos G2/G3.
+                  "fixtures/g4/**/*.json"]
 
 
 def _covered_files() -> dict[Path, str]:

@@ -1,0 +1,396 @@
+{
+  "views": {
+    "vista_5": {
+      "semantic": "fondos_gestionados",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Tipo IIC",
+            "Denominación"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Tipo IIC",
+              "Denominación"
+            ],
+            [
+              "558",
+              "Fondo de inversión",
+              "ABANCA AHORRO, FI"
+            ],
+            [
+              "3682",
+              "Fondo de inversión",
+              "ABANCA BONOS CORPORATIVOS, FI"
+            ],
+            [
+              "3389",
+              "Fondo de inversión",
+              "ABANCA FONDEPOSITO, FI"
+            ],
+            [
+              "4676",
+              "Fondo de inversión",
+              "ABANCA GESTION, FI"
+            ],
+            [
+              "5532",
+              "Fondo de inversión",
+              "ABANCA INDICE RENTA VARIABLE EMERGENTE, FI"
+            ],
+            [
+              "6075",
+              "Fondo de inversión",
+              "ABANCA OBJETIVO 18 MESES, FI"
+            ],
+            [
+              "5533",
+              "Fondo de inversión",
+              "ABANCA RENTA FIJA GOBIERNOS, FI"
+            ],
+            [
+              "4808",
+              "Fondo de inversión",
+              "ABANCA RENTA FIJA MIXTA, FI"
+            ],
+            [
+              "3988",
+              "Fondo de inversión",
+              "ABANCA RENTA FIJA PATRIMONIO, FI"
+            ],
+            [
+              "2992",
+              "Fondo de inversión",
+              "ABANCA RENTA VARIABLE CRECIMIENTO, FI"
+            ],
+            [
+              "4807",
+              "Fondo de inversión",
+              "ABANCA RENTA VARIABLE DIVIDENDO, FI"
+            ],
+            [
+              "451",
+              "Fondo de inversión",
+              "ABANCA RENTA VARIABLE MIXTA, FI"
+            ],
+            [
+              "5627",
+              "Fondo de inversión",
+              "ABANCA RENTAS CRECIENTES 2026, FI"
+            ],
+            [
+              "5598",
+              "Fondo de inversión",
+              "ABANCA RENTAS CRECIENTES 2027, FI"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_6": {
+      "semantic": "sociedades_gestionadas",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_10": {
+      "semantic": "sucursales_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_11": {
+      "semantic": "sucursales_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_12": {
+      "semantic": "libre_prestacion_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "País",
+            "Agentes de"
+          ],
+          "rows": [
+            [
+              "País",
+              "Agentes de"
+            ],
+            [
+              "LUXEMBURGO"
+            ],
+            [
+              "PORTUGAL"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_13": {
+      "semantic": "libre_prestacion_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_16": {
+      "semantic": "atencion_cliente",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nombre",
+            "Teléfono",
+            "Fax",
+            "Correo electrónico",
+            "Página Web"
+          ],
+          "rows": [
+            [
+              "Nombre",
+              "Teléfono",
+              "Fax",
+              "Correo electrónico",
+              "Página Web"
+            ],
+            [
+              "MANUEL ANGEL GONZALEZ CARRASCO",
+              "915785758",
+              "&nbsp;",
+              "reclamaciones@abancagestion.com",
+              "&nbsp;"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Localidad",
+            "Provincia",
+            "Código postal"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Localidad",
+              "Provincia",
+              "Código postal"
+            ],
+            [
+              "SERRANO, 45",
+              "MADRID",
+              "MADRID",
+              "28001"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_38": {
+      "semantic": "auditorias",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "128",
+              "11/06/1990"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Ejercicio",
+            "Auditora",
+            "Cuentas anuales"
+          ],
+          "rows": [
+            [
+              "Ejercicio",
+              "Auditora",
+              "Cuentas anuales"
+            ],
+            [
+              "2025",
+              "PricewaterhouseCoopers Auditores, S.L."
+            ],
+            [
+              "2024",
+              "PricewaterhouseCoopers Auditores, S.L."
+            ],
+            [
+              "2023",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2022",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2021",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2020",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2018",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2017",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2016",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2015",
+              "KPMG Auditores, S.L."
+            ],
+            [
+              "2014",
+              "ERNST&YOUNG"
+            ],
+            [
+              "2013",
+              "ERNST&YOUNG"
+            ],
+            [
+              "2012",
+              "ERNST&YOUNG"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    }
+  },
+  "errors": []
+}

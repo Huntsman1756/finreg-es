@@ -147,10 +147,28 @@ def page_name(path: Path) -> str:
 
 # ------------------------------------------------------------------ builder
 
+def vista_rows(path: Path, skip_header=True):
+    """Data rows of every non-identity table in a CNMV vista."""
+    if not path.exists():
+        return []
+    out = []
+    for t in parse_tables(path):
+        # identity header table: [Nº Registro oficial, Fecha registro oficial]
+        if t and len(t[0]) >= 2 and "Fecha registro" in t[0][1]["text"]:
+            continue
+        rows = t[1:] if skip_header else t
+        out.extend(rows)
+    return out
+
+
 def main() -> int:
     corpus = json.loads((G4 / "corpus/entities.json").read_text(encoding="utf-8"))
-    manifest = json.loads((G4 / "sources/manifest.json").read_text(encoding="utf-8"))
-    reqs = manifest["requests"]
+    # G0 manifest + successor refresh manifests (history is never rewritten;
+    # each freeze adds an independent manifest file).
+    manifest_files = sorted((G4 / "sources").glob("manifest*.json"))
+    reqs = []
+    for mf in manifest_files:
+        reqs.extend(json.loads(mf.read_text(encoding="utf-8"))["requests"])
 
     def reqs_for(slot, label_prefix=None):
         return [r for r in reqs if r["slot"] == slot
@@ -240,6 +258,67 @@ def main() -> int:
             services = parse_programa(raw / f"{slot}__vista_17.html") \
                 if (raw / f"{slot}__vista_17.html").exists() else []
 
+            # --- G4-G3 refreshed surfaces (manifest-refresh-*) ---
+            passporting = []
+            for v, scope, mode in [(10, "EEA", "BRANCH"), (11, "NON_EEA", "BRANCH"),
+                                   (12, "EEA", "FREEDOM_TO_PROVIDE_SERVICES"),
+                                   (13, "NON_EEA", "FREEDOM_TO_PROVIDE_SERVICES")]:
+                for r in vista_rows(raw / f"{slot}__vista_{v}.html"):
+                    cells = [c["text"] for c in r if c["text"] and c["text"] != "\xa0"]
+                    if mode == "BRANCH" and len(cells) >= 2:
+                        passporting.append({"mode": mode, "scope": scope,
+                                            "country": cells[1], "address": cells[0],
+                                            "basis": "OFFICIAL_AS_OF_STATE"})
+                    elif mode != "BRANCH" and cells:
+                        passporting.append({"mode": mode, "scope": scope,
+                                            "country": cells[0],
+                                            "basis": "OFFICIAL_AS_OF_STATE"})
+
+            managed_entities = []
+            for v, kind in [(5, "FUND"), (6, "MANAGED_COMPANY")]:
+                for r in vista_rows(raw / f"{slot}__vista_{v}.html"):
+                    cells = [c["text"] for c in r if c["text"]]
+                    if len(cells) >= 3:
+                        managed_entities.append({"register_number": cells[0],
+                                                 "type": cells[1], "name": cells[2],
+                                                 "kind": kind})
+                    elif len(cells) >= 2:
+                        managed_entities.append({"register_number": cells[0],
+                                                 "name": cells[1], "kind": kind})
+
+            cs = {"name": None, "phone": None, "fax": None, "email": None,
+                  "web": None, "address": None, "locality": None,
+                  "province": None, "postal_code": None}
+            cs_seen = False
+            for t in parse_tables(raw / f"{slot}__vista_16.html") \
+                    if (raw / f"{slot}__vista_16.html").exists() else []:
+                if not t or "Registro" in t[0][0]["text"]:
+                    continue
+                hdr = [c["text"] for c in t[0]]
+                for r in t[1:]:
+                    vals = [c["text"].replace("\xa0", " ").strip() for c in r]
+                    for h, val in zip(hdr, vals):
+                        if not val:
+                            continue
+                        cs_seen = True
+                        key = {"Nombre": "name", "Teléfono": "phone", "Fax": "fax",
+                               "Correo electrónico": "email", "Página Web": "web",
+                               "Dirección": "address", "Localidad": "locality",
+                               "Provincia": "province", "Código postal": "postal_code"}.get(h)
+                        if key:
+                            cs[key] = val
+            customer_service = {k: v for k, v in cs.items() if v} if cs_seen else None
+
+            audits = []
+            for r in vista_rows(raw / f"{slot}__vista_38.html"):
+                cells = [c["text"] for c in r if c["text"]]
+                if len(cells) >= 2:
+                    audits.append({"year": cells[0], "auditor": cells[1]})
+            audits = list({a["year"] + "|" + a["auditor"]: a
+                           for a in audits}.values())  # page renders table twice
+            managed_entities = list({json.dumps(m, sort_keys=True): m
+                                     for m in managed_entities}.values())
+
             # fs historical states (SGIIC/IIC only)
             fs_states = []
             for r in reqs_for(slot, "dg_fs"):
@@ -297,11 +376,15 @@ def main() -> int:
                 "locations": {"domicile": cur_addr,
                               "branches": [r[0] for r in sucursales if r],
                               "agents": [r[0] for r in agentes if r],
-                              "passporting": "UNKNOWN"},
+                              "passporting": passporting},
                 "organisation": {
                     "shareholders": [{"name": r[0], "pct": r[1]} for r in socios if len(r) >= 2],
                     "administrators": [{"name": r[0], "role": r[1], "appointed": r[2] if len(r) > 2 else None}
-                                       for r in admins if len(r) >= 2]},
+                                       for r in admins if len(r) >= 2],
+                    "auditor": audits[0]["auditor"] if audits else None,
+                    "audits": audits,
+                    "customer_service": customer_service},
+                "managed_entities": managed_entities,
                 "regulatory_record": {"sanctions": [], "appeals": [],
                                       "direct_warnings": [], "impersonations": [], "candidates": []},
                 "timeline": timeline,
@@ -408,6 +491,7 @@ def main() -> int:
                                                "basis": "OFFICIAL_AS_OF_STATE"} for x in xb]},
                 "organisation": {"shareholders": [], "administrators": [],
                                  "parent": g.get("NOMBRE ENTIDAD MATRIZ") or None},
+                "managed_entities": [],
                 "regulatory_record": {"sanctions": [], "appeals": [],
                                       "direct_warnings": [], "impersonations": [], "candidates": []},
                 "timeline": timeline, "sources": [bde_ev, eba_ev],
@@ -440,6 +524,7 @@ def main() -> int:
                           "organisation": {"shareholders": [], "administrators": []},
                           "regulatory_record": {"sanctions": [], "appeals": [], "direct_warnings": [],
                                                 "impersonations": [], "candidates": []},
+                          "managed_entities": [],
                           "timeline": [], "sources": [ins_ev], "coverage": {},
                           "freshness": {"last_successful_refresh": "UNKNOWN", "source_status": "NO_EVIDENCE"}}
             else:
@@ -495,6 +580,7 @@ def main() -> int:
                     "regulatory_record": {"sanctions": [], "appeals": [], "direct_warnings": [],
                                           "impersonations": [],
                                           "candidates": d.get("conflicts", [])},
+                    "managed_entities": [],
                     "timeline": timeline, "sources": [ins_ev], "coverage": {},
                     "freshness": {"last_successful_refresh": snap, "source_status": "OK"},
                 }
@@ -563,12 +649,13 @@ def main() -> int:
     for p in sorted(written):
         bundle.update(p.read_bytes())
     man = {"schema": "regulatory-record-public/v1",
-           "generated_at": max(s.get("retrieved_at", "") for r in entities for s in r["sources"]
-                               if isinstance(s.get("retrieved_at"), str)),
+           "generated_at": max((s.get("retrieved_at", "") for r in entities for s in r["sources"]
+                                if re.match(r"\d{4}-", str(s.get("retrieved_at", "")))),
+                               default="UNKNOWN"),
            "entity_count": len(entities),
            "artifact_count": len(written),
            "inputs": {"corpus": "fixtures/g4/corpus/entities.json",
-                      "manifest": "fixtures/g4/sources/manifest.json",
+                      "manifests": [mf.relative_to(ROOT).as_posix() for mf in manifest_files],
                       "bde_xlsx_sha256": bde_sha, "eba_zip_sha256": eba_sha,
                       "opendgsfp_sha256": dgsfp_sha, "alertafin_sha256": alertafin_sha},
            "bundle_sha256": bundle.hexdigest()}

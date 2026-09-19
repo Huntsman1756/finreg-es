@@ -96,7 +96,34 @@
     "passporting": {}
    }
   },
-  "organisation": {"type": "object"},
+  "organisation": {
+  "type": "object",
+  "properties": {
+   "auditor": {"type": ["string", "null"]},
+   "audits": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "required": ["year", "auditor"],
+     "properties": {"year": {"type": "string"}, "auditor": {"type": "string"}}
+    }
+   },
+   "customer_service": {"type": ["object", "null"]}
+  }
+ },
+ "managed_entities": {
+  "type": "array",
+  "items": {
+   "type": "object",
+   "required": ["register_number", "name", "kind"],
+   "properties": {
+    "register_number": {"type": "string"},
+    "type": {"type": "string"},
+    "name": {"type": "string"},
+    "kind": {"enum": ["FUND", "MANAGED_COMPANY"]}
+   }
+  }
+ },
   "regulatory_record": {
    "type": "object",
    "additionalProperties": false,
