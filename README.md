@@ -146,15 +146,14 @@ incluye wheel y sdist con SHA-256 publicados en las notas del release.
 No se publica en PyPI: puedes instalar el wheel descargado del release
 o reconstruirlo desde el tag exacto.
 
-Instalación desde el wheel descargado:
+Crea y activa un entorno virtual según tu shell (Windows o POSIX), como
+se indica en [CONTRIBUTING.md](CONTRIBUTING.md#setup-y-verificación).
+En ese entorno, instala el wheel descargado:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate           # o .venv/bin/activate en POSIX
-pip install "finreg_es-0.0.1-py3-none-any.whl[cli]"
+python -m pip install "finreg_es-0.0.1-py3-none-any.whl[cli]"
 finreg --help
-finreg assess-bitemporal --entity-id E3-001 --activity MONEY_REMITTANCE \
-  --jurisdiction ES --valid-at 2020-07-22 --known-at 2026-09-13
+finreg assess-bitemporal --entity-id E3-001 --activity MONEY_REMITTANCE --jurisdiction ES --valid-at 2020-07-22 --known-at 2026-09-13
 # → CONFIRMED_ENTITLED / ACTIVE_ENTITLEMENT_EVIDENCED
 #   evidence_set_id: derived-assertions-g1-e-002@sha256:2fb08d67…
 ```
@@ -199,12 +198,17 @@ completos son los artefactos).
 | Filas proyectadas a SQLite (G3-C) | 1197 en 7 tablas, digest lógico fijado |
 | Smoke externo black-box (G3-D) | 8/8 checks, 0 imports internos |
 | Ficheros del runtime bundle (G3-E) | 17, sha256 repo = wheel = instalado |
-| Tests | 564 PASS |
+| Tests — baseline histórico del release `v0.0.1` | 564 PASS |
 | Dependencias runtime | 0 (stdlib puro) |
+
+El total actual de tests se obtiene ejecutando `python -m pytest -ra`;
+564 es el baseline histórico del release, no un recuento del checkout actual.
 
 Replay determinista: mismos inputs → mismos bytes. La cadena
 autoritativa completa regenera byte-idéntico con
-`python tools/audit_g2f_replay.py`.
+`python tools/audit_g2f_replay.py`. Este comando reconstruye artefactos en
+rutas históricas: ejecútalo sólo en un checkout desechable, nunca sobre
+trabajo en curso.
 
 ## Fail-closed, en ejemplos reales
 
@@ -253,15 +257,29 @@ verificación por fase: `docs/`.
 
 ## Reproducir
 
-```bash
-python -m pytest          # 564 tests, offline
-python -m finreg_es.openlineage_export   # regenera openlineage/ byte-idéntico
-python tools/audit_g2f_replay.py         # replay byte-idéntico de la cadena G2
-python -m build                          # wheel + sdist reproducibles (G3-E)
+Prepara el entorno virtual Windows/POSIX descrito en
+[CONTRIBUTING.md](CONTRIBUTING.md#setup-y-verificación), desde la raíz del
+checkout actual:
+
+```sh
+python -m pip install ".[test]"
+python -m pip check
+python -m pytest -ra
 ```
 
-Sin servicios, sin red, sin credenciales. Todo input es un fichero del
-repo; todo output es un artefacto hash-fijado.
+El resumen de pytest da el recuento y resultado actuales. Para regenerar
+artefactos o ejecutar el replay, prepara ese entorno en un **checkout
+desechable**: el replay reconstruye rutas históricas y puede sobrescribirlas.
+
+```sh
+python -m finreg_es.openlineage_export
+python tools/audit_g2f_replay.py
+python -m build
+```
+
+La verificación usa inputs locales, sin servicios ni credenciales; la
+instalación de dependencias puede requerir red. La regeneración debe ser
+byte-idéntica; no publiques cambios sobre artefactos históricos.
 
 ## Lo que no es
 

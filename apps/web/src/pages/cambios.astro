@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import { changes, index, u } from "../lib/data";
+const name = new Map(index.map((e: any) => [e.id, e.name]));
+const CLS: Record<string, string> = {
+  OFFICIAL_EVENT: "Evento oficial",
+  RECONSTRUCTED_HISTORICAL: "Histórico reconstruido",
+  OBSERVED_CURRENT: "Observado",
+  BACKFILL: "Backfill",
+};
+const sorted = [...changes].sort((a: any, b: any) =>
+  String(b.date_or_interval).localeCompare(String(a.date_or_interval)));
+---
+<Base title="Cambios regulatorios" crumbs={[{ href: u("cambios/"), label: "Cambios" }]}>
+  <h1>Cambios regulatorios</h1>
+  <p class="muted small">
+    Hechos y cambios clasificados sobre el corpus. Cada entrada traza a la
+    evidencia de fuente que la sustenta; los intervalos indican cambios
+    acotados entre observaciones, nunca fechas inventadas.
+  </p>
+  <table>
+    <thead><tr><th>Fecha / intervalo</th><th>Entidad</th><th>Hecho</th><th>Clase</th></tr></thead>
+    <tbody>
+      {sorted.map((c: any) => (
+        <tr>
+          <td class="small" style="white-space:nowrap">
+            {Array.isArray(c.date_or_interval) ? c.date_or_interval.join(" → ") : c.date_or_interval}
+          </td>
+          <td class="small"><a href={u(`entidad/${c.entity_id}/`)}>{name.get(c.entity_id) ?? c.entity_id}</a></td>
+          <td class="small">{c.summary}</td>
+          <td class="small muted">{CLS[c.class] ?? c.class}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Base>

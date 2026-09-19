@@ -4,8 +4,7 @@ from pathlib import Path
 import pytest
 
 from finreg_es.canonical import canonical_json, sha256_hex, strict_json_loads
-from finreg_es.contracts import load_contract, staleness_policy
-from finreg_es.loaders import load_assertions
+from finreg_es.contracts import staleness_policy, validate_contract_dict
 from finreg_es.vocab import NegativeEvidenceCapability
 
 
@@ -56,9 +55,12 @@ def test_pending_hypotheses_are_declared(contract_paths):
         assert statuses <= {"VERIFIED", "PENDING", "PROPOSED"}
 
 
-def test_fixtures_are_canonical_deterministic_and_float_free():
-    for base in (Path("fixtures/contracts"), Path("fixtures/regulatory")):
-        for p in sorted((Path(__file__).parents[1] / base).glob("*.json")):
+def test_fixtures_are_strict_json_canonical_roundtrip_and_float_free():
+    root = Path(__file__).parents[2] / "fixtures"
+    for base in (root / "contracts", root / "regulatory"):
+        paths = sorted(base.glob("*.json"))
+        assert paths, f"sin fixtures en {base}"
+        for p in paths:
             raw = strict_json_loads(p.read_text(encoding="utf-8"))
             assert canonical_json(raw) == canonical_json(
                 strict_json_loads(canonical_json(raw))
@@ -118,3 +120,12 @@ def test_assertions_have_required_semantic_dimensions(assertions):
         assert a.effective_from
         for s in a.source_assertions:
             assert s.retrieved_at and s.extractor_version and s.source_url
+
+
+def test_contract_files_exist(contract_paths):
+    assert len(contract_paths) >= 6
+
+
+def test_contract_dicts_validate(contract_paths):
+    for p in contract_paths:
+        validate_contract_dict(strict_json_loads(p.read_text(encoding="utf-8")))

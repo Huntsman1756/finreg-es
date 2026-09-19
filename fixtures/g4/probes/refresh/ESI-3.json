@@ -1,0 +1,292 @@
+{
+  "views": {
+    "vista_6": {
+      "semantic": "sociedades_gestionadas",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_10": {
+      "semantic": "sucursales_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_11": {
+      "semantic": "sucursales_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_12": {
+      "semantic": "libre_prestacion_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "País",
+            "Agentes de",
+            "Programa de actividades"
+          ],
+          "rows": [
+            [
+              "País",
+              "Agentes de",
+              "Programa de actividades"
+            ],
+            [
+              "PORTUGAL"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_13": {
+      "semantic": "libre_prestacion_fuera_eee",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_16": {
+      "semantic": "atencion_cliente",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Nombre",
+            "Teléfono",
+            "Fax",
+            "Correo electrónico",
+            "Página Web"
+          ],
+          "rows": [
+            [
+              "Nombre",
+              "Teléfono",
+              "Fax",
+              "Correo electrónico",
+              "Página Web"
+            ],
+            [
+              "RAMIREZ RICAUD, ALONSO",
+              "919496235",
+              "&nbsp;",
+              "atcliente@activotrade.com",
+              "&nbsp;"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Dirección",
+            "Localidad",
+            "Provincia",
+            "Código postal"
+          ],
+          "rows": [
+            [
+              "Dirección",
+              "Localidad",
+              "Provincia",
+              "Código postal"
+            ],
+            [
+              "C/ CALERUEGA 102,7ª PLANTA",
+              "Madrid",
+              "28033"
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    },
+    "vista_38": {
+      "semantic": "auditorias",
+      "tables": [
+        {
+          "headers": [
+            "Nº Registro Oficial",
+            "Fecha registro oficial"
+          ],
+          "rows": [
+            [
+              "Nº Registro Oficial",
+              "Fecha registro oficial"
+            ],
+            [
+              "239",
+              "15/01/2010"
+            ]
+          ]
+        },
+        {
+          "headers": [
+            "Ejercicio",
+            "Auditora",
+            "Cuentas anuales"
+          ],
+          "rows": [
+            [
+              "Ejercicio",
+              "Auditora",
+              "Cuentas anuales"
+            ],
+            [
+              "2025",
+              "CAPITAL AUDITORS AND CONSULTANTS, S.L."
+            ],
+            [
+              "2024",
+              "CAPITAL AUDITORS AND CONSULTANTS, S.L."
+            ],
+            [
+              "2023",
+              "CAPITAL AUDITORS AND CONSULTANTS, S.L."
+            ],
+            [
+              "2022",
+              "CAPITAL AUDITORS AND CONSULTANTS, S.L."
+            ],
+            [
+              "2021",
+              "BDO AUDITORES, S.L.P."
+            ],
+            [
+              "2020",
+              "BDO"
+            ],
+            [
+              "2019",
+              "BDO"
+            ],
+            [
+              "2018",
+              "BDO"
+            ],
+            [
+              "2017",
+              "BDO AUDITORES"
+            ],
+            [
+              "2016",
+              "BDO AUDITORES"
+            ],
+            [
+              "2015",
+              "BDO AUDITORES"
+            ],
+            [
+              "2014",
+              "BDO AUDITORES"
+            ],
+            [
+              "2013",
+              "BDO AUDITORES SL"
+            ],
+            [
+              "2012",
+              "ACTIVOTRADE VALORES, AGENCIA DE VALORES, S.A."
+            ]
+          ]
+        }
+      ],
+      "declared_data_date": null
+    }
+  },
+  "errors": []
+}

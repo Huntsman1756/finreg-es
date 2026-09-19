@@ -1,0 +1,31 @@
+---
+import Base from "../layouts/Base.astro";
+import { index, verticalLabel , u } from "../lib/data";
+---
+<Base title="Buscar" crumbs={[{ href: u("buscar/"), label: "Buscar" }]}>
+  <h1>Buscar</h1>
+  <link href={u("pagefind/pagefind-ui.css")} rel="stylesheet" />
+  <script src={u("pagefind/pagefind-ui.js")} is:inline></script>
+  <div id="search"></div>
+  <script is:inline define:vars={{ bundlePath: u("pagefind/") }}>
+    window.addEventListener("DOMContentLoaded", () => {
+      const q = new URLSearchParams(location.search).get("q");
+      const ui = new PagefindUI({ element: "#search", showSubResults: true, bundlePath });
+      const inp = document.querySelector(".pagefind-ui__search-input");
+      if (inp) { inp.removeAttribute("title"); inp.setAttribute("aria-label", "Buscar en el registro"); }
+      if (q) ui.triggerSearch(q);
+    });
+  </script>
+  <noscript>
+    <p>La búsqueda dinámica requiere JavaScript. Índice completo de entidades:</p>
+  </noscript>
+  <h2>Índice</h2>
+  <table>
+    <tbody>
+      {index.map((e: any) => (
+        <tr><td><a href={u(`entidad/${e.id}/`)}>{e.name}</a></td>
+            <td class="muted small">{verticalLabel(e.id)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</Base>

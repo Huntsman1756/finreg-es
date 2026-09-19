@@ -1,0 +1,117 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  crumbs?: { href: string; label: string }[];
+  noindex?: boolean;
+}
+import { u } from "../lib/data";
+const { title, crumbs = [], noindex = false } = Astro.props;
+const description = Astro.props.description ??
+  "Registro regulatorio provisional, verificable y público sobre fuentes oficiales españolas.";
+const site = "Regulatory Record ES";
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : null;
+---
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title} — {site}</title>
+  <meta name="description" content={description} />
+  {canonical && <link rel="canonical" href={canonical} />}
+  {noindex && <meta name="robots" content="noindex" />}
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23244a6b'/><text x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='serif'>R</text></svg>" />
+  <style is:global>
+    :root {
+      --ink: #1a2330; --muted: #5a6572; --line: #d9dfe6;
+      --accent: #244a6b; --bg: #fbfcfd; --chip: #eef2f6;
+      --warn-bg: #fdf6ec; --warn-line: #e0c48f;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.55 Georgia, "Times New Roman", serif;
+           color: var(--ink); background: var(--bg); }
+    a { color: var(--accent); }
+    .wrap { max-width: 58rem; margin: 0 auto; padding: 0 1.25rem; }
+    header.site { border-bottom: 2px solid var(--accent); background: #fff; }
+    header.site .wrap { display: flex; gap: 1.5rem; align-items: baseline;
+                        padding-top: .9rem; padding-bottom: .9rem; flex-wrap: wrap; }
+    .brand { font-weight: bold; font-size: 1.15rem; text-decoration: none;
+             color: var(--ink); letter-spacing: .02em; }
+    nav.top { display: flex; gap: 1.1rem; font-size: .92rem; flex-wrap: wrap; }
+    nav.top a { text-decoration: none; color: var(--muted); }
+    nav.top a:hover { color: var(--accent); text-decoration: underline; }
+    .crumbs { font-size: .85rem; color: var(--muted); margin: 1.1rem 0 .2rem; }
+    .crumbs a { color: var(--muted); text-decoration: none; }
+    .crumbs a:hover { text-decoration: underline; }
+    main { padding: 0 0 4rem; }
+    h1 { font-size: 1.7rem; line-height: 1.2; margin: .6rem 0 .4rem; }
+    h2 { font-size: 1.15rem; margin: 2.2rem 0 .6rem;
+         border-bottom: 1px solid var(--line); padding-bottom: .3rem;
+         color: var(--accent); }
+    h3 { font-size: 1rem; margin: 1.2rem 0 .4rem; }
+    table { border-collapse: collapse; width: 100%; font-size: .92rem;
+            margin: .5rem 0 1rem; }
+    th, td { text-align: left; padding: .4rem .6rem; vertical-align: top;
+             border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    .src a, .src code, td code { word-break: break-all; }
+    th { font-weight: normal; color: var(--muted); font-size: .82rem;
+         text-transform: uppercase; letter-spacing: .04em;
+         border-bottom: 1px solid var(--accent); }
+    .chip { display: inline-block; padding: .1rem .5rem; border-radius: 3px;
+            background: var(--chip); font-size: .8rem; margin: .1rem .15rem .1rem 0; }
+    .status { font-weight: bold; }
+    .status.ok { color: #1d6b3c; } .status.off { color: #8c2f2f; }
+    .unknown { color: var(--muted); font-style: italic; }
+    .muted { color: var(--muted); }
+    .small { font-size: .85rem; }
+    .factline { font-size: .85rem; color: var(--muted); }
+    .warnbox { background: var(--warn-bg); border: 1px solid var(--warn-line);
+               border-left: 4px solid var(--warn-line); padding: .8rem 1rem;
+               margin: .8rem 0; }
+    .cov { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem,1fr));
+           gap: .3rem .8rem; font-size: .85rem; margin: .5rem 0; }
+    .cov span { border-bottom: 1px dotted var(--line); padding: .15rem 0; }
+    footer.site { border-top: 1px solid var(--line); color: var(--muted);
+                  font-size: .82rem; padding: 1.5rem 0 2.5rem; margin-top: 2rem; }
+    input[type="search"] { font: inherit; padding: .5rem .7rem; width: 100%;
+                           max-width: 26rem; border: 1px solid var(--line); }
+    .src { font-size: .8rem; color: var(--muted); }
+    .src code { font-size: .75rem; }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href={u("")}>Regulatory Record ES</a>
+      <nav class="top" aria-label="Principal">
+        <a href={u("buscar/")}>Buscar</a>
+        <a href={u("cambios/")}>Cambios</a>
+        <a href={u("reguladores/")}>Reguladores</a>
+        <a href={u("metodologia/")}>Metodología</a>
+        <a href={u("fuentes/")}>Fuentes</a>
+        <a href={u("datos/")}>Datos</a>
+      </nav>
+    </div>
+  </header>
+  <div class="wrap">
+    {crumbs.length > 0 && (
+      <nav class="crumbs" aria-label="Miga de pan">
+        <a href={u("")}>Inicio</a>
+        {crumbs.map(c => <> / <a href={c.href}>{c.label}</a></>)}
+      </nav>
+    )}
+    <main><slot /></main>
+  </div>
+  <footer class="site">
+    <div class="wrap">
+      Registro regulatorio provisional construido exclusivamente sobre fuentes
+      oficiales públicas con evidencia congelada y verificable. No emite
+      valoraciones, ratings ni recomendaciones.
+      <a href={u("metodologia/")}>Metodología</a> ·
+      <a href={u("aviso-legal/")}>Aviso legal</a> ·
+      <a href={u("privacidad/")}>Privacidad</a>
+    </div>
+  </footer>
+</body>
+</html>

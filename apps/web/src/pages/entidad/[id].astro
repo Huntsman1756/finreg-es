@@ -1,0 +1,272 @@
+---
+import Base from "../../layouts/Base.astro";
+import { index, loadEntity, verticalLabel, KIND_LABEL , u } from "../../lib/data";
+
+export function getStaticPaths() {
+  return index.map((e: any) => ({ params: { id: e.id } }));
+}
+
+const { id } = Astro.params;
+const e = loadEntity(id!);
+const rr = e.regulatory_record;
+const perms = Array.isArray(e.permissions) ? e.permissions : [];
+const xb = Array.isArray(e.locations.passporting) ? e.locations.passporting : [];
+const statusClass = e.status.value === "REGISTERED" ? "status ok" : "status off";
+const idLabel = (s: string) => ({ "es:nif": "NIF", lei: "LEI" }[s] ?? s);
+---
+<Base title={e.identity.legal_name}
+      description={`Ficha regulatoria verificable: ${e.identity.legal_name} — ${verticalLabel(e.id)}`}
+      crumbs={[{ href: u("entidad/"), label: "Entidades" }, { href: u(`/entidad/${e.id}/`), label: e.identity.legal_name }]}>
+  <h1>{e.identity.legal_name}</h1>
+  <p class="factline">
+    {verticalLabel(e.id)} · Identidad: <strong>{e.identity.resolution}</strong> ·
+    Última observación de fuente: {e.freshness.last_successful_refresh.slice(0, 10)}
+  </p>
+  {e.identity.aliases.length > 0 && (
+    <p class="small muted">También consta como: {e.identity.aliases.join(" · ")}</p>
+  )}
+
+  <h2>Estado e identificadores</h2>
+  <p>
+    Estado: <span class={statusClass}>{e.status.value}</span>
+    {e.status.source_value && <span class="muted small"> (valor de fuente: {e.status.source_value})</span>}
+    — a fecha {e.status.as_of} · <span class="small muted">{e.status.basis}</span>
+  </p>
+  <table>
+    <thead><tr><th>Identificador</th><th>Valor</th></tr></thead>
+    <tbody>
+      {e.identity.identifiers.map(i => (
+        <tr><td class="muted">{idLabel(i.scheme)}</td><td><code>{i.value}</code></td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Inscripciones en registros oficiales</h2>
+  <table>
+    <thead><tr><th>Regulador</th><th>Registro</th><th>Nº</th><th>Fecha</th><th>Estado</th></tr></thead>
+    <tbody>
+      {e.registrations.map((r: any) => (
+        <tr>
+          <td>{r.regulator}</td>
+          <td class="muted small">{r.register}</td>
+          <td>{r.number ?? "—"}</td>
+          <td>{r.date ?? <span class="unknown">desconocida</span>}
+            {r.conflict_with && <div class="small muted">⚠ difiere de {r.conflict_with}</div>}</td>
+          <td>{r.state ?? "—"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Autorizaciones y servicios</h2>
+  {perms.length === 0 ? (
+    <p class="unknown">
+      {e.permissions === "UNKNOWN"
+        ? "La fuente congelada no publica el detalle de autorizaciones para esta entidad."
+        : "Sin evidencia de autorizaciones en la evidencia congelada."}
+    </p>
+  ) : (
+    <table>
+      <thead><tr><th>Servicio / actividad</th><th>Instrumentos</th><th>Clientes</th><th>Desde</th></tr></thead>
+      <tbody>
+        {perms.map((p: any) => (
+          <tr>
+            <td>{p.service}{p.kind && <span class="chip">{p.kind}</span>}
+              {p.norm && <div class="small muted">{p.norm}</div>}</td>
+            <td class="small">{(p.instruments ?? []).join(" · ") || "—"}</td>
+            <td class="small">{(p.clients ?? []).join(" · ") || "—"}</td>
+            <td class="small">{p.since ?? <span class="unknown">n/d</span>}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+
+  <h2>Presencia y distribución</h2>
+  <table>
+    <tbody>
+      <tr><th style="width:12rem">Domicilio</th><td>{e.locations.domicile}</td></tr>
+      {e.locations.branches.length > 0 && (
+        <tr><th>Sucursales</th><td>{e.locations.branches.map((b: string) => <div>{b}</div>)}</td></tr>
+      )}
+      {e.locations.agents.length > 0 && (
+        <tr><th>Agentes</th><td class="small">{e.locations.agents.join(" · ")}</td></tr>
+      )}
+      {xb.length > 0 && (
+        <tr><th>Operación transfronteriza</th>
+          <td>{xb.map((x: any) => (
+            <div class="small">
+              {x.mode ?? "—"} → {x.country ?? "—"}
+              {x.activity && <> · {x.activity.slice(0, 60)}</>}
+              {x.since && <> · desde {x.since}</>}
+            </div>))}
+          </td></tr>
+      )}
+    </tbody>
+  </table>
+  {e.locations.passporting === "UNKNOWN" && (
+    <p class="unknown">Pasaporte/libre prestación: sin evidencia en la fuente congelada.</p>
+  )}
+
+  {(e.organisation.administrators?.length > 0 || e.organisation.shareholders?.length > 0
+    || e.organisation.audits?.length > 0 || e.organisation.customer_service) && (
+    <>
+      <h2>Organización</h2>
+      {e.organisation.shareholders?.length > 0 && (
+        <table>
+          <thead><tr><th>Socio</th><th>%</th></tr></thead>
+          <tbody>{e.organisation.shareholders.map((s: any) => <tr><td>{s.name}</td><td>{s.pct}</td></tr>)}</tbody>
+        </table>
+      )}
+      {e.organisation.administrators?.length > 0 && (
+        <table>
+          <thead><tr><th>Administrador</th><th>Cargo</th><th>Nombramiento</th></tr></thead>
+          <tbody>{e.organisation.administrators.map((a: any) => (
+            <tr><td>{a.name}</td><td class="small">{a.role}</td><td class="small">{a.appointed ?? "—"}</td></tr>))}
+          </tbody>
+        </table>
+      )}
+      {e.organisation.audits?.length > 0 && (
+        <table>
+          <thead><tr><th>Ejercicio</th><th>Auditora</th></tr></thead>
+          <tbody>{e.organisation.audits.map((a: any) => (
+            <tr><td class="small">{a.year}</td><td>{a.auditor}</td></tr>))}
+          </tbody>
+        </table>
+      )}
+      {e.organisation.customer_service && (
+        <table>
+          <tbody>
+            <tr><th style="width:12rem">Atención al cliente</th>
+              <td>{[e.organisation.customer_service.name,
+                    e.organisation.customer_service.phone,
+                    e.organisation.customer_service.email,
+                    e.organisation.customer_service.web].filter(Boolean).join(" · ")}
+                {e.organisation.customer_service.address && (
+                  <div class="small muted">
+                    {[e.organisation.customer_service.address,
+                      e.organisation.customer_service.locality,
+                      e.organisation.customer_service.province,
+                      e.organisation.customer_service.postal_code].filter(Boolean).join(", ")}
+                  </div>)}
+              </td></tr>
+          </tbody>
+        </table>
+      )}
+    </>
+  )}
+
+  {e.managed_entities?.length > 0 && (
+    <>
+      <h2>IIC gestionadas</h2>
+      <table>
+        <thead><tr><th>Nº registro</th><th>Tipo</th><th>Denominación</th></tr></thead>
+        <tbody>{e.managed_entities.map((m: any) => (
+          <tr>
+            <td class="small">{m.register_number}</td>
+            <td class="small muted">{m.type ?? (m.kind === "MANAGED_COMPANY" ? "Sociedad gestionada" : m.kind)}</td>
+            <td>{m.name}</td>
+          </tr>))}
+        </tbody>
+      </table>
+    </>
+  )}
+
+  <h2>Regulatory record</h2>
+  {rr.sanctions.length > 0 && (
+    <>
+      <h3>Sanciones (documentos oficiales)</h3>
+      {rr.sanctions.map((s: any) => (
+        <div class="warnbox">
+          <strong>{s.register_date}</strong> — {s.resolution}
+          <div class="small muted">{s.register} · {s.boe_reference} · {s.basis}</div>
+        </div>
+      ))}
+    </>
+  )}
+  {rr.direct_warnings.length === 0 && rr.impersonations.length === 0 && rr.sanctions.length === 0 && (
+    <p class="muted small">
+      Sin hechos regulatorios adversos en la evidencia congelada.
+      La ausencia aquí no es una garantía: indica que las fuentes congeladas
+      no contienen hechos adversos para esta entidad.
+    </p>
+  )}
+  {rr.impersonations.length > 0 && (
+    <>
+      <h3>Suplantaciones detectadas por el regulador</h3>
+      <p class="small muted">
+        Advertencias CNMV contra sitios que <strong>no guardan relación</strong> con esta
+        entidad y que la suplantan. La entidad registrada es la parte legítima
+        mencionada — la advertencia no es contra ella.
+      </p>
+      {rr.impersonations.map((w: any) => (
+        <div class="warnbox">
+          <strong>{w.fecha}</strong> — {w.warned_name}
+          <div class="small">
+            Dominios: {w.domains.join(", ") || "—"} ·
+            menciona a la entidad registrada nº {w.legitimate_entity.registry_number}
+          </div>
+          {w.observaciones && <div class="small muted">{w.observaciones}</div>}
+        </div>
+      ))}
+    </>
+  )}
+  {rr.candidates.length > 0 && (
+    <>
+      <h3>Candidatos no resueltos</h3>
+      <p class="small muted">
+        Registros que podrían referirse a esta entidad pero sin identificador
+        exacto — se muestran como candidatos, nunca como atribución.
+      </p>
+      {rr.candidates.map((c: any) => (
+        <div class="small muted">· {c.warned_name} <span class="chip">{c.basis}</span></div>
+      ))}
+    </>
+  )}
+
+  <h2>Timeline regulatorio</h2>
+  {e.coverage.history === "NO HISTORICAL EVIDENCE" && (
+    <p class="unknown">
+      NO HISTORICAL EVIDENCE — la fuente no ofrece estados históricos
+      accesibles para esta entidad; sólo consta el estado observado actual
+      y los hechos fechados explícitos.
+    </p>
+  )}
+  <table>
+    <thead><tr><th>Fecha / intervalo</th><th>Hecho</th><th>Tipo</th></tr></thead>
+    <tbody>
+      {[...e.timeline].sort((a, b) => String(a.date_or_interval).localeCompare(String(b.date_or_interval))).map(t => (
+        <tr>
+          <td class="small" style="white-space:nowrap">
+            {Array.isArray(t.date_or_interval) ? t.date_or_interval.join(" → ") : t.date_or_interval}
+          </td>
+          <td class="small">{t.summary}</td>
+          <td class="small muted">{KIND_LABEL[t.kind] ?? t.kind}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Cobertura y fuentes</h2>
+  <div class="cov">
+    {Object.entries(e.coverage).map(([k, v]) => (
+      <span><strong>{k}</strong>: {v}</span>
+    ))}
+  </div>
+  <table>
+    <thead><tr><th>Fuente</th><th>Referencia</th><th>Observada</th></tr></thead>
+    <tbody>
+      {e.sources.map((s: any) => (
+        <tr>
+          <td class="small">{s.source}</td>
+          <td class="src">
+            {s.url ? <a href={s.url}>{s.url.slice(0, 90)}</a> : s.artifact}
+            {s.sha256 && <div><code>{s.sha256.slice(0, 20)}…</code></div>}
+            {s.requested_fs && <div class="muted">fs pedido: {s.requested_fs}</div>}
+          </td>
+          <td class="src">{s.retrieved_at?.slice(0, 10) ?? s.as_of ?? "—"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Base>

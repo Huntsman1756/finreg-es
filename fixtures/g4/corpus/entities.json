@@ -1,0 +1,212 @@
+{
+  "schema": "FINREG_G4_CORPUS_V1",
+  "frozen_at": "2026-09-18",
+  "preregistration": "docs/gates/G4-G0-PREREG.md",
+  "selection_notes": "Slots explicitos fijados en preregistro; slots por regla resueltos contra superficies oficiales el 2026-09-18 antes de cualquier evaluacion.",
+  "entities": [
+    {
+      "slot": "ESI-1",
+      "vertical": "CNMV_ESI",
+      "nif": "A87515540",
+      "name": "ALANTRA CAPITAL MARKETS, SV, S.A.",
+      "detail_url": "https://www.cnmv.es/Portal/Consultas/ESI/esis.aspx?nif=A87515540",
+      "fs_support": "none-expected",
+      "traits": ["veteran", "branches", "passporting"]
+    },
+    {
+      "slot": "ESI-2",
+      "vertical": "CNMV_ESI",
+      "nif": "B22526768",
+      "name": "101 FUTURES ASSET MANAGEMENT AV, S.L.",
+      "detail_url": "https://www.cnmv.es/Portal/Consultas/ESI/esis.aspx?nif=B22526768",
+      "fs_support": "none-expected",
+      "traits": ["recent"]
+    },
+    {
+      "slot": "ESI-3",
+      "vertical": "CNMV_ESI",
+      "nif": "A64911100",
+      "name": "ACTIVOTRADE VALORES, SOCIEDAD DE VALORES, S.A.",
+      "detail_url": "https://www.cnmv.es/Portal/Consultas/ESI/esis.aspx?nif=A64911100",
+      "fs_support": "none-expected",
+      "traits": ["program-of-activities"]
+    },
+    {
+      "slot": "ESI-4",
+      "vertical": "CNMV_ESI",
+      "nif": "A-83217281",
+      "name": "ABANTE ASESORES DISTRIBUCION, AGENCIA DE VALORES, S.A.",
+      "detail_url": "https://www.cnmv.es/Portal/Consultas/ESI/esis.aspx?nif=A-83217281",
+      "fs_support": "none-expected",
+      "traits": ["group", "possible-name-change"]
+    },
+    {
+      "slot": "SAN-1",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A28867000",
+      "name": "GESCONSULT, S.A., S.G.I.I.C.",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A28867000",
+      "fs_support": "honored",
+      "traits": ["sanctioned", "fs-capable"],
+      "sanction_evidence": {
+        "register": "CNMV Registro publico de sanciones",
+        "register_url": "https://www.cnmv.es/portal/consultas/registrosanciones/verregsanciones.aspx?page=0",
+        "resolution": "Resolucion de 17 de julio de 2026, CNMV, sanciones por infracciones muy grave y graves a Gesconsult, SA, SGIIC y a don Juan Llado Garcia-Lomas (BOE de 3 de agosto de 2026)",
+        "register_date": "17/07/2026",
+        "boe_reference": "BOE de 3 de agosto de 2026"
+      }
+    },
+    {
+      "slot": "SGIIC-1",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A83133421",
+      "name": "A&G FONDOS, SGIIC, SA",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A83133421",
+      "fs_support": "honored",
+      "traits": ["fs-probed"]
+    },
+    {
+      "slot": "SGIIC-2",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A85853927",
+      "name": "ABACO CAPITAL, SGIIC, S.A.",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A85853927",
+      "fs_support": "honored",
+      "traits": ["boutique"]
+    },
+    {
+      "slot": "SGIIC-3",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A79389672",
+      "name": "ABANCA GESTION DE ACTIVOS, SGIIC, SA",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A79389672",
+      "fs_support": "honored",
+      "traits": ["bank-group", "organisation"]
+    },
+    {
+      "slot": "SGIIC-4",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A48883748",
+      "name": "ACACIA INVERSION, SGIIC, S.A.",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A48883748",
+      "fs_support": "honored",
+      "traits": ["veteran"]
+    },
+    {
+      "slot": "SGIIC-5",
+      "vertical": "CNMV_SGIIC",
+      "nif": "A84144625",
+      "name": "ALTAMAR PRIVATE EQUITY, S.G.I.I.C., S.A.",
+      "detail_url": "https://www.cnmv.es/portal/consultas/iic/sgiic.aspx?nif=A84144625",
+      "fs_support": "honored",
+      "traits": ["passporting-eee"]
+    },
+    {
+      "slot": "BDE-1",
+      "vertical": "BDE_EBA_PSD2",
+      "eba_entity_code": "ES_BE!6702",
+      "bde_nat_ref": "6702",
+      "name": "GLOBAL PAYMENTS MONEYTOPAY, EDE, S.L.",
+      "entity_type": "PSD_EMI",
+      "ent_aut": "2019-03-15",
+      "evidence": "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip :: download-PSDMD-202609130800.json",
+      "traits": ["e-money", "cross-border"]
+    },
+    {
+      "slot": "BDE-2",
+      "vertical": "BDE_EBA_PSD2",
+      "eba_entity_code": "ES_BE!6705",
+      "bde_nat_ref": "6705",
+      "name": "SEFIDE, E.D.E., S.L.",
+      "entity_type": "PSD_EMI",
+      "ent_aut": "2019-03-15",
+      "evidence": "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip :: download-PSDMD-202609130800.json",
+      "traits": ["e-money", "cross-border"]
+    },
+    {
+      "slot": "BDE-3",
+      "vertical": "BDE_EBA_PSD2",
+      "eba_entity_code": "ES_BE!6707",
+      "bde_nat_ref": "6707",
+      "name": "PECUNIA CARDS E.D.E., S.L.",
+      "entity_type": "PSD_EMI",
+      "ent_aut": "2019-03-15",
+      "evidence": "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip :: download-PSDMD-202609130800.json",
+      "traits": ["e-money", "cross-border"]
+    },
+    {
+      "slot": "BDE-4",
+      "vertical": "BDE_EBA_PSD2",
+      "eba_entity_code": "ES_BE!6709",
+      "bde_nat_ref": "6709",
+      "name": "UP AGANEA EDE, S.A.",
+      "entity_type": "PSD_EMI",
+      "ent_aut": "2019-03-15",
+      "evidence": "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip :: download-PSDMD-202609130800.json",
+      "traits": ["e-money", "cross-border"]
+    },
+    {
+      "slot": "BDE-5",
+      "vertical": "BDE_EBA_PSD2",
+      "eba_entity_code": "ES_BE!6712",
+      "bde_nat_ref": "6712",
+      "name": "BIP & DRIVE E.D.E, S.A.",
+      "entity_type": "PSD_EMI",
+      "ent_aut": "2019-05-27",
+      "evidence": "fixtures/g0.5/sources/raw/h4-eba-psd2-20260913.zip :: download-PSDMD-202609130800.json",
+      "traits": ["e-money", "cross-border"]
+    },
+    {
+      "slot": "INS-1",
+      "vertical": "INSURANCE_DGSFP",
+      "upstream_entity_id": "ent:dgsfp:clave:C0001",
+      "dgsfp_key": "C0001",
+      "has_lei": true,
+      "identity_status": "EXACT",
+      "evidence": "OpenDGSFP@f0d0035 :: data/derived/v0.1/opendgsfp-0.1.jsonl (sha256:056de1e6…)",
+      "traits": ["insurance", "with-lei"]
+    },
+    {
+      "slot": "INS-2",
+      "vertical": "INSURANCE_DGSFP",
+      "upstream_entity_id": "ent:dgsfp:clave:C0002",
+      "dgsfp_key": "C0002",
+      "has_lei": true,
+      "identity_status": "EXACT",
+      "evidence": "OpenDGSFP@f0d0035 :: data/derived/v0.1/opendgsfp-0.1.jsonl (sha256:056de1e6…)",
+      "traits": ["insurance", "with-lei"]
+    },
+    {
+      "slot": "INS-3",
+      "vertical": "INSURANCE_DGSFP",
+      "upstream_entity_id": "ent:dgsfp:clave:C0003",
+      "dgsfp_key": "C0003",
+      "has_lei": false,
+      "identity_status": "EXACT",
+      "evidence": "OpenDGSFP@f0d0035 :: data/derived/v0.1/opendgsfp-0.1.jsonl (sha256:056de1e6…)",
+      "traits": ["insurance", "without-lei"]
+    },
+    {
+      "slot": "INS-4",
+      "vertical": "INSURANCE_DGSFP",
+      "upstream_entity_id": "ent:dgsfp:clave:C0004",
+      "dgsfp_key": "C0004",
+      "has_lei": false,
+      "identity_status": "EXACT",
+      "evidence": "OpenDGSFP@f0d0035 :: data/derived/v0.1/opendgsfp-0.1.jsonl (sha256:056de1e6…)",
+      "traits": ["insurance", "without-lei"]
+    },
+    {
+      "slot": "INS-5",
+      "vertical": "INSURANCE_DGSFP",
+      "upstream_entity_id": "ent:dgsfp:clave:E0006",
+      "dgsfp_key": "E0006",
+      "has_lei": false,
+      "identity_status": "EXACT",
+      "situacion": "Cancelada",
+      "nif": "N0061004H",
+      "evidence": "OpenDGSFP@f0d0035 :: data/derived/v0.1/opendgsfp-0.1.jsonl (sha256:056de1e6…)",
+      "traits": ["branch-presence", "cancelled", "conflict-candidate"]
+    }
+  ]
+}

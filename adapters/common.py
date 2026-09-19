@@ -84,10 +84,15 @@ def _load_contracts(contracts_dir: str | Path) -> dict:
         raise AdapterError(
             "artifact_not_found", f"contracts dir no existe: {d}"
         )
-    return {
-        c.register_id: c
-        for c in (load_contract(p) for p in sorted(d.glob("*.json")))
-    }
+    try:
+        return {
+            c.register_id: c
+            for c in (load_contract(p) for p in sorted(d.glob("*.json")))
+        }
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        raise AdapterError(
+            "invalid_artifact", "contratos no legibles o invalidos"
+        ) from exc
 
 
 def _strict_input_date(value: str, field: str) -> None:
