@@ -11,6 +11,8 @@ import { index, verticalLabel } from "../lib/data";
     window.addEventListener("DOMContentLoaded", () => {
       const q = new URLSearchParams(location.search).get("q");
       const ui = new PagefindUI({ element: "#search", showSubResults: true });
+      const inp = document.querySelector(".pagefind-ui__search-input");
+      if (inp) { inp.removeAttribute("title"); inp.setAttribute("aria-label", "Buscar en el registro"); }
       if (q) ui.triggerSearch(q);
     });
   </script>

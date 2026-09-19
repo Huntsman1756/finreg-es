@@ -1,0 +1,166 @@
+{
+ "date": "2026-09-19T06:23:55.565Z",
+ "base": "dist/",
+ "checks": {
+  "R06_axe": {
+   "status": "PASS",
+   "detail": "0 violations on 5 pages"
+  },
+  "console_clean": {
+   "status": "PASS",
+   "detail": "0 uncaught errors"
+  },
+  "R07_js_disabled": {
+   "status": "PASS",
+   "detail": "h1+10 tables sin JS"
+  },
+  "R07_keyboard": {
+   "status": "PASS",
+   "detail": "tab order: A:Regulatory Record ES → A:Buscar → A:Cambios → A:Reguladores…"
+  },
+  "R07_reflow320": {
+   "status": "PASS",
+   "detail": "no horizontal overflow on 7 pages"
+  },
+  "R08_screenshots": {
+   "status": "PASS",
+   "detail": "home,esi1,esi4,sgiic5,buscar"
+  },
+  "R09_perf": {
+   "status": "PASS",
+   "detail": "heaviest page 6KB gz < 600KB"
+  },
+  "R09_requests": {
+   "status": "PASS",
+   "detail": "1 reqs, 0 external, 0 render-blocking"
+  },
+  "R10_seo_links": {
+   "status": "PASS",
+   "detail": "30 pages, 30 sitemap urls, 0 broken"
+  }
+ },
+ "evidence": {
+  "axe": {
+   "/": {
+    "violations": []
+   },
+   "/entidad/esi-a87515540/": {
+    "violations": []
+   },
+   "/entidad/esi-a83217281/": {
+    "violations": []
+   },
+   "/buscar/": {
+    "violations": []
+   },
+   "/fuentes/": {
+    "violations": []
+   }
+  },
+  "js_disabled": {
+   "h1": "ALANTRA CAPITAL MARKETS, SV, S.A.",
+   "tables": 10,
+   "scripts": 0,
+   "auditsVisible": true,
+   "managedNote": true
+  },
+  "keyboard": {
+   "order": [
+    "A:Regulatory Record ES",
+    "A:Buscar",
+    "A:Cambios",
+    "A:Reguladores",
+    "A:Metodología",
+    "A:Fuentes",
+    "A:Datos",
+    "INPUT:",
+    "A:GLOBAL PAYMENTS MONEYTOP",
+    "A:SEFIDE, E.D.E., S.L.",
+    "A:PECUNIA CARDS E.D.E., S.",
+    "A:UP AGANEA EDE, S.A."
+   ],
+   "focusStyle": {
+    "el": "A",
+    "outline": "auto",
+    "width": "1px",
+    "color": "rgb(16, 16, 16)"
+   }
+  },
+  "reflow320": {
+   "/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/entidad/esi-a87515540/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/entidad/esi-a83217281/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/buscar/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/fuentes/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/entidad/sgiic-a84144625/": {
+    "sw": 320,
+    "vw": 320
+   },
+   "/entidad/": {
+    "sw": 320,
+    "vw": 320
+   }
+  },
+  "screenshots": {
+   "home": "fixtures/g4/browser/g3-home-20260919.png",
+   "esi1": "fixtures/g4/browser/g3-esi1-20260919.png",
+   "esi4": "fixtures/g4/browser/g3-esi4-20260919.png",
+   "sgiic5": "fixtures/g4/browser/g3-sgiic5-20260919.png",
+   "buscar": "fixtures/g4/browser/g3-buscar-20260919.png"
+  },
+  "perf": {
+   "pages": {
+    "/": {
+     "raw": 8376,
+     "gz": 2938
+    },
+    "/entidad/esi-a87515540/": {
+     "raw": 19208,
+     "gz": 4438
+    },
+    "/entidad/sgiic-a84144625/": {
+     "raw": 30612,
+     "gz": 5847
+    },
+    "/buscar/": {
+     "raw": 7495,
+     "gz": 2834
+    }
+   },
+   "pagefind_lazy_gz": 370124,
+   "heaviest_page_gz": 5847,
+   "budget_gz": 614400
+  },
+  "requests": {
+   "count": 1,
+   "external": [],
+   "renderBlocking": []
+  },
+  "seo": {
+   "htmlFiles": 30,
+   "canonical": 30,
+   "title": 30,
+   "desc": 30,
+   "noTrailingSlash": [],
+   "sitemapUrls": 30,
+   "brokenLinks": [],
+   "brokenCount": 0
+  }
+ },
+ "verdict": "ALL_PASS"
+}
