@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { index, verticalLabel } from "../lib/data";
+import { index, verticalLabel, u } from "../lib/data";
 const byVertical = new Map<string, any[]>();
 for (const e of index as any[]) {
   const v = verticalLabel(e.id);
@@ -13,7 +13,7 @@ const DESC: Record<string, string> = {
   "Seguros · DGSFP": "Entidades aseguradoras y sucursales EEE — identidad consumida del artefacto OpenDGSFP.",
 };
 ---
-<Base title="Reguladores" crumbs={[{ href: "/reguladores/", label: "Reguladores" }]}>
+<Base title="Reguladores" crumbs={[{ href: u("reguladores/"), label: "Reguladores" }]}>
   <h1>Reguladores y superficies</h1>
   {[...byVertical.entries()].map(([v, ents]) => (
     <>
@@ -22,7 +22,7 @@ const DESC: Record<string, string> = {
       <table>
         <tbody>
           {ents.map((e: any) => (
-            <tr><td><a href={`/entidad/${e.id}/`}>{e.name}</a></td>
+            <tr><td><a href={u(`entidad/${e.id}/`)}>{e.name}</a></td>
                 <td class={e.status === "REGISTERED" ? "status ok" : "status off"}>{e.status}</td></tr>
           ))}
         </tbody>

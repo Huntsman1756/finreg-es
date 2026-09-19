@@ -1,8 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
-import { sources } from "../lib/data";
+import { sources, u } from "../lib/data";
 ---
-<Base title="Fuentes" crumbs={[{ href: "/fuentes/", label: "Fuentes" }]}>
+<Base title="Fuentes" crumbs={[{ href: u("fuentes/"), label: "Fuentes" }]}>
   <h1>Fuentes</h1>
   <p class="muted small">
     Fuentes oficiales utilizadas en la proyección actual. Cada entrada enlaza

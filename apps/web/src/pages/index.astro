@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { index, manifest } from "../lib/data";
+import { index, manifest, u } from "../lib/data";
 ---
 <Base title="Registro regulatorio verificable de entidades financieras en España"
       description="Qué entidad es, bajo qué reguladores figura, qué está autorizada a hacer, dónde puede operar y qué hechos regulatorios oficiales constan — con evidencia verificable.">
@@ -28,7 +28,7 @@ import { index, manifest } from "../lib/data";
     <tbody>
       {index.map((e: any) => (
         <tr>
-          <td><a href={`/entidad/${e.id}/`}>{e.name}</a></td>
+          <td><a href={u(`entidad/${e.id}/`)}>{e.name}</a></td>
           <td class="muted small">{e.vertical}</td>
           <td class={e.status === "REGISTERED" ? "status ok" : "status off"}>{e.status}</td>
         </tr>
@@ -39,6 +39,6 @@ import { index, manifest } from "../lib/data";
   <p class="src">
     Datos: {manifest.schema} · {manifest.entity_count} entidades · bundle
     <code>{manifest.bundle_sha256.slice(0, 16)}…</code>
-    — <a href="/datos/">descargas y schema</a>
+    — <a href={u("datos/")}>descargas y schema</a>
   </p>
 </Base>

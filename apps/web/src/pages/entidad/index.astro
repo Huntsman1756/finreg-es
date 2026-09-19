@@ -1,15 +1,15 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { index, verticalLabel } from "../../lib/data";
+import { index, verticalLabel, u } from "../../lib/data";
 ---
-<Base title="Entidades" crumbs={[{ href: "/entidad/", label: "Entidades" }]}>
+<Base title="Entidades" crumbs={[{ href: u("entidad/"), label: "Entidades" }]}>
   <h1>Entidades</h1>
   <table>
     <thead><tr><th>Entidad</th><th>Vertical</th><th>Estado</th></tr></thead>
     <tbody>
       {index.map((e: any) => (
         <tr>
-          <td><a href={`/entidad/${e.id}/`}>{e.name}</a></td>
+          <td><a href={u(`entidad/${e.id}/`)}>{e.name}</a></td>
           <td class="muted small">{verticalLabel(e.id)}</td>
           <td class={e.status === "REGISTERED" ? "status ok" : "status off"}>{e.status}</td>
         </tr>

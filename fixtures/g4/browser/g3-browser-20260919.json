@@ -1,5 +1,5 @@
 {
- "date": "2026-09-19T06:23:55.565Z",
+ "date": "2026-09-19T06:26:29.025Z",
  "base": "dist/",
  "checks": {
   "R06_axe": {
@@ -126,24 +126,24 @@
   "perf": {
    "pages": {
     "/": {
-     "raw": 8376,
-     "gz": 2938
+     "raw": 8699,
+     "gz": 2967
     },
     "/entidad/esi-a87515540/": {
-     "raw": 19208,
-     "gz": 4438
+     "raw": 19351,
+     "gz": 4458
     },
     "/entidad/sgiic-a84144625/": {
-     "raw": 30612,
-     "gz": 5847
+     "raw": 30755,
+     "gz": 5869
     },
     "/buscar/": {
-     "raw": 7495,
-     "gz": 2834
+     "raw": 7880,
+     "gz": 2877
     }
    },
    "pagefind_lazy_gz": 370124,
-   "heaviest_page_gz": 5847,
+   "heaviest_page_gz": 5869,
    "budget_gz": 614400
   },
   "requests": {

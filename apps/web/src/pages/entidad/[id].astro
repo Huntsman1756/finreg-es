@@ -1,6 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { index, loadEntity, verticalLabel, KIND_LABEL } from "../../lib/data";
+import { index, loadEntity, verticalLabel, KIND_LABEL , u } from "../../lib/data";
 
 export function getStaticPaths() {
   return index.map((e: any) => ({ params: { id: e.id } }));
@@ -16,7 +16,7 @@ const idLabel = (s: string) => ({ "es:nif": "NIF", lei: "LEI" }[s] ?? s);
 ---
 <Base title={e.identity.legal_name}
       description={`Ficha regulatoria verificable: ${e.identity.legal_name} — ${verticalLabel(e.id)}`}
-      crumbs={[{ href: "/entidad/", label: "Entidades" }, { href: `/entidad/${e.id}/`, label: e.identity.legal_name }]}>
+      crumbs={[{ href: u("entidad/"), label: "Entidades" }, { href: u(`/entidad/${e.id}/`), label: e.identity.legal_name }]}>
   <h1>{e.identity.legal_name}</h1>
   <p class="factline">
     {verticalLabel(e.id)} · Identidad: <strong>{e.identity.resolution}</strong> ·

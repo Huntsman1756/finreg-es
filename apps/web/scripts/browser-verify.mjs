@@ -19,8 +19,10 @@ const MIME = { ".html": "text/html", ".json": "application/json", ".js": "text/j
   ".css": "text/css", ".xml": "application/xml", ".png": "image/png",
   ".svg": "image/svg+xml", ".txt": "text/plain", ".webmanifest": "application/manifest+json" };
 
+const SITE_BASE = "/finreg-es/";
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  if (p.startsWith(SITE_BASE)) p = "/" + p.slice(SITE_BASE.length);
   if (p.endsWith("/")) p += "index.html";
   const f = join(DIST, p);
   if (!f.startsWith(DIST) || !existsSync(f) || !statSync(f).isFile()) {
@@ -217,8 +219,10 @@ const axeSrc = readFileSync(resolve(HERE, "../node_modules/axe-core/axe.min.js")
     if (/<title>[^<]+<\/title>/.test(h)) seo.title++;
     if (h.includes("name=\"description\"")) seo.desc++;
     for (const m of h.matchAll(/href="(\/[^"#]*)"/g)) {
-      const href = m[1];
-      if (href.startsWith("//") || href.startsWith("/pagefind/") || href.startsWith("/data/")) continue;
+      let href = m[1];
+      if (href.startsWith("//")) continue;
+      if (href.startsWith(SITE_BASE)) href = "/" + href.slice(SITE_BASE.length);
+      if (href.startsWith("/pagefind/") || href.startsWith("/data/")) continue;
       const target = join(DIST, href, "index.html");
       const targetFile = join(DIST, href);
       if (!existsSync(target) && !existsSync(targetFile)) missing.push(`${f.slice(DIST.length)} -> ${href}`);

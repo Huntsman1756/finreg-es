@@ -5,6 +5,7 @@ interface Props {
   crumbs?: { href: string; label: string }[];
   noindex?: boolean;
 }
+import { u } from "../lib/data";
 const { title, crumbs = [], noindex = false } = Astro.props;
 const description = Astro.props.description ??
   "Registro regulatorio provisional, verificable y público sobre fuentes oficiales españolas.";
@@ -82,21 +83,21 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : nu
 <body>
   <header class="site">
     <div class="wrap">
-      <a class="brand" href="/">Regulatory Record ES</a>
+      <a class="brand" href={u("")}>Regulatory Record ES</a>
       <nav class="top" aria-label="Principal">
-        <a href="/buscar/">Buscar</a>
-        <a href="/cambios/">Cambios</a>
-        <a href="/reguladores/">Reguladores</a>
-        <a href="/metodologia/">Metodología</a>
-        <a href="/fuentes/">Fuentes</a>
-        <a href="/datos/">Datos</a>
+        <a href={u("buscar/")}>Buscar</a>
+        <a href={u("cambios/")}>Cambios</a>
+        <a href={u("reguladores/")}>Reguladores</a>
+        <a href={u("metodologia/")}>Metodología</a>
+        <a href={u("fuentes/")}>Fuentes</a>
+        <a href={u("datos/")}>Datos</a>
       </nav>
     </div>
   </header>
   <div class="wrap">
     {crumbs.length > 0 && (
       <nav class="crumbs" aria-label="Miga de pan">
-        <a href="/">Inicio</a>
+        <a href={u("")}>Inicio</a>
         {crumbs.map(c => <> / <a href={c.href}>{c.label}</a></>)}
       </nav>
     )}
@@ -107,9 +108,9 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : nu
       Registro regulatorio provisional construido exclusivamente sobre fuentes
       oficiales públicas con evidencia congelada y verificable. No emite
       valoraciones, ratings ni recomendaciones.
-      <a href="/metodologia/">Metodología</a> ·
-      <a href="/aviso-legal/">Aviso legal</a> ·
-      <a href="/privacidad/">Privacidad</a>
+      <a href={u("metodologia/")}>Metodología</a> ·
+      <a href={u("aviso-legal/")}>Aviso legal</a> ·
+      <a href={u("privacidad/")}>Privacidad</a>
     </div>
   </footer>
 </body>

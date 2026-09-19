@@ -8,6 +8,11 @@ function load<T = any>(rel: string): T {
   return JSON.parse(readFileSync(path.join(PROJECTIONS, rel), "utf-8")) as T;
 }
 
+// URL helper: all internal links must go through u() so the site works
+// under any static base prefix (GitHub Pages project site: /finreg-es/).
+export const u = (p = "") =>
+  import.meta.env.BASE_URL + p.replace(/^\/+/, "");
+
 export const manifest = load("manifest.json");
 export const index = load("entities.json");
 export const changes = load("changes.json");
